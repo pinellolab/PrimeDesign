@@ -10,11 +10,11 @@ from argparse import RawTextHelpFormatter
 
 ##### Argument handeling
 parser = argparse.ArgumentParser(description = '''----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Software for the design of pegRNAs for flexible prime editing! Please visit ----- https://github.com/jyhsu15/pegDesigner ----- for more documentation on how to use the software.
+Software for the design of pegRNAs for flexible prime editing! Please visit ----- https://github.com/jyhsu15/PrimeDesign ----- for more documentation on how to use the software.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------''', formatter_class=RawTextHelpFormatter)
 
 # Inputs for de-novo design of pegRNAs and nicking gRNAs
-parser.add_argument('-f', '--file', required = True, type = str, help = '''Input file (.txt or .csv) for pegDesigner
+parser.add_argument('-f', '--file', required = True, type = str, help = '''Input file (.txt or .csv) with sequences for PrimeDesign. Format: target_name,target_sequence (Required)
 
 *** Example .TXT file *** --------------------------------------------------------------
 |											|
@@ -51,14 +51,14 @@ parser.add_argument('-f', '--file', required = True, type = str, help = '''Input
 ''')
 
 # Inputs for the design parameters of pegRNAs and nicking gRNAs
-parser.add_argument('-pe_format', '--pe_format', type = str, default = 'NNNNNNNNNNNNNNNNN/NNN[NGG]', help = "***** Prime editing formatting including the spacer, cut index -> /, and protospacer adjacent motif (PAM) -> [PAM]. Examples: NNNNNNNNNNNNNNNNN/NNN[NGG], NNNNNNNNNNNNNNNNN/NNN[NG] *****\n\n")
-parser.add_argument('-pbs', '--pbs_length_list', type = int, default = 0, nargs = '+', help = '***** List of the lengths of the primer binding sites for pegRNA extension *****\n\n')
-parser.add_argument('-rt', '--rt_length_list', type = int, default = 0, nargs = '+', help = '***** List of the lengths of the reverse transcription template for pegRNA extension (default: 20 to 50nt with insertion) *****\n')
-parser.add_argument('-nick_dist_min', '--nicking_distance_minimum', type = int, default = 0, nargs = '+', help = '***** Minimum nicking distance for PE3 in both directions *****\n\n')
-parser.add_argument('-nick_dist_max', '--nicking_distance_maximum', type = int, default = 100, nargs = '+', help = '***** Maximum nicking distance for PE3 in both directions *****\n\n')
+parser.add_argument('-pe_format', '--pe_format', type = str, default = 'NNNNNNNNNNNNNNNNN/NNN[NGG]', help = "***** Prime editing formatting including the spacer, cut index -> /, and protospacer adjacent motif (PAM) -> [PAM] (Default: NNNNNNNNNNNNNNNNN/NNN[NGG]). Examples: NNNNNNNNNNNNNNNNN/NNN[NGG], NNNNNNNNNNNNNNNNN/NNN[NG] *****\n\n")
+parser.add_argument('-pbs', '--pbs_length_list', type = int, default = 0, nargs = '+', help = '***** List of primer binding site (PBS) lengths for the pegRNA extension (Default: 10 to 16 nt). Example: 12 13 14 15 *****\n\n')
+parser.add_argument('-rt', '--rt_length_list', type = int, default = 0, nargs = '+', help = '***** List of reverse transcription (RT) template lengths for the pegRNA extension (Default: 10 to 16 nt). Example: 10 15 20 *****\n')
+parser.add_argument('-nick_dist_min', '--nicking_distance_minimum', type = int, default = 0, nargs = '+', help = '***** Minimum nicking distance for designing ngRNAs upstream and downstream of a pegRNA (Default: 0). *****\n\n')
+parser.add_argument('-nick_dist_max', '--nicking_distance_maximum', type = int, default = 100, nargs = '+', help = '***** Maximum nicking distance for designing ngRNAs upstream and downstream of a pegRNA (Default: 100). *****\n\n')
 
 # Output directory
-parser.add_argument('-out', '--out_dir', default = '0', type = str, help = '***** Name of output directory *****\n\n')
+parser.add_argument('-out', '--out_dir', default = '0', type = str, help = '***** Name of output directory (Default: ./DATETIMESTAMP_PrimeDesign). *****\n\n')
 
 args = parser.parse_args()
 
@@ -73,9 +73,9 @@ nicking_distance_maximum = args.nicking_distance_maximum
 
 # Default PBS and RTT lengths to design
 if pbs_length_list == 0:
-	pbs_length_list = list(range(11, 18))
+	pbs_length_list = list(range(10, 16))
 if rt_length_list == 0:
-	rt_length_list = list(range(10, 35, 5))
+	rt_length_list = list(range(10, 16))
 
 # Output directory date and time stamped
 out_dir = args.out_dir
