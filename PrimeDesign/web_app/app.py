@@ -26,7 +26,7 @@ df_tmp = pd.DataFrame.from_dict(peg_design_tmp)
 
 app.layout = html.Div([
 
-    html.Img(src=app.get_asset_url('primedesign_logo-v2.png'), width = '25%', style = {'margin-bottom': '0px', 'padding-left': '15px'}),
+    html.Img(src=app.get_asset_url('primedesign_logo.png'), width = '25%', style = {'margin-bottom': '0px', 'padding-left': '15px'}),
 
     html.Div([
 
