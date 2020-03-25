@@ -46,3 +46,25 @@ Users can specify the following options:
 -out, --out_dir
       Name of output directory. (Default: ./DATETIMESTAMP_PrimeDesign)
 ```
+## PrimeDesign input sequence format
+
+PrimeDesign takes in a single input sequence to design pegRNAs and ngRNAs for prime editing. The input sequence encodes both the reference and edited sequence with the following formatting:
+
+*Substitution:     (reference/edit)
+*Insertion:        (+insertion)
+*Deletion:         (-deletion)
+
+###### Example
+Reference sequence:           GCCTGTGACTAACTGCGCCAAAACGTCTTCCAATCCCCTTATCCAATTTA
+
+Substitution edit sequence:   GCCTGTGACTAACTGCGCCAAAACG**A**CTTCCAATCCCCTTATCCAATTTA
+PrimeDesign input sequence:   GCCTGTGACTAACTGCGCCAAAACG(T/A)CTTCCAATCCCCTTATCCAATTTA
+
+Insertion edit sequence:      GCCTGTGACTAACTGCGCCAAAACGT**CTT**CTTCCAATCCCCTTATCCAATTTA
+PrimeDesign input sequence:   GCCTGTGACTAACTGCGCCAAAACGT(+CTT)CTTCCAATCCCCTTATCCAATTTA
+
+Deletion edit sequence:       GCCTGTGACTAACTGCGCCAAAAC----TCCAATCCCCTTATCCAATTTA
+PrimeDesign input sequence:   GCCTGTGACTAACTGCGCCAAAAC(-GTCT)TCCAATCCCCTTATCCAATTTA
+
+Combinatorial edit sequence:  GCCTGTGACTAACTGC**T**CCA**ATCG**AAACGTC----AATCCCCTTATCCAATTTA
+PrimeDesign input sequence:   GCCTGTGACTAACTGC(G/T)CCA(+ATCG)AAACGTC(-TTCC)AATCCCCTTATCCAATTTA
