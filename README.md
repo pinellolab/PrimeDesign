@@ -11,9 +11,17 @@ Docker can be downloaded freely here: [https://store.docker.com/search?offering=
 To get a local copy of CRISPR-SURF, simply execute the following command:
 * ```docker pull pinellolab/primedesign```
 
+## PrimeDesign web application
+
+Run the PrimeDesign web application locally with the command:
+
+```
+docker run -p 9994:9994 pinellolab/primedesign:latest primedesign_webapp
+```
+
 ## PrimeDesign command line tool
 
-Run the PrimeDesign command line interface (CLI) in the terminal with the command:
+Run the PrimeDesign command line interface (CLI) with the command in the terminal:
 
 ```
 docker run -v ${PWD}/:/DATA -w /DATA pinellolab/primedesign primedesign_cli [options]
