@@ -26,20 +26,26 @@ df_tmp = pd.DataFrame.from_dict(peg_design_tmp)
 
 app.layout = html.Div([
 
-    html.Img(src=app.get_asset_url('primedesign_logo.png'), width = '20%', style = {'margin-bottom': '0px'}),
-    # html.H6('Design tool for prime editing', style = {'color':'grey', 'margin-top': '0px'}),
+    html.Img(src=app.get_asset_url('primedesign_logo-v2.png'), width = '25%', style = {'margin-bottom': '0px', 'padding-left': '15px'}),
 
     html.Div([
 
-        dcc.Textarea(
-            id='pe-sequence-input',
-            placeholder='Enter sequence to prime edit ...\n\nEdit formatting: Substitutions (ATGC/CGTA)  |  Insertions (+ATGC)  |  Deletions (-ATGC)',
-            value='',
-            style={'width': '99.2%'}
-        ),
+        html.Div([
 
-        html.Label(id = 'input-check', children = '', style = {'font-weight':'bold'})
-        ]),
+            html.H5('Input sequence'),
+
+            dcc.Textarea(
+                id='pe-sequence-input',
+                placeholder='Enter sequence to prime edit ...\n\nEdit formatting: Substitutions (ATGC/CGTA)  |  Insertions (+ATGC)  |  Deletions (-ATGC)',
+                value='',
+                style = {'width': '100%'}
+            ),
+
+            html.Label(id = 'input-check', children = '', style = {'font-weight':'bold'})
+            
+            ], className = 'twelve columns'),
+
+        ], className = 'row', style = {'padding': '15px','margin': '0px'}),
 
     # html.Br(),
 
@@ -71,7 +77,7 @@ app.layout = html.Div([
 
             html.Div(id='store-sequence', style={'display': 'none'}),
 
-            ], style={'width': '97%','display': 'inline-block','border-radius': '5px','box-shadow': '2px 2px 2px lightgrey','background-color': '#fafafa','padding': '15px','margin': '10px'}),
+            ], className = 'twelve columns', style={'display': 'inline-block','border-radius': '5px','box-shadow': '2px 2px 2px lightgrey','background-color': '#fafafa','padding': '15px','margin': '0px'}),
 
         ], className = 'row'),
     
@@ -170,14 +176,32 @@ app.layout = html.Div([
                 labelStyle={'display': 'inline-block'}
             ),
 
-            ], className = 'three columns', style={'display': 'inline-block','border-radius': '5px','box-shadow': '2px 2px 2px lightgrey','background-color': '#fafafa','padding': '15px','margin-top': '10px', 'margin-bottom': '10px', 'margin-left': '10px', 'margin-right': '10px'}
+            ], className = 'three columns', style={'display': 'inline-block','border-radius': '5px','box-shadow': '2px 2px 2px lightgrey','background-color': '#fafafa','padding': '15px',}#'margin-top': '10px', 'margin-bottom': '10px', 'margin-left': '10px', 'margin-right': '10px'}
             ),
 
         html.Div([
 
-            html.H6('pegRNA spacer table'),
+            html.Div([
 
-            # ['pegRNA group','type', 'spacer sequence','PAM','strand','peg-to-edit','nick-to-peg','pegRNA extension','PBS length','RTT length','annotation']
+                html.Div([html.H6('pegRNA spacer table')], className = 'six columns'),
+
+                html.Div([
+
+                    html.A(
+                        'Download all designs',
+                        id='download-link',
+                        download="PrimeDesign.csv",
+                        href="",
+                        target="_blank",
+                        style = {'font-size':'20px'}
+                    ),
+
+                    ], className = 'six columns', style = {'text-align':'right', 'padding-bottom':'0px'}),
+
+                ], className = 'row', style = {'display':'inline'}),
+
+            # html.H6('pegRNA spacer table'),
+
             dash_table.DataTable(
                 id = 'peg-table',
                 columns = [{'name': i, 'id': i} for i in ['spacer sequence','PAM','strand','peg-to-edit','annotation']],
@@ -228,23 +252,24 @@ app.layout = html.Div([
                 # filter_action = 'native',
             ),
 
-            html.A(
-                'Download all designs',
-                id='download-link',
-                download="PrimeDesign.csv",
-                href="",
-                target="_blank"
-            ),
+            # html.A(
+            #     'Download all designs',
+            #     id='download-link',
+            #     download="PrimeDesign.csv",
+            #     href="",
+            #     target="_blank",
+            #     style = {'font-size':'20px'}
+            # ),
 
             html.Div(id='store-peg-table-total', style={'display': 'none'}),
             html.Div(id='store-peg-table', style={'display': 'none'}),
 
-            ], className = 'nine columns', style={'display': 'inline-block','border-radius': '5px','box-shadow': '2px 2px 2px lightgrey','background-color': '#fafafa','padding': '15px','margin-top': '10px', 'margin-bottom': '10px', 'margin-left': '10px', 'margin-right': '10px'}),
+            ], className = 'nine columns', style={'display': 'inline-block','border-radius': '5px','box-shadow': '2px 2px 2px lightgrey','background-color': '#fafafa','padding': '15px', })#,'margin-top': '10px', 'margin-bottom': '10px', 'margin-left': '10px', 'margin-right': '10px'}),
 
         ], className = 'row'),
-    ], style={})
+    ])
 
-@app.callback(Output('input-check', 'children'),
+@app.callback([Output('input-check', 'children'), Output('input-check', 'style'),],
     [Input('pe-sequence-input','value')]
 )
 
@@ -271,6 +296,7 @@ def update_input_check(input_sequence):
             # Check composition of input sequence
             if len(input_sequence) != sum([1 if x in ['A','T','C','G','(',')','+','-','/'] else 0 for x in input_sequence.upper()]):
                 sequence_check = 'Error: Input sequence contains a character not in the following list: A,T,C,G,(,),+,-,/ ...'
+                sequence_check_style = {'font-weight':'bold','color':'red'}
 
             else:
 
@@ -280,22 +306,29 @@ def update_input_check(input_sequence):
                         if '()' not in format_check: # Checks for empty annotations
                             if sum([1 if x in format_check else 0 for x in ['++','--','//','+-','+/','-+','-/','/+','/-','/(','+(','-(',')/',')+',')-']]) == 0:
                                 sequence_check = 'Success: Input sequence has correct formatting'
+                                sequence_check_style = {'font-weight':'bold','color':'green'}
                             else:
                                 sequence_check = 'Error: Input sequence has more than one edit annotation per parantheses set or annotation outside of parantheses'
+                                sequence_check_style = {'font-weight':'bold','color':'red'}
                         else:
                             sequence_check = 'Error: Input sequence has empty parantheses without an edit annotation (i.e. /,  + , -)'
+                            sequence_check_style = {'font-weight':'bold','color':'red'}
                     else:
                         sequence_check = 'Error: Input sequence has nested parantheses which is not allowed'
+                        sequence_check_style = {'font-weight':'bold','color':'red'}
                 else:
                     sequence_check = 'Error: Input sequence does not have full sets of parantheses'
+                    sequence_check_style = {'font-weight':'bold','color':'red'}
 
         else:
             sequence_check = 'Error: Input sequence has exceeded maximum length of 10kb'
+            sequence_check_style = {'font-weight':'bold','color':'red'}
 
     else:
         sequence_check = 'No input sequence with desired edits has been provided'
+        sequence_check_style = {'font-weight':'bold','color':'red'}
 
-    return(sequence_check)
+    return(sequence_check, sequence_check_style)
 
 @app.callback([Output('reference-edit-sequence', 'sequence'), Output('reference-edit-sequence', 'coverage')],
     [Input('input-check','children'), Input('sequence-option', 'value')],
