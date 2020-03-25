@@ -1,48 +1,53 @@
 # Import required libraries
 import re
+import os
+import base64
+import urllib.parse
 import dash
 import dash_table
 import dash_bio as dashbio
 import dash_html_components as html
+import dash_bootstrap_components as dbc
 from flask import Flask
 import pandas as pd
 from dash.dependencies import Input, Output, State, ClientsideFunction
 import dash_core_components as dcc
 import dash_html_components as html
 
+'https://codepen.io/chriddyp/pen/bWLwgP.css'
+
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+app = dash.Dash(__name__, external_stylesheets = external_stylesheets)
 server = app.server
-# server.secret_key = 'r\xf8\x03\xd6z= \x8c\x0c\x9b\xba\xd0\xac\xfb\xd4\x97\xf7>=\xe3HK\x95R'
 
-peg_design_tmp = peg_design = {'pegRNA group':[],'type':[], 'spacer sequence':[],'PAM':[],'strand':[],'peg-to-edit':[],'nick-to-peg':[],'pegRNA extension':[],'PBS length':[],'RTT length':[],'annotation':[]}
+peg_design_tmp = {'pegRNA group':[],'type':[], 'spacer sequence':[],'PAM':[],'strand':[],'peg-to-edit':[],'nick-to-peg':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'RTT length':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
 df_tmp = pd.DataFrame.from_dict(peg_design_tmp)
 
 app.layout = html.Div([
 
-    html.H2('PrimeDesign', style = {'margin-bottom': '0px'}),
-    html.H6('Flexible prime editing design', style = {'color':'grey', 'margin-top': '0px'}),
+    html.Img(src=app.get_asset_url('primedesign_logo.png'), width = '20%', style = {'margin-bottom': '0px'}),
+    # html.H6('Design tool for prime editing', style = {'color':'grey', 'margin-top': '0px'}),
 
     html.Div([
 
         dcc.Textarea(
             id='pe-sequence-input',
-            placeholder='Enter sequence to prime edit ...\n\nFormatting edits: Substitutions (ATGC/CGTA)  |  Insertions (+ATGC)  |  Deletions (-ATGC)',
+            placeholder='Enter sequence to prime edit ...\n\nEdit formatting: Substitutions (ATGC/CGTA)  |  Insertions (+ATGC)  |  Deletions (-ATGC)',
             value='',
-            style={'width': '100%'}
+            style={'width': '99.2%'}
         ),
 
         html.Label(id = 'input-check', children = '', style = {'font-weight':'bold'})
         ]),
 
-    html.Br(),
+    # html.Br(),
 
     html.Div([
 
         html.Div([
 
-            html.H6('Visualize sequence'),
+            html.H5('Visualize sequence'),
             dcc.RadioItems(
                 id = 'sequence-option',
                 options=[
@@ -56,9 +61,7 @@ app.layout = html.Div([
             dashbio.SequenceViewer(
                 id = 'reference-edit-sequence',
                 sequence = '...',
-                # title ='Reference sequence',
                 badge =False,
-                # wrapAminoAcids =False,
                 charsPerLine = 150,
                 sequenceMaxHeight = '10000px',
                 search = True,
@@ -68,7 +71,7 @@ app.layout = html.Div([
 
             html.Div(id='store-sequence', style={'display': 'none'}),
 
-            ], className = 'twelve columns', style={'display': 'inline-block','border-radius': '5px','box-shadow': '2px 2px 2px lightgrey','background-color': '#fafafa','padding': '15px','margin': '10px'}),
+            ], style={'width': '97%','display': 'inline-block','border-radius': '5px','box-shadow': '2px 2px 2px lightgrey','background-color': '#fafafa','padding': '15px','margin': '10px'}),
 
         ], className = 'row'),
     
@@ -78,29 +81,74 @@ app.layout = html.Div([
 
         html.Div([
 
-            html.H6('Prime editing parameters'),
+            html.H5('Prime editing parameters'),
 
-            html.Label(id = 'pbs-title', children = 'PBS length', style = {'font-weight':'bold'}),
+            html.Div([
+
+                html.Label(id = 'pbs-title', children = 'PBS length', style = {'font-weight':'bold'}),
+                html.Span('?',
+                      id = 'pbs-tooltip',
+                      style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'},
+                      className = 'dot'),
+
+                 dbc.Tooltip('Recommendation: ~13 nt',
+                       target = 'pbs-tooltip',
+                       placement = 'right',
+                       style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
+                 ),
+
+            ], className='row', style={'display' : 'flex'}),
+
             html.Label(id = 'pbs-info', children = 'Primer binding site', style = {'color':'grey'}),
             dcc.RangeSlider(
                 id = 'pbs-range',
                 min=5,
                 max=17,
-                value=[12, 15],
+                value=[11, 15],
                 allowCross=False
             ),
 
-            html.Label(id = 'rtt-title', children = 'RTT length', style = {'font-weight':'bold'}),
+            html.Div([
+
+                html.Label(id = 'rtt-title', children = 'RTT length', style = {'font-weight':'bold'}),
+                html.Span('?',
+                      id = 'rtt-tooltip',
+                      style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'},
+                      className = 'dot'),
+
+                 dbc.Tooltip('Recommendation: ~10-16 nt',
+                       target = 'rtt-tooltip',
+                       placement = 'right',
+                       style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
+                 ),
+
+            ], className='row', style={'display' : 'flex'}),
+
             html.Label(id = 'rtt-info', children = 'Reverse transcription template', style = {'color':'grey'}),
             dcc.RangeSlider(
                 id = 'rtt-range',
                 min=5,
-                max=50,
-                value=[10, 20],
+                max=80,
+                value=[10, 16],
                 allowCross=False
             ),
 
-            html.Label(id = 'nick-dist-title', children = 'ngRNA distance', style = {'font-weight':'bold'}),
+            
+            html.Div([
+                html.Label(id = 'nick-dist-title', children = 'ngRNA distance', style = {'font-weight':'bold'}),
+                html.Span('?',
+                      id = 'nick-dist-tooltip',
+                      style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'},
+                      className = 'dot'),
+
+                 dbc.Tooltip('Recommendation: ~50 bp',
+                       target = 'nick-dist-tooltip',
+                       placement = 'right',
+                       style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
+                 ),
+
+            ], className='row', style={'display' : 'flex'}),
+
             html.Label(id = 'nick-dist-info', children = 'ngRNA to pegRNA distance', style = {'color':'grey'}),
             dcc.RangeSlider(
                 id = 'nick-dist-range',
@@ -108,7 +156,19 @@ app.layout = html.Div([
                 max=120,
                 value=[0, 100],
                 allowCross=False
-            )
+            ),
+
+            html.Label('Remove pegRNA extensions with C first base', style = {'font-weight':'bold'}),
+
+            dcc.RadioItems(
+                id = 'extfirstbase-option',
+                options=[
+                    {'label': 'Yes', 'value': 'yes'},
+                    {'label': 'No', 'value': 'no'},
+                ],
+                value='yes',
+                labelStyle={'display': 'inline-block'}
+            ),
 
             ], className = 'three columns', style={'display': 'inline-block','border-radius': '5px','box-shadow': '2px 2px 2px lightgrey','background-color': '#fafafa','padding': '15px','margin-top': '10px', 'margin-bottom': '10px', 'margin-left': '10px', 'margin-right': '10px'}
             ),
@@ -122,7 +182,7 @@ app.layout = html.Div([
                 id = 'peg-table',
                 columns = [{'name': i, 'id': i} for i in ['spacer sequence','PAM','strand','peg-to-edit','annotation']],
                 data = df_tmp.to_dict('records'),
-                style_cell={'textAlign': 'left', 'padding': '5px'},
+                style_cell={'textAlign': 'left', 'padding': '5px',},
                 # style_as_list_view=True,
                 style_header={
                     'backgroundColor': 'white',
@@ -168,6 +228,14 @@ app.layout = html.Div([
                 # filter_action = 'native',
             ),
 
+            html.A(
+                'Download all designs',
+                id='download-link',
+                download="PrimeDesign.csv",
+                href="",
+                target="_blank"
+            ),
+
             html.Div(id='store-peg-table-total', style={'display': 'none'}),
             html.Div(id='store-peg-table', style={'display': 'none'}),
 
@@ -183,40 +251,46 @@ app.layout = html.Div([
 def update_input_check(input_sequence):
 
     if len(input_sequence) > 0:
-        # Check formatting is correct
-        format_check = ''
-        for i in input_sequence:
-            if i == '(':
-                format_check += '('
-            elif i == ')':
-                format_check += ')'
-            elif i == '/':
-                format_check += '/'
-            elif i == '+':
-                format_check += '+'
-            elif i == '-':
-                format_check += '-'
 
-        # Check composition of input sequence
-        if len(input_sequence) != sum([1 if x in ['A','T','C','G','(',')','+','-','/'] else 0 for x in input_sequence.upper()]):
-            sequence_check = 'Error: Input sequence contains a character not in the following list: A,T,C,G,(,),+,-,/ ...'
+        input_sequence = ''.join(input_sequence.split())
+        if len(input_sequence) <= 10000:
+            # Check formatting is correct
+            format_check = ''
+            for i in input_sequence:
+                if i == '(':
+                    format_check += '('
+                elif i == ')':
+                    format_check += ')'
+                elif i == '/':
+                    format_check += '/'
+                elif i == '+':
+                    format_check += '+'
+                elif i == '-':
+                    format_check += '-'
+
+            # Check composition of input sequence
+            if len(input_sequence) != sum([1 if x in ['A','T','C','G','(',')','+','-','/'] else 0 for x in input_sequence.upper()]):
+                sequence_check = 'Error: Input sequence contains a character not in the following list: A,T,C,G,(,),+,-,/ ...'
+
+            else:
+
+                # Check formatting
+                if format_check.count('(') == format_check.count(')') and format_check.count('(') > 0: # Left and right parantheses equal
+                    if '((' not in format_check: # Checks both directions for nested parantheses
+                        if '()' not in format_check: # Checks for empty annotations
+                            if sum([1 if x in format_check else 0 for x in ['++','--','//','+-','+/','-+','-/','/+','/-','/(','+(','-(',')/',')+',')-']]) == 0:
+                                sequence_check = 'Success: Input sequence has correct formatting'
+                            else:
+                                sequence_check = 'Error: Input sequence has more than one edit annotation per parantheses set or annotation outside of parantheses'
+                        else:
+                            sequence_check = 'Error: Input sequence has empty parantheses without an edit annotation (i.e. /,  + , -)'
+                    else:
+                        sequence_check = 'Error: Input sequence has nested parantheses which is not allowed'
+                else:
+                    sequence_check = 'Error: Input sequence does not have full sets of parantheses'
 
         else:
-
-            # Check formatting
-            if format_check.count('(') == format_check.count(')') and format_check.count('(') > 0: # Left and right parantheses equal
-                if '((' not in format_check: # Checks both directions for nested parantheses
-                    if '()' not in format_check: # Checks for empty annotations
-                        if sum([1 if x in format_check else 0 for x in ['++','--','//','+-','+/','-+','-/','/+','/-','/(','+(','-(',')/',')+',')-']]) == 0:
-                            sequence_check = 'Success: Input sequence has correct formatting'
-                        else:
-                            sequence_check = 'Error: Input sequence has more than one edit annotation per parantheses set or annotation outside of parantheses'
-                    else:
-                        sequence_check = 'Error: Input sequence has empty parantheses without an edit annotation (i.e. /,  + , -)'
-                else:
-                    sequence_check = 'Error: Input sequence has nested parantheses which is not allowed'
-            else:
-                sequence_check = 'Error: Input sequence does not have full sets of parantheses'
+            sequence_check = 'Error: Input sequence has exceeded maximum length of 10kb'
 
     else:
         sequence_check = 'No input sequence with desired edits has been provided'
@@ -230,6 +304,7 @@ def update_input_check(input_sequence):
 
 def update_reference_sequence(input_check, sequence_option, input_sequence, selected_rows, store_peg_table):
 
+    input_sequence = ''.join(input_sequence.split())
     editformat2sequence = {}
     editformat2sequencestore = {}
     index_shift = 0
@@ -336,7 +411,7 @@ def update_pbs_title(rtt_range):
 )
 
 def update_pbs_title(nick_dist_range):
-    return('Nicking distance: %s - %s nt' % (nick_dist_range[0], nick_dist_range[1]))
+    return('Nicking distance: %s - %s bp' % (nick_dist_range[0], nick_dist_range[1]))
 
 ### Section to run pegDesigner code
 
@@ -396,6 +471,8 @@ def reverse_complement(sequence):
 
 # Extract reference and edited sequence information
 def process_sequence(input_sequence):
+
+    input_sequence = ''.join(input_sequence.split())
 
     # Check formatting is correct
     format_check = ''
@@ -496,23 +573,24 @@ def process_sequence(input_sequence):
 
 
 @app.callback([Output('peg-table', 'data'), Output('store-peg-table-total', 'children'), Output('store-peg-table', 'children')],
-    [Input('input-check','children'), Input('pbs-range','value'), Input('rtt-range','value'), Input('nick-dist-range','value')],
+    [Input('input-check','children'), Input('pbs-range','value'), Input('rtt-range','value'), Input('nick-dist-range','value'), Input('extfirstbase-option','value')],
     state = [State('pe-sequence-input','value')]
 )
 
-def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, input_sequence):
+def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, extfirstbase_filter, input_sequence):
 
     target_design = {}
-    peg_design = {'pegRNA group':[],'type':[], 'spacer sequence':[],'PAM':[],'strand':[],'peg-to-edit':[],'nick-to-peg':[],'pegRNA extension':[],'PBS length':[],'RTT length':[],'annotation':[]}
+    peg_design = {'pegRNA group':[],'type':[], 'spacer sequence':[],'PAM':[],'strand':[],'peg-to-edit':[],'nick-to-peg':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'RTT length':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
 
     if 'Success' in input_check:
 
+        input_sequence = ''.join(input_sequence.split())
         pe_format = 'NNNNNNNNNNNNNNNNN/NNN[NGG]'
         nicking_distance_minimum = nicking_distance_range[0]
         nicking_distance_maximum = nicking_distance_range[1]
         pbs_length_list = list(range(pbs_range[0], pbs_range[1] + 1))
         rtt_length_list = list(range(rtt_range[0], rtt_range[1] + 1))
-        target_sequence = input_sequence
+        target_sequence = input_sequence#.upper()
         target_name = 'user-input'
 
         target_sequence = target_sequence.upper()
@@ -730,7 +808,7 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, i
             edit_stop_in_ref_rev = int(target_design[target_name]['edit_stop_in_ref_rev'])
             edit_span_length_w_ref = int(target_design[target_name]['edit_span_length'][0])
             edit_span_length_w_edit = int(target_design[target_name]['edit_span_length'][1])
-            
+
             # Design pegRNAs targeting the (+) strand
             counter = 1
             counted = []
@@ -754,7 +832,7 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, i
                             for pbs_length in pbs_length_list:
 
                                 # Construct pegRNA extension to encode intended edit(s)
-                                pegRNA_ext = edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + rtt_length]
+                                pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + rtt_length])
 
                                 # Check to see if pegRNA extension is within input sequence
                                 if len(pegRNA_ext) == (pbs_length + rtt_length):
@@ -766,10 +844,15 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, i
                                     peg_design['strand'].append('+')
                                     peg_design['peg-to-edit'].append(nick2lastedit_length)
                                     peg_design['nick-to-peg'].append('')
-                                    peg_design['pegRNA extension'].append(reverse_complement(pegRNA_ext))
+                                    peg_design['pegRNA extension'].append(pegRNA_ext)
+                                    peg_design['extension first base'].append(pegRNA_ext[0])
                                     peg_design['PBS length'].append(pbs_length)
                                     peg_design['RTT length'].append(rtt_length)
                                     peg_design['annotation'].append(pe_annotate)
+                                    peg_design['spacer top strand oligo'].append('caccG' + pe_spacer_sequence[1:] + 'gtttt')
+                                    peg_design['spacer bottom strand oligo'].append('ctctaaaac' + reverse_complement('G' + pe_spacer_sequence[1:]))
+                                    peg_design['pegRNA extension top strand oligo'].append('gtgc' + pegRNA_ext)
+                                    peg_design['pegRNA extension bottom strand oligo'].append('aaaa' + reverse_complement(pegRNA_ext))
 
                                     counted.append(counter)
 
@@ -788,9 +871,14 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, i
                                 peg_design['peg-to-edit'].append('')
                                 peg_design['nick-to-peg'].append(nick_distance)
                                 peg_design['pegRNA extension'].append('')
+                                peg_design['extension first base'].append('')
                                 peg_design['PBS length'].append('')
                                 peg_design['RTT length'].append('')
                                 peg_design['annotation'].append(ng_annotate)
+                                peg_design['spacer top strand oligo'].append('caccG' + reverse_complement(ng_spacer_sequence_edit)[1:])
+                                peg_design['spacer bottom strand oligo'].append('aaac' + reverse_complement('G' + reverse_complement(ng_spacer_sequence_edit)[1:]))
+                                peg_design['pegRNA extension top strand oligo'].append('')
+                                peg_design['pegRNA extension bottom strand oligo'].append('')
 
                         counter += 1
 
@@ -828,9 +916,14 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, i
                                     peg_design['peg-to-edit'].append(nick2lastedit_length)
                                     peg_design['nick-to-peg'].append('')
                                     peg_design['pegRNA extension'].append(pegRNA_ext)
+                                    peg_design['extension first base'].append(pegRNA_ext[0])
                                     peg_design['PBS length'].append(pbs_length)
                                     peg_design['RTT length'].append(rtt_length)
                                     peg_design['annotation'].append(pe_annotate)
+                                    peg_design['spacer top strand oligo'].append('caccG' + reverse_complement(pe_spacer_sequence)[1:] + 'gtttt')
+                                    peg_design['spacer bottom strand oligo'].append('ctctaaaac' + reverse_complement('G' + reverse_complement(pe_spacer_sequence)[1:]))
+                                    peg_design['pegRNA extension top strand oligo'].append('gtgc' + pegRNA_ext)
+                                    peg_design['pegRNA extension bottom strand oligo'].append('aaaa' + reverse_complement(pegRNA_ext))
 
                                     counted.append(counter)
 
@@ -849,16 +942,26 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, i
                                 peg_design['peg-to-edit'].append('')
                                 peg_design['nick-to-peg'].append(nick_distance)
                                 peg_design['pegRNA extension'].append('')
+                                peg_design['extension first base'].append('')
                                 peg_design['PBS length'].append('')
                                 peg_design['RTT length'].append('')
                                 peg_design['annotation'].append(ng_annotate)
+                                peg_design['spacer top strand oligo'].append('caccG' + ng_spacer_sequence_edit[1:])
+                                peg_design['spacer bottom strand oligo'].append('aaac' + reverse_complement('G' + ng_spacer_sequence_edit[1:]))
+                                peg_design['pegRNA extension top strand oligo'].append('')
+                                peg_design['pegRNA extension bottom strand oligo'].append('')
 
                         counter += 1
 
         df = pd.DataFrame.from_dict(peg_design)
 
     else:
+        df = {'pegRNA group':[],'type':[], 'spacer sequence':[],'PAM':[],'strand':[],'peg-to-edit':[],'nick-to-peg':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'RTT length':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
         df = pd.DataFrame.from_dict(peg_design)
+
+    if extfirstbase_filter == 'yes':
+        df = df[df['extension first base'] != 'C']
+        df.reset_index(drop=True, inplace=True)
 
     df_pegs = df[df['type'] == 'pegRNA']
     df_pegs = df_pegs[['pegRNA group','spacer sequence','PAM','strand','peg-to-edit','annotation']].drop_duplicates()
@@ -886,7 +989,7 @@ def update_pegext_table(selected_row, store_peg_table_total, store_peg_table):
         df_pegext.reset_index(drop=True, inplace=True)
 
     except:
-        df_pegext = {'pegRNA group':[],'type':[], 'spacer sequence':[],'PAM':[],'strand':[],'peg-to-edit':[],'nick-to-peg':[],'pegRNA extension':[],'PBS length':[],'RTT length':[],'annotation':[]}
+        df_pegext = {'pegRNA group':[],'type':[], 'spacer sequence':[],'PAM':[],'strand':[],'peg-to-edit':[],'nick-to-peg':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'RTT length':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
         df_pegext = pd.DataFrame.from_dict(df_pegext)
 
     return(df_pegext.to_dict('records'))
@@ -910,7 +1013,7 @@ def update_ng_table(selected_row, store_peg_table_total, store_peg_table):
         df_ng.reset_index(drop=True, inplace=True)
 
     except:
-        df_ng = {'pegRNA group':[],'type':[], 'spacer sequence':[],'PAM':[],'strand':[],'peg-to-edit':[],'nick-to-peg':[],'pegRNA extension':[],'PBS length':[],'RTT length':[],'annotation':[]}
+        df_ng = {'pegRNA group':[],'type':[], 'spacer sequence':[],'PAM':[],'strand':[],'peg-to-edit':[],'nick-to-peg':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'RTT length':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
         df_ng = pd.DataFrame.from_dict(df_ng)
 
     return(df_ng.to_dict('records'))
@@ -923,6 +1026,23 @@ def update_ng_table(selected_row, store_peg_table_total, store_peg_table):
 def see_active_cell(active_cell):#, store_peg_table, sequence_option_value):
 
     return('ref')
+
+@app.callback(Output('download-link', 'href'),
+    [Input('store-peg-table-total', 'children')]
+)
+def update_download_link(store_peg_table_total):
+
+    try:
+        # Open up stored peg table
+        df_out = pd.read_json(store_peg_table_total, orient='split')
+
+    except:
+        df_out = {'pegRNA group':[],'type':[], 'spacer sequence':[],'PAM':[],'strand':[],'peg-to-edit':[],'nick-to-peg':[],'pegRNA extension':[],'PBS length':[],'RTT length':[],'annotation':[]}
+        df_out = pd.DataFrame.from_dict(df_out)
+
+    csv_string = df_out.to_csv(index = False, encoding='utf-8')
+    csv_string = "data:text/csv;charset=utf-8," + urllib.parse.quote(csv_string)
+    return csv_string
 
 if __name__ == '__main__':
     app.run_server(debug = True, port = 9994, host = '0.0.0.0')

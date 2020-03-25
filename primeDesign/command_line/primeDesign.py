@@ -80,7 +80,7 @@ if rt_length_list == 0:
 # Output directory date and time stamped
 out_dir = args.out_dir
 if out_dir == '0':
-	out_dir = '%s_pegRNA_design' % str(time.strftime("%y%m%d_%H.%M.%S", time.localtime()))
+	out_dir = '%s_PrimeDesign' % str(time.strftime("%y%m%d_%H.%M.%S", time.localtime()))
 
 if not os.path.exists(out_dir):
 	os.makedirs(out_dir)
@@ -91,7 +91,7 @@ logger.setLevel(logging.DEBUG)
 
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-fh = logging.FileHandler(out_dir + '/pegRNA_design.log')
+fh = logging.FileHandler(out_dir + '/PrimeDesign.log')
 fh.setLevel(logging.DEBUG)
 fh.setFormatter(formatter)
 logger.addHandler(fh)
@@ -634,13 +634,13 @@ for target_name in target_design:
 # 			print('\t'.join(map(str, entry)))
 
 # Output pegRNAs
-pegRNAs_summary_f = '%s_pegRNA_design_summary.csv' % str(time.strftime("%m-%d-%y_%H.%M.%S", time.localtime()))
+pegRNAs_summary_f = '%s_PrimeDesign_summary.csv' % str(time.strftime("%m-%d-%y_%H.%M.%S", time.localtime()))
 logger.info('Writing pegRNA and ngRNA designs into output file %s ...' % pegRNAs_summary_f)
 
 counter = 1
 with open(out_dir + '/%s' % pegRNAs_summary_f, 'w') as f:
 	
-	f.write(','.join(map(str, ['Target_name', 'Target_sequence', 'pegRNA_number', 'gRNA_type', 'Spacer_sequence', 'PAM_sequence', 'Extension_sequence', 'Strand', 'Annotation', 'Nick_index', 'Distance_from_PE_nick', 'PBS_length', 'RT_length','First_extension_nucleotide', 'Spacer_sequence_order_TOP', 'Spacer_sequence_order_BOTTOM', 'pegExtension_sequence_order_TOP', 'pegExtension_sequence_order_BOTTOM'])) + '\n')
+	f.write(','.join(map(str, ['Target_name', 'Target_sequence', 'pegRNA_number', 'gRNA_type', 'Spacer_sequence', 'PAM_sequence', 'Extension_sequence', 'Strand', 'Annotation', 'Nick_index', 'Distance_from_PE_nick', 'PBS_length', 'RT_length','First_extension_nucleotide', 'Spacer_sequence_order_TOP', 'Spacer_sequence_order_BOTTOM', 'pegRNA_extension_sequence_order_TOP', 'pegRNA_extension_sequence_order_BOTTOM'])) + '\n')
 	for target_name in pe_design:
 		
 		for pegid in pe_design[target_name]:
@@ -658,7 +658,7 @@ with open(out_dir + '/%s' % pegRNAs_summary_f, 'w') as f:
 					pe_pam_ref = reverse_complement(pe_pam_ref)
 					pegRNA_ext_first_base = pegRNA_ext[0]
 
-				f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'pegRNA', pe_spacer_sequence, pe_pam_ref, pegRNA_ext, pe_strand, pe_annotate, pe_nick_ref_idx, 'n/a', pbs_length, rt_length, pegRNA_ext_first_base, 'caccG' + pe_spacer_sequence[1:] + 'gtttt', 'ctctaaaac' + reverse_complement('G' + pe_spacer_sequence[1:]), 'gtgc' + pegRNA_ext, 'aaaa' + reverse_complement(pegRNA_ext)])) + '\n')
+				f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'pegRNA', pe_spacer_sequence, pe_pam_ref, pegRNA_ext, pe_strand, pe_annotate, pe_nick_ref_idx, '', pbs_length, rt_length, pegRNA_ext_first_base, 'caccG' + pe_spacer_sequence[1:] + 'gtttt', 'ctctaaaac' + reverse_complement('G' + pe_spacer_sequence[1:]), 'gtgc' + pegRNA_ext, 'aaaa' + reverse_complement(pegRNA_ext)])) + '\n')
 
 			# Write ngRNAs
 			for ngRNA_entry in pe_design[target_name][pegid][1]:
@@ -668,6 +668,6 @@ with open(out_dir + '/%s' % pegRNAs_summary_f, 'w') as f:
 					ng_spacer_sequence = reverse_complement(ng_spacer_sequence_edit)
 					ng_pam = reverse_complement(ng_pam_edit)
 
-				f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'ngRNA', ng_spacer_sequence, ng_pam, 'n/a', ng_strand, ng_annotate, ng_nick_ref_idx, nick_distance, 'n/a', 'n/a', 'n/a', 'caccG' + ng_spacer_sequence[1:] + 'gtttt', 'ctctaaaac' + reverse_complement('G' + ng_spacer_sequence[1:]), 'n/a', 'n/a'])) + '\n')
+				f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'ngRNA', ng_spacer_sequence, ng_pam, '', ng_strand, ng_annotate, ng_nick_ref_idx, nick_distance, '', '', '', 'caccG' + ng_spacer_sequence[1:], 'aaac' + reverse_complement('G' + ng_spacer_sequence[1:]), '', ''])) + '\n')
 
 			counter += 1

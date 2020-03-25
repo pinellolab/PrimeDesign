@@ -18,15 +18,16 @@ RUN conda config --add channels bioconda
 # Add website dependencies
 RUN pip install dash==1.9.1  # Dash core
 RUN pip install dash-bio==0.4.8 # Dash bio
+RUN pip install dash-bootstrap-components
 RUN pip install gunicorn
 
 # Create environment
-COPY primeDesign /primeDesign
+COPY PrimeDesign /PrimeDesign
 #RUN mkdir /tmp/UPLOADS_FOLDER
 #RUN mkdir /tmp/RESULTS_FOLDER
 
 # Reroute to enable the PrimeDesign CLI and WebApp
-WORKDIR /primeDesign
-EXPOSE 9993
-RUN chmod +x /primeDesign/web_app/start_server_docker.sh
-ENTRYPOINT ["python", "/primeDesign/primedesign_router.py"]
+WORKDIR /PrimeDesign
+EXPOSE 9994
+RUN chmod +x /PrimeDesign/web_app/start_server_docker.sh
+ENTRYPOINT ["python", "/PrimeDesign/primedesign_router.py"]
