@@ -18,6 +18,7 @@ Run the PrimeDesign web application locally with the command:
 ```
 docker run -p 9994:9994 pinellolab/primedesign:latest primedesign_webapp
 ```
+After execution of the command, the user will have a local instance of the website accessible at the URL: http://0.0.0.0:9994
 
 ## PrimeDesign command line tool
 
