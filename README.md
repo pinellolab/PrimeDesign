@@ -50,9 +50,9 @@ Users can specify the following options:
 
 PrimeDesign takes in a single input sequence to design pegRNAs and ngRNAs for prime editing. The input sequence encodes both the reference and edited sequence with the following formatting:
 
-*Substitution:     (reference/edit)
-*Insertion:        (+insertion)
-*Deletion:         (-deletion)
+* Substitution:     (reference/edit)
+* Insertion:        (+insertion)
+* Deletion:         (-deletion)
 
 ###### Example
 Reference sequence:           GCCTGTGACTAACTGCGCCAAAACGTCTTCCAATCCCCTTATCCAATTTA
