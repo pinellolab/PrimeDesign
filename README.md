@@ -55,7 +55,7 @@ PrimeDesign takes in a single input sequence to design pegRNAs and ngRNAs for pr
 * Deletion:         (-deletion)
 
 ### Example
-**Reference sequence:**\t\t\tGCCTGTGACTAACTGCGCCAAAACGTCTTCCAATCCCCTTATCCAATTTA
+**Reference sequence:**<pre><pre><pre>GCCTGTGACTAACTGCGCCAAAACGTCTTCCAATCCCCTTATCCAATTTA
 
 **Substitution edit sequence:**   GCCTGTGACTAACTGCGCCAAAACG**A**CTTCCAATCCCCTTATCCAATTTA<br/>
 **PrimeDesign input sequence:**   GCCTGTGACTAACTGCGCCAAAACG(T/A)CTTCCAATCCCCTTATCCAATTTA
