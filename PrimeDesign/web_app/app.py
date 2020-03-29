@@ -42,7 +42,73 @@ app.layout = html.Div([
 about_page = html.Div([
 
     html.Br(),
-    html.H4('This page is under construction ...'),
+
+    html.H3('What is PrimeDesign?'),
+    html.Div([
+        '''PrimeDesign is a flexible and comprehensive design tool for prime editing.
+        PrimeDesign can be utilized for the installation of 
+        '''
+        ], style = { 'display':'inline', 'color':'#6a6a6a'}),
+
+    html.Span('substitution', style = {'color':'#1E90FF', 'display':'inline'}),
+    html.Span(', ', style = {'display':'inline', 'color':'#6a6a6a'}),
+    html.Span('insertion', style = {'color':'#3CB371', 'display':'inline'}),
+    html.Span(', and ', style = {'display':'inline', 'color':'#6a6a6a'}),
+    html.Span('deletion', style = {'color':'#DC143C', 'display':'inline'}),
+
+    html.Div([
+        ''' edits, and is generalizable for both single and combinatorial edits.
+        Given an edit of interest, PrimeDesign identifies all possible prime editing guide RNAs (pegRNAs) and nicking guide RNAs (ngRNAs) within a specified parameter range for the optimization of prime editing.
+        In addition to the web application, PrimeDesign is also available as a stand-alone command line tool for more flexible and higher-throughput PrimeDesign functions.
+        The command line tool is available here: 
+        '''
+        ], style = {'display':'inline', 'color':'#6a6a6a'}),
+
+    html.A(
+            'https://github.com/pinellolab/PrimeDesign',
+            id='github-link',
+            href="https://github.com/pinellolab/PrimeDesign",
+            target='_blank',
+            style = {'text-decoration':'none', 'display':'inline'}
+        ),
+
+    html.H3('Labs'),
+
+    html.A(
+            'Pinello Lab',
+            id='pinellolab-link',
+            href="http://pinellolab.org/",
+            target='_blank',
+            style = {'text-decoration':'none', 'display':'inline', 'font-size':'20px', 'color':'#6a6a6a'}
+        ),
+
+     html.Div([
+
+        html.Br(),
+
+        ], style = {'display':'block','line-height':'100%'}),
+
+     html.A(
+            'Joung Lab',
+            id='jounglab-link',
+            href="http://www.jounglab.org/",
+            target='_blank',
+            style = {'text-decoration':'none', 'display':'inline', 'font-size':'20px', 'color':'#6a6a6a'}
+        ),
+
+      html.Div([
+
+        html.Br(),
+
+        ], style = {'display':'block','line-height':'100%'}),
+
+      html.A(
+            'Liu Lab',
+            id='liulab-link',
+            href="https://liugroup.us/",
+            target='_blank',
+            style = {'text-decoration':'none', 'display':'inline', 'font-size':'20px', 'color':'#6a6a6a'}
+        ),
 
     ]),
 
@@ -55,19 +121,29 @@ help_page = html.Div([
         '''PrimeDesign is a flexible and comprehensive design tool for prime editing.
         PrimeDesign can be utilized for the installation of 
         '''
-        ], style = { 'display':'inline', 'color':'#444444'}),
+        ], style = { 'display':'inline', 'color':'#6a6a6a'}),
 
     html.Span('substitution', style = {'color':'#1E90FF', 'display':'inline'}),
-    html.Span(', ', style = {'display':'inline', 'color':'#444444'}),
+    html.Span(', ', style = {'display':'inline', 'color':'#6a6a6a'}),
     html.Span('insertion', style = {'color':'#3CB371', 'display':'inline'}),
-    html.Span(', and ', style = {'display':'inline', 'color':'#444444'}),
+    html.Span(', and ', style = {'display':'inline', 'color':'#6a6a6a'}),
     html.Span('deletion', style = {'color':'#DC143C', 'display':'inline'}),
 
     html.Div([
         ''' edits, and is generalizable for both single and combinatorial edits.
         Given an edit of interest, PrimeDesign identifies all possible prime editing guide RNAs (pegRNAs) and nicking guide RNAs (ngRNAs) within a specified parameter range for the optimization of prime editing.
+        In addition to the web application, PrimeDesign is also available as a stand-alone command line tool for more flexible and higher-throughput PrimeDesign functions.
+        The command line tool is available here: 
         '''
-        ], style = {'display':'inline', 'color':'#444444'}),
+        ], style = {'display':'inline', 'color':'#6a6a6a'}),
+
+    html.A(
+            'https://github.com/pinellolab/PrimeDesign',
+            id='github-link',
+            href="https://github.com/pinellolab/PrimeDesign",
+            target='_blank',
+            style = {'text-decoration':'none', 'display':'inline'}
+        ),
 
     html.H3('How do you use PrimeDesign?'),
 
@@ -75,7 +151,7 @@ help_page = html.Div([
     html.Div([
         '''PrimeDesign only requires a single input that encodes both the reference and edit sequences. The edit encoding format is below:
         '''
-        ], style = {'color':'#444444'}),
+        ], style = {'color':'#6a6a6a'}),
 
     html.Div([
 
@@ -108,7 +184,7 @@ help_page = html.Div([
     html.Div([
         '''The input sequence can incorporate single or combinatorial edits by simply including the desired number of edit encodings. For example:
         '''
-        ], style = {'color':'#444444'}),
+        ], style = {'color':'#6a6a6a'}),
 
     html.Div([
 
@@ -171,16 +247,37 @@ help_page = html.Div([
 
         '''We recommend an input sequence length of >300 bp centered around the the edit(s) of interest to ensure that the complete set of pegRNAs and ngRNAs are designed.
         '''
-        ], style = {'color':'#444444'}),
+        ], style = {'color':'#6a6a6a'}),
+
+    html.Div([
+
+        html.Br(),
+
+        ], style = {'display':'block','line-height':'100%'}),
 
     html.H5('Nagivating PrimeDesign'),
 
-    html.H5('Downloading designs'),
+    html.Div([
+
+        '''After you successfully construct a desired input sequence, check out the GIF below to learn how to navigate the PrimeDesign web application:
+        '''
+
+        ], style = {'color':'#6a6a6a'}),
 
     html.Div([
-        '''The complete list of pegRNA and ngRNA designs can be downloaded by clicking the highlighted link below. The downloaded file is in .csv format and includes columns for oligo ordering based on the pegRNA Golden Gate assembly strategy outlined in Anzalone et al. 2019.
-        '''
-        ], style = {'color':'#444444'}),
+
+        html.Br(),
+
+        ], style = {'display':'block','line-height':'100%'}),
+
+    html.Img(src=app.get_asset_url('primedesign_demo.gif'), style = {'display':'block', 'margin-left':'auto', 'margin-right':'auto', 'width':'80%'}),
+
+    # html.H5('Downloading designs'),
+
+    # html.Div([
+    #     '''The complete list of pegRNA and ngRNA designs can be downloaded by clicking the highlighted link below. The downloaded file is in .csv format and includes columns for oligo ordering based on the pegRNA Golden Gate assembly strategy outlined in Anzalone et al. 2019.
+    #     '''
+    #     ], style = {'color':'#6a6a6a'}),
 
     ], style = {'padding': '15px','margin': '0px'}),
 
@@ -237,7 +334,7 @@ design_page = html.Div([
 
             dashbio.SequenceViewer(
                 id = 'reference-edit-sequence',
-                sequence = '...',
+                sequence = ' ',
                 badge =False,
                 charsPerLine = 150,
                 sequenceMaxHeight = '10000px',
