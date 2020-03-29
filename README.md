@@ -1,6 +1,6 @@
 # PrimeDesign
 
-PrimeDesign is a software tool for the flexible design of prime editing.
+PrimeDesign is a software tool for the flexible and comprehensive design of prime editing. PrimeDesign is an edit-centric design tool for the installation of substitution, insertion, and deletion edits, and is generalizable for both single and combinatorial edits. Taking a single input that encodes both the reference and edit sequence, PrimeDesign enumerates all possible pegRNA protospacers, pegRNA extensions, and ngRNAs within set parameter ranges to install the desired edit(s).
 
 ## Installation with Docker
 
