@@ -72,6 +72,24 @@ about_page = html.Div([
             style = {'text-decoration':'none', 'display':'inline'}
         ),
 
+    html.H3('Reference'),
+
+    html.Div([
+
+        '''Manuscript in preparation!
+        '''
+
+        ], style = {'color':'#6a6a6a'}),
+
+    html.H3('Contact'),
+
+    html.Div([
+
+        '''If you have any questions or concerns, please don't hesitate to contact me at jyhsu (at) mit.edu.
+        '''
+
+        ], style = {'color':'#6a6a6a'}),
+
     html.H3('Labs'),
 
     html.A(
@@ -79,38 +97,30 @@ about_page = html.Div([
             id='pinellolab-link',
             href="http://pinellolab.org/",
             target='_blank',
-            style = {'text-decoration':'none', 'display':'inline', 'font-size':'20px', 'color':'#6a6a6a'}
+            style = {'text-decoration':'none', 'display':'inline', 'font-size':'20px', 'color':'#6a6a6a', 'margin-right':'15px'}
         ),
 
-     html.Div([
+    html.Label('|', style = {'font-size':'20px', 'display':'inline', 'color':'#6a6a6a'}),
 
-        html.Br(),
-
-        ], style = {'display':'block','line-height':'100%'}),
-
-     html.A(
+    html.A(
             'Joung Lab',
             id='jounglab-link',
             href="http://www.jounglab.org/",
             target='_blank',
-            style = {'text-decoration':'none', 'display':'inline', 'font-size':'20px', 'color':'#6a6a6a'}
+            style = {'text-decoration':'none', 'display':'inline', 'font-size':'20px', 'color':'#6a6a6a', 'margin-right':'15px', 'margin-left':'15px'}
         ),
 
-      html.Div([
+    html.Label('|', style = {'font-size':'20px', 'display':'inline', 'color':'#6a6a6a'}),
 
-        html.Br(),
-
-        ], style = {'display':'block','line-height':'100%'}),
-
-      html.A(
+    html.A(
             'Liu Lab',
             id='liulab-link',
             href="https://liugroup.us/",
             target='_blank',
-            style = {'text-decoration':'none', 'display':'inline', 'font-size':'20px', 'color':'#6a6a6a'}
+            style = {'text-decoration':'none', 'display':'inline', 'font-size':'20px', 'color':'#6a6a6a', 'margin-left':'15px'}
         ),
 
-    ]),
+    ], style = {'padding': '15px','margin': '0px'}),
 
 help_page = html.Div([
 
