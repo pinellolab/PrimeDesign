@@ -4,11 +4,11 @@ PrimeDesign is a software tool for the flexible design of prime editing.
 
 ## Installation with Docker
 
-With Docker, no installation is required - the only dependence is Docker itself. Users will not need to deal with installation and configuration issues. Docker will do all the dirty work for you!
+With Docker, no installation is required - the only dependence is Docker itself. Users will not need to deal with installation and configuration issues.
 
 Docker can be downloaded freely here: [https://store.docker.com/search?offering=community&type=edition](https://store.docker.com/search?offering=community&type=edition)
 
-To get a local copy of CRISPR-SURF, simply execute the following command:
+Following the installation of Docker, simply execute the following command in the terminal for a local version of PrimeDesign:
 * ```docker pull pinellolab/primedesign```
 
 ## PrimeDesign web application
