@@ -3,6 +3,7 @@ import re
 import os
 import base64
 import urllib.parse
+import math
 import dash
 import dash_table
 import dash_bio as dashbio
@@ -342,6 +343,15 @@ design_page = html.Div([
                 labelStyle={'display': 'inline-block'}
             ),
 
+            # dcc.Checklist(
+            #         id = 'protein-option',
+            #         options=[
+            #             {'label': 'Visualize protein sequence', 'value': 'protein'},
+            #         ],
+            #         value=[]
+            #     ),
+
+            html.H6('DNA', style = {'margin-bottom':'0px', 'padding-bottom':'0px'}),
             dashbio.SequenceViewer(
                 id = 'reference-edit-sequence',
                 sequence = ' ',
@@ -352,6 +362,29 @@ design_page = html.Div([
                 coverage = [],
                 # legend = [{'name':'Substitution', 'color':'#1E90FF', 'underscore':False}, {'name':'Insertion', 'color':'#3CB371', 'underscore':False}, {'name':'Deletion', 'color':'#DC143C', 'underscore':False}, {'name':'Selected pegRNA spacer', 'color':'#d6d6d6', 'underscore':False}]
             ),
+
+            dcc.Checklist(
+                    id = 'protein-option',
+                    options=[
+                        {'label': 'Visualize amino acid sequence', 'value': 'protein'},
+                    ],
+                    value=[]
+                ), 
+
+            html.Div(id = 'protein-display', children = [
+
+                html.H6('Protein', style = {'margin-bottom':'0px', 'padding-bottom':'0px'}),
+                dashbio.SequenceViewer(
+                    id = 'protein-sequence',
+                    sequence = ' ',
+                    badge =False,
+                    charsPerLine = 150,
+                    sequenceMaxHeight = '10000px',
+                    search = False,
+                    coverage = [],
+                ),
+
+                ], style = {'display':'none'}),
 
             html.Div(id='store-sequence', style={'display': 'none'}),
 
@@ -477,8 +510,6 @@ design_page = html.Div([
 
             ], className='row', style={'display' : 'flex'}),
 
-            # html.Label('Remove pegRNA extensions with C first base', style = {'font-weight':'bold'}),
-
             dcc.RadioItems(
                 id = 'extfirstbase-option',
                 options=[
@@ -486,6 +517,31 @@ design_page = html.Div([
                     {'label': 'No', 'value': 'no'},
                 ],
                 value='yes',
+                labelStyle={'display': 'inline-block'}
+            ),
+
+            html.Div([
+                html.Label(id = 'silent-mutation', children = 'Disrupt PAM with silent PAM mutation', style = {'font-weight':'bold', 'margin-right':'5px'}),
+                html.Span('?',
+                      id = 'silent-mutation',
+                      style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'},
+                      className = 'dot'),
+
+                 dbc.Tooltip('This may improve prime editing efficiencies for coding sequence edits',
+                       target = 'silent-mutation',
+                       placement = 'right',
+                       style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
+                 ),
+
+            ], className='row', style={'display' : 'flex'}),
+
+            dcc.RadioItems(
+                id = 'silentmutation-option',
+                options=[
+                    {'label': 'Yes', 'value': 'yes'},
+                    {'label': 'No', 'value': 'no'},
+                ],
+                value='no',
                 labelStyle={'display': 'inline-block'}
             ),
 
@@ -670,7 +726,7 @@ def update_input_check(input_sequence):
 
     return(sequence_check, sequence_check_style)
 
-@app.callback([Output('reference-edit-sequence', 'sequence'), Output('reference-edit-sequence', 'coverage')],
+@app.callback([Output('reference-edit-sequence', 'sequence'), Output('reference-edit-sequence', 'coverage'), Output('protein-sequence', 'sequence'), Output('protein-sequence', 'coverage')],
     [Input('input-check','children'), Input('sequence-option', 'value')],
     state = [State('pe-sequence-input','value'), State('peg-table','selected_rows'), State('store-peg-table', 'children')]
 )
@@ -682,6 +738,7 @@ def update_reference_sequence(input_check, sequence_option, input_sequence, sele
     editformat2sequencestore = {}
     index_shift = 0
     annotations = []
+    annotations_aa = []
     if 'Success' in input_check:
 
         edit_idxs = [[m.start(), m.end()] for m in re.finditer('\(.*?\)', input_sequence)]
@@ -696,16 +753,31 @@ def update_reference_sequence(input_check, sequence_option, input_sequence, sele
                 if '/' in edit:
                     editformat2sequence[edit] = edit.split('/')[0].replace('(','')
                     annotations.append({'start':edit_idx[0] - index_shift, 'end':edit_idx[0] - index_shift + len(edit.split('/')[0].replace('(','')), 'color':'#1E90FF', 'bgcolor':'#e8f3ff', 'underscore':True})
+                    
+                    aa_start = math.floor(float(edit_idx[0] - index_shift)/3.0)
+                    aa_stop = math.ceil(float(edit_idx[0] - index_shift + len(edit.split('/')[0].replace('(','')))/3.0)
+                    annotations_aa.append({'start':aa_start, 'end':aa_stop, 'color':'#1E90FF', 'bgcolor':'#e8f3ff', 'underscore':True})
+                    
                     index_shift += edit_length - len(edit.split('/')[0].replace('(',''))
 
                 elif '+' in edit:
                     editformat2sequence[edit] = ''
                     annotations.append({'start':edit_idx[0] - index_shift, 'end':edit_idx[0] - index_shift, 'color':'#3CB371', 'bgcolor':'#ebf7f0', 'underscore':True})
+
+                    # aa_start = math.floor(float(edit_idx[0] - index_shift)/3.0)
+                    # aa_stop = math.ceil(float(edit_idx[0] - index_shift)/3.0)
+                    # annotations_aa.append({'start':aa_start, 'end':aa_stop, 'color':'#3CB371', 'bgcolor':'#ebf7f0', 'underscore':True})
+
                     index_shift += edit_length
 
                 elif '-' in edit:
                     editformat2sequence[edit] = edit.split('-')[1].replace(')','')
                     annotations.append({'start':edit_idx[0] - index_shift, 'end':edit_idx[0] - index_shift + len(edit.split('-')[1].replace(')','')), 'color':'#DC143C', 'bgcolor':'#fbe7eb', 'underscore':True})
+
+                    aa_start = math.floor(float(edit_idx[0] - index_shift)/3.0)
+                    aa_stop = math.ceil(float(edit_idx[0] - index_shift + len(edit.split('-')[1].replace(')','')))/3.0)
+                    annotations_aa.append({'start':aa_start, 'end':aa_stop, 'color':'#DC143C', 'bgcolor':'#fbe7eb', 'underscore':True})
+
                     index_shift += edit_length - len(edit.split('-')[1].replace(')',''))
 
             elif sequence_option == 'edit':
@@ -713,16 +785,30 @@ def update_reference_sequence(input_check, sequence_option, input_sequence, sele
                 if '/' in edit:
                     editformat2sequence[edit] = edit.split('/')[1].replace(')','')
                     annotations.append({'start':edit_idx[0] - index_shift, 'end':edit_idx[0] - index_shift + len(edit.split('/')[1].replace(')','')), 'color':'#1E90FF', 'bgcolor':'#e8f3ff', 'underscore':True})
+
+                    aa_start = math.floor(float(edit_idx[0] - index_shift)/3.0)
+                    aa_stop = math.ceil(float(edit_idx[0] - index_shift + len(edit.split('/')[1].replace(')','')))/3.0)
+                    annotations_aa.append({'start':aa_start, 'end':aa_stop, 'color':'#1E90FF', 'bgcolor':'#e8f3ff', 'underscore':True})
+
                     index_shift += edit_length - len(edit.split('/')[1].replace(')',''))
 
                 elif '+' in edit:
                     editformat2sequence[edit] = edit.split('+')[1].replace(')','')
                     annotations.append({'start':edit_idx[0] - index_shift, 'end':edit_idx[0] - index_shift + len(edit.split('+')[1].replace(')','')), 'color':'#3CB371', 'bgcolor':'#ebf7f0', 'underscore':True})
+
+                    aa_start = math.floor(float(edit_idx[0] - index_shift)/3.0)
+                    aa_stop = math.ceil(float(edit_idx[0] - index_shift + len(edit.split('+')[1].replace(')','')))/3.0)
+                    annotations_aa.append({'start':aa_start, 'end':aa_stop, 'color':'#3CB371', 'bgcolor':'#ebf7f0', 'underscore':True})
                     index_shift += edit_length -len(edit.split('+')[1].replace(')',''))
 
                 elif '-' in edit:
                     editformat2sequence[edit] = ''
                     annotations.append({'start':edit_idx[0] - index_shift, 'end':edit_idx[0] - index_shift, 'color':'#DC143C', 'bgcolor':'#fbe7eb', 'underscore':True})
+
+                    # aa_start = math.floor(float(edit_idx[0] - index_shift)/3.0)
+                    # aa_stop = math.ceil(float(edit_idx[0] - index_shift)/3.0)
+                    # annotations_aa.append({'start':aa_start, 'end':aa_stop, 'color':'#DC143C', 'bgcolor':'#fbe7eb', 'underscore':True})
+
                     index_shift += edit_length
 
         for edit in editformat2sequence:
@@ -758,12 +844,27 @@ def update_reference_sequence(input_check, sequence_option, input_sequence, sele
         except:
             pass
 
+        aa_sequence = sequencetoaa(input_sequence)
+
     else:
         input_sequence = ' '
+        aa_sequence = ' '
         reference_sequence = ''
         edit_sequence = ''
 
-    return(input_sequence, annotations)
+    return(input_sequence, annotations, aa_sequence, annotations_aa)
+
+# Visualize protein sequence
+@app.callback(Output('protein-display', 'style'),
+    [Input('protein-option','value')]
+)
+
+def protein_display(protein_option):
+
+    if 'protein' in protein_option:
+        return({'display':'block'})
+    else:
+        return({'display':'none'})
 
 @app.callback(Output('pbs-title', 'children'),
     [Input('pbs-range','value')]
@@ -841,6 +942,84 @@ def reverse_complement(sequence):
         elif base == ')':
             new_sequence += '('
     return(new_sequence[::-1])
+
+# Amino acid code
+codon_dict = {
+    'GGG':['Gly','G'],
+    'GGA':['Gly','G'],
+    'GGT':['Gly','G'],
+    'GGC':['Gly','G'],
+    'GAG':['Glu','E'],
+    'GAA':['Glu','E'],
+    'GAT':['Asp','D'],
+    'GAC':['Asp','D'],
+    'GTG':['Val','V'],
+    'GTA':['Val','V'],
+    'GTT':['Val','V'],
+    'GTC':['Val','V'],
+    'GCG':['Ala','A'],
+    'GCA':['Ala','A'],
+    'GCT':['Ala','A'],
+    'GCC':['Ala','A'],
+    'AGG':['Arg','R'],
+    'AGA':['Arg','R'],
+    'AGT':['Ser','S'],
+    'AGC':['Ser','S'],
+    'AAG':['Lys','K'],
+    'AAA':['Lys','K'],
+    'AAT':['Asn','N'],
+    'AAC':['Asn','N'],
+    'ATG':['Met','M'],
+    'ATA':['Ile','I'],
+    'ATT':['Ile','I'],
+    'ATC':['Ile','I'],
+    'ACG':['Thr','T'],
+    'ACA':['Thr','T'],
+    'ACT':['Thr','T'],
+    'ACC':['Thr','T'],
+    'TGG':['Trp','W'],
+    'TGA':['End','X'],
+    'TGT':['Cys','C'],
+    'TGC':['Cys','C'],
+    'TAG':['End','X'],
+    'TAA':['End','X'],
+    'TAT':['Tyr','Y'],
+    'TAC':['Tyr','Y'],
+    'TTG':['Leu','L'],
+    'TTA':['Leu','L'],
+    'TTT':['Phe','F'],
+    'TTC':['Phe','F'],
+    'TCG':['Ser','S'],
+    'TCA':['Ser','S'],
+    'TCT':['Ser','S'],
+    'TCC':['Ser','S'],
+    'CGG':['Arg','R'],
+    'CGA':['Arg','R'],
+    'CGT':['Arg','R'],
+    'CGC':['Arg','R'],
+    'CAG':['Gln','Q'],
+    'CAA':['Gln','Q'],
+    'CAT':['His','H'],
+    'CAC':['His','H'],
+    'CTG':['Leu','L'],
+    'CTA':['Leu','L'],
+    'CTT':['Leu','L'],
+    'CTC':['Leu','L'],
+    'CCG':['Pro','P'],
+    'CCA':['Pro','P'],
+    'CCT':['Pro','P'],
+    'CCC':['Pro','P'],
+}
+
+def sequencetoaa(sequence):
+
+    sequence = sequence.upper()
+    codon_list = [sequence[i:i+3] for i in range(0, len(sequence), 3)]
+    if len(codon_list[-1]) != 3:
+        codon_list = codon_list[:-1]
+
+    aa_sequence = ''.join(map(str, [codon_dict[x][1] for x in codon_list]))
+    return(aa_sequence)
 
 # Extract reference and edited sequence information
 def process_sequence(input_sequence):
@@ -1345,8 +1524,8 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, e
 
 # Trigger pegRNA extension and ngRNA tables with pegRNA spacer selection
 @app.callback(Output('pegext-table', 'data'),
-    [Input('peg-table','selected_rows')],
-    [State('store-peg-table-total', 'children'), State('store-peg-table', 'children')]
+    [Input('peg-table','selected_rows'), Input('store-peg-table-total', 'children'), Input('store-peg-table', 'children')],
+    # [State('store-peg-table-total', 'children'), State('store-peg-table', 'children')]
 )
 
 def update_pegext_table(selected_row, store_peg_table_total, store_peg_table):
@@ -1369,8 +1548,8 @@ def update_pegext_table(selected_row, store_peg_table_total, store_peg_table):
     return(df_pegext.to_dict('records'))
 
 @app.callback(Output('ng-table', 'data'),
-    [Input('peg-table','selected_rows')],
-    [State('store-peg-table-total', 'children'), State('store-peg-table', 'children')]
+    [Input('peg-table','selected_rows'), Input('store-peg-table-total', 'children'), Input('store-peg-table', 'children')],
+    # [State('store-peg-table-total', 'children'), State('store-peg-table', 'children')]
 )
 
 def update_ng_table(selected_row, store_peg_table_total, store_peg_table):
