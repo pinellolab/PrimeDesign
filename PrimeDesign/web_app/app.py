@@ -86,7 +86,7 @@ about_page = html.Div([
 
     html.Div([
 
-        '''If you have any questions or concerns, please don't hesitate to contact me at jyhsu (at) mit.edu.
+        '''If you have any questions or concerns, please don't hesitate to contact us at jyhsu (at) mit.edu.
         '''
 
         ], style = {'color':'#6a6a6a'}),
@@ -283,13 +283,6 @@ help_page = html.Div([
 
     html.Img(src=app.get_asset_url('primedesign_demo.gif'), style = {'display':'block', 'margin-left':'auto', 'margin-right':'auto', 'width':'80%'}),
 
-    # html.H5('Downloading designs'),
-
-    # html.Div([
-    #     '''The complete list of pegRNA and ngRNA designs can be downloaded by clicking the highlighted link below. The downloaded file is in .csv format and includes columns for oligo ordering based on the pegRNA Golden Gate assembly strategy outlined in Anzalone et al. 2019.
-    #     '''
-    #     ], style = {'color':'#6a6a6a'}),
-
     ], style = {'padding': '15px','margin': '0px'}),
 
 error_page = html.Div([
@@ -324,15 +317,12 @@ design_page = html.Div([
 
         ], className = 'row', style = {'padding': '15px','margin': '0px'}),
 
-    # html.Br(),
-
     html.Div([
 
         html.H5('Visualize sequence'),
 
         html.Div([
 
-            # html.H5('Visualize sequence'),
             dcc.RadioItems(
                 id = 'sequence-option',
                 options=[
@@ -342,14 +332,6 @@ design_page = html.Div([
                 value='ref',
                 labelStyle={'display': 'inline-block'}
             ),
-
-            # dcc.Checklist(
-            #         id = 'protein-option',
-            #         options=[
-            #             {'label': 'Visualize protein sequence', 'value': 'protein'},
-            #         ],
-            #         value=[]
-            #     ),
 
             html.H6('DNA', style = {'margin-bottom':'0px', 'padding-bottom':'0px'}),
             dashbio.SequenceViewer(
@@ -410,15 +392,9 @@ design_page = html.Div([
 
         ], className = 'row', style = {'padding-right': '15px', 'padding-left': '15px','margin': '0px'}),
 
-    # html.H5('Prime editing parameters'),
-
     html.Div([
 
-        # html.H5('Prime editing parameters'),
-
         html.Div([
-
-            # html.H5('Prime editing parameters'),
 
             html.Div([
 
@@ -570,8 +546,6 @@ design_page = html.Div([
 
             html.Label('Increase RTT length if no pegRNA spacer designs are available', style = {'color':'grey', 'margin-top':'0px'}),
 
-            # html.H6('pegRNA spacer table'),
-
             dash_table.DataTable(
                 id = 'peg-table',
                 columns = [{'name': i, 'id': i} for i in ['spacer sequence','PAM','strand','peg-to-edit distance','annotation']],
@@ -590,6 +564,10 @@ design_page = html.Div([
                 row_selectable = 'multi',
                 style_data_conditional=[{
                     'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PAM_mutated'},
+                    'backgroundColor': "#62c096",
+                    'color': 'white'
+                },
+                {
                     'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PAM_mutated_silent_mutation'},
                     'backgroundColor': "#62c096",
                     'color': 'white'
@@ -645,10 +623,12 @@ design_page = html.Div([
             html.Div(id='store-peg-table', style={'display': 'none'}),
 
 
-            ], className = 'nine columns', style={'display': 'inline-block','border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px', })#,'margin-top': '10px', 'margin-bottom': '10px', 'margin-left': '10px', 'margin-right': '10px'}),
+            ], className = 'nine columns', style={'display': 'inline-block','border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px', }),#,'margin-top': '10px', 'margin-bottom': '10px', 'margin-left': '10px', 'margin-right': '10px'}),
 
         ], className = 'row', style = {'padding-right': '15px', 'padding-left': '15px','margin': '0px'}),
-    ])
+    
+    html.Hr(),
+])
 
 # Multi page set up
 # Update the index
@@ -657,13 +637,15 @@ design_page = html.Div([
 def display_page(pathname):
     if pathname == '/':
         return design_page
+
     elif pathname == '/about':
         return about_page
+
     elif pathname == '/help':
         return help_page
+
     else:
         return error_page
-    # You could also return a 404 "URL not found" page here
 
 @app.callback([Output('input-check', 'children'), Output('input-check', 'style'),],
     [Input('pe-sequence-input','value')]
