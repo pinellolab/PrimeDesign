@@ -20,6 +20,7 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets = external_stylesheets)
 app.config.suppress_callback_exceptions = True
 server = app.server
+server.secret_key = '\xfd\x00R\xb5\xbd\x83_t\xed\xdf\xc4\na\x08\xf7K\xc4\xfd\xa2do3\xa5\xdd'
 
 peg_design_tmp = {'pegRNA group':[],'type':[], 'spacer sequence':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'RTT length':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
 df_tmp = pd.DataFrame.from_dict(peg_design_tmp)
@@ -180,7 +181,7 @@ help_page = html.Div([
         html.Span(': (+insertion)', style = {'font-size':'20px'}),
         html.Br(),
 
-        html.Span('Substitution', style = {'color':'#DC143C', 'font-size':'20px'}),
+        html.Span('Deletion', style = {'color':'#DC143C', 'font-size':'20px'}),
         html.Span(': (-deletion)', style = {'font-size':'20px'}),
 
 
