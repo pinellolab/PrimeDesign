@@ -22,7 +22,7 @@ app.config.suppress_callback_exceptions = True
 server = app.server
 server.secret_key = '\xfd\x00R\xb5\xbd\x83_t\xed\xdf\xc4\na\x08\xf7K\xc4\xfd\xa2do3\xa5\xdd'
 
-peg_design_tmp = {'pegRNA group':[],'type':[], 'spacer sequence':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'RTT length':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
+peg_design_tmp = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
 df_tmp = pd.DataFrame.from_dict(peg_design_tmp)
 
 app.layout = html.Div([
@@ -549,7 +549,7 @@ design_page = html.Div([
 
             dash_table.DataTable(
                 id = 'peg-table',
-                columns = [{'name': i, 'id': i} for i in ['spacer sequence','PAM','strand','peg-to-edit distance','annotation']],
+                columns = [{'name': i, 'id': i} for i in ['spacer sequence','PAM','strand','peg-to-edit distance','spacer GC content','annotation']],
                 data = df_tmp.to_dict('records'),
                 style_cell={'textAlign': 'left', 'padding': '5px'},
                 # style_as_list_view=True,
@@ -580,7 +580,7 @@ design_page = html.Div([
 
             dash_table.DataTable(
                 id = 'pegext-table',
-                columns = [{'name': i, 'id': i} for i in ['PBS length','RTT length','pegRNA extension']],
+                columns = [{'name': i, 'id': i} for i in ['PBS length','PBS GC content','RTT length','RTT GC content','pegRNA extension']],
                 data = df_tmp.to_dict('records'),
                 style_cell={'textAlign': 'left', 'padding': '5px'},
                 # style_as_list_view=True,
@@ -600,7 +600,7 @@ design_page = html.Div([
 
             dash_table.DataTable(
                 id = 'ng-table',
-                columns = [{'name': i, 'id': i} for i in ['spacer sequence','PAM','strand','nick-to-peg distance','annotation']],
+                columns = [{'name': i, 'id': i} for i in ['spacer sequence','PAM','strand','nick-to-peg distance','spacer GC content','annotation']],
                 data = df_tmp.to_dict('records'),
                 style_cell={'textAlign': 'left', 'padding': '5px'},
                 # style_as_list_view=True,
@@ -873,6 +873,13 @@ def update_pbs_title(nick_dist_range):
 ### Section to run pegDesigner code
 
 # Helper functions
+def gc_content(sequence):
+    sequence = sequence.upper()
+    GC_count = sequence.count('G') + sequence.count('C')
+    GC_content = float(GC_count)/float(len(sequence))
+
+    return("%.2f" % GC_content)
+
 # IUPAC code map
 iupac2bases_dict = {'A':'A','T':'T','C':'C','G':'G','a':'a','t':'t','c':'c','g':'g',
 'R':'[AG]','Y':'[CT]','S':'[GC]','W':'[AT]','K':'[GT]','M':'[AC]','B':'[CGT]','D':'[AGT]','H':'[ACT]','V':'[ACG]','N':'[ACTG]',
@@ -1107,7 +1114,7 @@ def process_sequence(input_sequence):
 def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, extfirstbase_filter, silent_mutation, input_sequence):
 
     target_design = {}
-    peg_design = {'pegRNA group':[],'type':[], 'spacer sequence':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'RTT length':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
+    peg_design = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
 
     if 'Success' in input_check:
 
@@ -1425,6 +1432,7 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, e
                                     peg_design['pegRNA group'].append(counter)
                                     peg_design['type'].append('pegRNA')
                                     peg_design['spacer sequence'].append(pe_spacer_sequence)
+                                    peg_design['spacer GC content'].append(gc_content(pe_spacer_sequence))
 
                                     if pe_pam_ref_silent_mutation == '':
                                         peg_design['PAM'].append(pe_pam_ref)
@@ -1437,7 +1445,9 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, e
                                     peg_design['pegRNA extension'].append(pegRNA_ext)
                                     peg_design['extension first base'].append(pegRNA_ext[0])
                                     peg_design['PBS length'].append(pbs_length)
+                                    peg_design['PBS GC content'].append(gc_content(pegRNA_ext[rtt_length:]))
                                     peg_design['RTT length'].append(rtt_length)
+                                    peg_design['RTT GC content'].append(gc_content(pegRNA_ext[:rtt_length]))
                                     peg_design['annotation'].append(pe_annotate)
                                     peg_design['spacer top strand oligo'].append('caccG' + pe_spacer_sequence[1:] + 'gtttt')
                                     peg_design['spacer bottom strand oligo'].append('ctctaaaac' + reverse_complement('G' + pe_spacer_sequence[1:]))
@@ -1456,6 +1466,7 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, e
                                 peg_design['pegRNA group'].append(counter)
                                 peg_design['type'].append('ngRNA')
                                 peg_design['spacer sequence'].append(reverse_complement(ng_spacer_sequence_edit))
+                                peg_design['spacer GC content'].append(gc_content(reverse_complement(ng_spacer_sequence_edit)))
                                 peg_design['PAM'].append(reverse_complement(ng_pam_edit))
                                 peg_design['strand'].append('-')
                                 peg_design['peg-to-edit distance'].append('')
@@ -1463,7 +1474,9 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, e
                                 peg_design['pegRNA extension'].append('')
                                 peg_design['extension first base'].append('')
                                 peg_design['PBS length'].append('')
+                                peg_design['PBS GC content'].append('')
                                 peg_design['RTT length'].append('')
+                                peg_design['RTT GC content'].append('')
                                 peg_design['annotation'].append(ng_annotate)
                                 peg_design['spacer top strand oligo'].append('caccG' + reverse_complement(ng_spacer_sequence_edit)[1:])
                                 peg_design['spacer bottom strand oligo'].append('aaac' + reverse_complement('G' + reverse_complement(ng_spacer_sequence_edit)[1:]))
@@ -1560,6 +1573,7 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, e
                                     peg_design['pegRNA group'].append(counter)
                                     peg_design['type'].append('pegRNA')
                                     peg_design['spacer sequence'].append(reverse_complement(pe_spacer_sequence))
+                                    peg_design['spacer GC content'].append(gc_content(reverse_complement(pe_spacer_sequence)))
 
                                     if pe_pam_ref_silent_mutation == '':
                                         peg_design['PAM'].append(reverse_complement(pe_pam_ref))
@@ -1572,7 +1586,9 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, e
                                     peg_design['pegRNA extension'].append(pegRNA_ext)
                                     peg_design['extension first base'].append(pegRNA_ext[0])
                                     peg_design['PBS length'].append(pbs_length)
+                                    peg_design['PBS GC content'].append(gc_content(pegRNA_ext[rtt_length:]))
                                     peg_design['RTT length'].append(rtt_length)
+                                    peg_design['RTT GC content'].append(gc_content(pegRNA_ext[:rtt_length]))
                                     peg_design['annotation'].append(pe_annotate)
                                     peg_design['spacer top strand oligo'].append('caccG' + reverse_complement(pe_spacer_sequence)[1:] + 'gtttt')
                                     peg_design['spacer bottom strand oligo'].append('ctctaaaac' + reverse_complement('G' + reverse_complement(pe_spacer_sequence)[1:]))
@@ -1591,6 +1607,7 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, e
                                 peg_design['pegRNA group'].append(counter)
                                 peg_design['type'].append('ngRNA')
                                 peg_design['spacer sequence'].append(ng_spacer_sequence_edit)
+                                peg_design['spacer GC content'].append(gc_content(ng_spacer_sequence_edit))
                                 peg_design['PAM'].append(ng_pam_edit)
                                 peg_design['strand'].append('+')
                                 peg_design['peg-to-edit distance'].append('')
@@ -1598,7 +1615,9 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, e
                                 peg_design['pegRNA extension'].append('')
                                 peg_design['extension first base'].append('')
                                 peg_design['PBS length'].append('')
+                                peg_design['PBS GC content'].append('')
                                 peg_design['RTT length'].append('')
+                                peg_design['RTT GC content'].append('')
                                 peg_design['annotation'].append(ng_annotate)
                                 peg_design['spacer top strand oligo'].append('caccG' + ng_spacer_sequence_edit[1:])
                                 peg_design['spacer bottom strand oligo'].append('aaac' + reverse_complement('G' + ng_spacer_sequence_edit[1:]))
@@ -1610,7 +1629,7 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, e
         df = pd.DataFrame.from_dict(peg_design)
 
     else:
-        df = {'pegRNA group':[],'type':[], 'spacer sequence':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'RTT length':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
+        df = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
         df = pd.DataFrame.from_dict(peg_design)
 
     if extfirstbase_filter == 'yes':
@@ -1618,7 +1637,7 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, e
         df.reset_index(drop=True, inplace=True)
 
     df_pegs = df[df['type'] == 'pegRNA']
-    df_pegs = df_pegs[['pegRNA group','spacer sequence','PAM','strand','peg-to-edit distance','annotation']].drop_duplicates()
+    df_pegs = df_pegs[['pegRNA group','spacer sequence','PAM','strand','peg-to-edit distance','spacer GC content','annotation']].drop_duplicates()
     df_pegs = df_pegs.sort_values('peg-to-edit distance')
     df_pegs.reset_index(drop=True, inplace=True)
 
@@ -1639,11 +1658,11 @@ def update_pegext_table(selected_row, store_peg_table_total, store_peg_table):
         spacer_sequence = list(df_peg.loc[selected_row, 'spacer sequence'].values)
         df_pegext = df_peg_total[df_peg_total['spacer sequence'].isin(spacer_sequence)]
         df_pegext = df_pegext[df_pegext['type'] == 'pegRNA']
-        df_pegext = df_pegext[['PBS length','RTT length','pegRNA extension']].drop_duplicates()
+        df_pegext = df_pegext[['PBS length','PBS GC content','RTT length','RTT GC content','pegRNA extension']].drop_duplicates()
         df_pegext.reset_index(drop=True, inplace=True)
 
     except:
-        df_pegext = {'pegRNA group':[],'type':[], 'spacer sequence':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'RTT length':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
+        df_pegext = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
         df_pegext = pd.DataFrame.from_dict(df_pegext)
 
     return(df_pegext.to_dict('records'))
@@ -1662,11 +1681,11 @@ def update_ng_table(selected_row, store_peg_table_total, store_peg_table):
         peg_group = list(df_peg.loc[selected_row, 'pegRNA group'].values)
         df_ng = df_peg_total[df_peg_total['pegRNA group'].isin(peg_group)]
         df_ng = df_ng[df_ng['type'] == 'ngRNA']
-        df_ng = df_ng[['spacer sequence','PAM','strand','nick-to-peg distance','annotation']].drop_duplicates()
+        df_ng = df_ng[['spacer sequence','PAM','strand','nick-to-peg distance','spacer GC content','annotation']].drop_duplicates()
         df_ng.reset_index(drop=True, inplace=True)
 
     except:
-        df_ng = {'pegRNA group':[],'type':[], 'spacer sequence':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'RTT length':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
+        df_ng = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
         df_ng = pd.DataFrame.from_dict(df_ng)
 
     return(df_ng.to_dict('records'))
@@ -1690,7 +1709,7 @@ def update_download_link(store_peg_table_total):
         df_out = pd.read_json(store_peg_table_total, orient='split')
 
     except:
-        df_out = {'pegRNA group':[],'type':[], 'spacer sequence':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[],'PBS length':[],'RTT length':[],'annotation':[]}
+        df_out = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
         df_out = pd.DataFrame.from_dict(df_out)
 
     csv_string = df_out.to_csv(index = False, encoding='utf-8')
