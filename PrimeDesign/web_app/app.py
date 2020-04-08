@@ -9,7 +9,7 @@ import dash_table
 import dash_bio as dashbio
 import dash_html_components as html
 import dash_bootstrap_components as dbc
-from flask import Flask
+from flask import Flask, send_from_directory
 import pandas as pd
 from dash.dependencies import Input, Output, State, ClientsideFunction
 import dash_core_components as dcc
@@ -21,6 +21,16 @@ app = dash.Dash(__name__, external_stylesheets = external_stylesheets)
 app.config.suppress_callback_exceptions = True
 server = app.server
 server.secret_key = '\xfd\x00R\xb5\xbd\x83_t\xed\xdf\xc4\na\x08\xf7K\xc4\xfd\xa2do3\xa5\xdd'
+
+
+# UPLOAD_DIRECTORY = '/PrimeDesign/reports'
+# if not os.path.exists(UPLOAD_DIRECTORY):
+#     os.makedirs(UPLOAD_DIRECTORY)
+
+# @server.route('/download/<path:path>')
+# def download(path):
+#     """Serve a file from the upload directory."""
+#     return send_from_directory(UPLOAD_DIRECTORY, path, as_attachment=True)
 
 peg_design_tmp = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
 df_tmp = pd.DataFrame.from_dict(peg_design_tmp)
@@ -267,7 +277,7 @@ help_page = html.Div([
 
         ], style = {'display':'block','line-height':'100%'}),
 
-    html.H5('Nagivating PrimeDesign'),
+    html.H5('Navigating PrimeDesign'),
 
     html.Div([
 
@@ -752,6 +762,12 @@ design_page = html.Div([
     
     html.Hr(),
 ])
+
+# Download file
+def file_download_link(filename):
+    """Create a Plotly Dash 'A' element that downloads a file from the app."""
+    location = "/download/{}".format(urlquote(filename))
+    return html.A(filename, href=location)
 
 # Multi page set up
 # Update the index
@@ -1939,15 +1955,6 @@ def update_ng_table(selected_row, store_peg_table_total, store_peg_table):
 
     return(df_ng.to_dict('records'))
 
-# # Interface between table selection and sequenceviewer
-# @app.callback(Output('sequence-option', 'value'),
-#     [Input('peg-table','selected_rows')]
-# )
-
-# def see_active_cell(active_cell):#, store_peg_table, sequence_option_value):
-
-#     return('ref')
-
 @app.callback(Output('download-link', 'href'),
     [Input('store-peg-table-total', 'children')]
 )
@@ -1955,15 +1962,17 @@ def update_download_link(store_peg_table_total):
 
     try:
         # Open up stored peg table
+        # print(store_peg_table_total)
         df_out = pd.read_json(store_peg_table_total, orient='split')
+        # print(df_out)
 
     except:
         df_out = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
         df_out = pd.DataFrame.from_dict(df_out)
 
     csv_string = df_out.to_csv(index = False, encoding='utf-8')
-    csv_string = "data:text/csv;charset=utf-8," + urllib.parse.quote(csv_string)
-    return csv_string
+    csv_string = "data:text/csv;charset=utf-8,%EF%BB%BF" + urllib.parse.quote(csv_string)
+    return(csv_string)
 
 if __name__ == '__main__':
     app.run_server(debug = True, port = 9994, host = '0.0.0.0')
