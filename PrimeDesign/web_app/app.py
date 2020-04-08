@@ -302,17 +302,35 @@ design_page = html.Div([
 
         html.Div([
 
-            html.H5('Input sequence'),
+            html.H5('Input sequence', style = {'margin-right':'5px','display':'inline'}),
+            html.Span('?', id = 'input-tooltip', style={'font-size':'11px', 'textAlign': 'center', 'color': 'white',}, className = 'dot'),
+
+            dcc.Checklist(
+                id = 'example-option',
+                options=[
+                    {'label': 'Substitution', 'value': 'substitution'},
+                    {'label': 'Insertion', 'value': 'insertion'},
+                    {'label': 'Deletion', 'value': 'deletion'},
+                ],
+                value=[],
+                labelStyle={'display': 'inline'}
+            ),
+
+            dbc.Tooltip('Edit formatting examples: Substitution (ATGC/CGTA)  |  Insertion (+ATGC)  |  Deletion (-ATGC)',
+                       target = 'input-tooltip',
+                       placement = 'right',
+                       style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
+                ),
 
             dcc.Textarea(
                 id='pe-sequence-input',
-                placeholder='Enter sequence to prime edit ...\n\nEdit formatting: Substitutions (ATGC/CGTA)  |  Insertions (+ATGC)  |  Deletions (-ATGC)',
+                placeholder='Enter sequence to prime edit or load example input sequence above ...\n\nEdit formatting examples: Substitution (ATGC/CGTA)  |  Insertion (+ATGC)  |  Deletion (-ATGC)',
                 value='',
                 style = {'width': '100%', 'margin': '0px'},
-                className = 'textarea'
+                className = 'textarea',
             ),
 
-            html.Label(id = 'input-check', children = '', style = {'font-weight':'bold'})
+            html.Label(id = 'input-check', children = '', style = {'font-weight':'bold'}),
             
             ], className = 'twelve columns'),
 
@@ -325,7 +343,7 @@ design_page = html.Div([
         dcc.Checklist(
                 id = 'protein-option',
                 options=[
-                    {'label': 'Visualize amino acid sequence', 'value': 'protein'},
+                    {'label': 'Visualize amino acid sequence (assumes sequence is in-frame)', 'value': 'protein'},
                 ],
                 value=[]
             ), 
@@ -342,7 +360,8 @@ design_page = html.Div([
             #     labelStyle={'display': 'inline-block'}
             # ),
 
-            html.H6('Reference DNA', style = {'margin-bottom':'0px', 'padding-bottom':'0px'}),
+            html.H6('Reference DNA', style = {'margin':'0px', 'padding-bottom':'0px'}),
+            html.Label('Please select pegRNA spacer(s) in design table to visualize', style = {'color':'grey', 'margin-top':'0px'}),
             dashbio.SequenceViewer(
                 id = 'reference-sequence',
                 sequence = ' ',
@@ -364,7 +383,7 @@ design_page = html.Div([
 
             html.Div(id = 'reference-protein-display', children = [
 
-                html.H6('Reference Protein', style = {'margin-bottom':'0px', 'padding-bottom':'0px'}),
+                html.H6('Reference Protein', style = {'margin':'0px', 'padding-bottom':'0px'}),
                 dashbio.SequenceViewer(
                     id = 'reference-protein-sequence',
                     sequence = ' ',
@@ -381,8 +400,8 @@ design_page = html.Div([
 
             html.Span('Substitution', style = {'color':'#1E90FF'}),
             html.Span(' | '),
-            html.Span('Insertion', style = {'color':'#3CB371'}),
-            html.Span(' | '),
+            # html.Span('Insertion', style = {'color':'#3CB371'}),
+            # html.Span(' | '),
             html.Span('Deletion', style = {'color':'#DC143C'}),
             html.Span(' | '),
             html.Span('pegRNA spacer', style = {'color':'#808080'}),
@@ -401,7 +420,8 @@ design_page = html.Div([
             #     labelStyle={'display': 'inline-block'}
             # ),
 
-            html.H6('Edited DNA', style = {'margin-bottom':'0px', 'padding-bottom':'0px'}),
+            html.H6('Edited DNA', style = {'margin':'0px', 'padding-bottom':'0px'}),
+            html.Label('Please select pegRNA extension(s) and ngRNA(s) in design tables to visualize', style = {'color':'grey', 'margin-top':'0px'}),
             dashbio.SequenceViewer(
                 id = 'edit-sequence',
                 sequence = ' ',
@@ -423,7 +443,7 @@ design_page = html.Div([
 
             html.Div(id = 'edit-protein-display', children = [
 
-                html.H6('Edited Protein', style = {'margin-bottom':'0px', 'padding-bottom':'0px'}),
+                html.H6('Edited Protein', style = {'margin':'0px', 'padding-bottom':'0px'}),
                 dashbio.SequenceViewer(
                     id = 'edit-protein-sequence',
                     sequence = ' ',
@@ -442,9 +462,11 @@ design_page = html.Div([
             html.Span(' | '),
             html.Span('Insertion', style = {'color':'#3CB371'}),
             html.Span(' | '),
-            html.Span('Deletion', style = {'color':'#DC143C'}),
+            # html.Span('Deletion', style = {'color':'#DC143C'}),
+            # html.Span(' | '),
+            html.Span('pegRNA extension', style = {'color':'#ffa500'}),
             html.Span(' | '),
-            html.Span('pegRNA spacer', style = {'color':'#808080'}),
+            html.Span('ngRNA spacer', style = {'color':'#808080'}),
 
             ], style={'display': 'inline-block','border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px', 'margin': '0px', 'float':'right', 'width':'47.5%'}),
 
@@ -454,9 +476,19 @@ design_page = html.Div([
 
     html.Div([
 
-        html.Div([html.H5('Prime editing parameters'),], className = 'three columns', style = {'padding-top':'15px'}),
+        html.Div([html.H5('Prime editing parameters', style = {'display':'inline', 'margin-right':'5px',}), html.Span('?', id = 'parameters-tooltip', style={'font-size':'11px', 'textAlign': 'center', 'color': 'white',}, className = 'dot')], className = 'three columns', style = {'padding-top':'15px'}),
+        dbc.Tooltip('Interactively design pegRNAs with the parameter slides below',
+               target = 'parameters-tooltip',
+               placement = 'right',
+               style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
+         ),
 
-        html.Div([html.H5('Design tables')], className = 'nine columns', style = {'padding-top':'15px'})
+        html.Div([html.H5('Design tables', style = {'display':'inline', 'margin-right':'5px',}), html.Span('?', id = 'design-tables-tooltip', style={'font-size':'11px', 'textAlign': 'center', 'color': 'white',}, className = 'dot')], className = 'nine columns', style = {'padding-top':'15px'}),
+        dbc.Tooltip('Please select pegRNA spacer(s) to proceed with design of pegRNA extensions and ngRNAs',
+               target = 'design-tables-tooltip',
+               placement = 'right',
+               style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
+         ),
 
         ], className = 'row', style = {'padding-right': '15px', 'padding-left': '15px','margin': '0px'}),
 
@@ -539,7 +571,7 @@ design_page = html.Div([
             ),
 
             html.Div([
-                html.Label(id = 'remove-first-c-base', children = 'Remove pegRNA extensions with C first base', style = {'font-weight':'bold', 'margin-right':'5px'}),
+                html.Label(id = 'remove-first-c-base', children = 'Remove extensions with C first base', style = {'font-weight':'bold', 'margin-right':'5px'}),
                 html.Span('?',
                       id = 'remove-first-c-base-tooltip',
                       style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'},
@@ -594,7 +626,13 @@ design_page = html.Div([
 
             html.Div([
 
-                html.Div([html.H6('pegRNA spacers', style = {'margin':'0px'})], className = 'six columns'),
+                html.Div([html.H6('pegRNA spacers', style = {'display': 'inline', 'margin':'0px', 'margin-right':'5px'}), html.Span('?', id = 'pegspacer-tooltip', style={'font-size':'11px', 'textAlign': 'center', 'color': 'white',}, className = 'dot')], className = 'six columns'),
+
+                dbc.Tooltip('Table of all possible pegRNA spacer designs given parameter ranges - Please select pegRNA spacer(s) to proceed with design',
+                       target = 'pegspacer-tooltip',
+                       placement = 'right',
+                       style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
+                ),
 
                 html.Div([
 
@@ -641,7 +679,15 @@ design_page = html.Div([
                 }]
             ),
 
-            html.H6('pegRNA extensions', style = {'margin-bottom':'0px'}),
+            html.H6('pegRNA extensions', style = {'display': 'inline', 'margin':'0px', 'margin-right':'5px'}),
+            html.Span('?', id = 'pegext-tooltip', style={'font-size':'11px', 'textAlign': 'center', 'color': 'white',}, className = 'dot'),
+
+            dbc.Tooltip('Table of all possible pegRNA extensions given parameter ranges - Please select pegRNA spacer(s) to proceed with design',
+                       target = 'pegext-tooltip',
+                       placement = 'right',
+                       style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
+                ),
+
             html.Label('Please select pegRNA spacer(s) above to see associated extensions', style = {'color':'grey', 'margin-top':'0px'}),
 
             dash_table.DataTable(
@@ -662,7 +708,15 @@ design_page = html.Div([
                 row_selectable = 'multi',
             ),
 
-            html.H6('ngRNA spacers', style = {'margin-bottom':'0px'}),
+            html.H6('ngRNA spacers', style = {'display': 'inline', 'margin':'0px', 'margin-right':'5px'}),
+            html.Span('?', id = 'ngspacer-tooltip', style={'font-size':'11px', 'textAlign': 'center', 'color': 'white',}, className = 'dot'),
+
+            dbc.Tooltip('Table of all possible ngRNAs given parameter ranges - Please select pegRNA spacer(s) to proceed with design',
+                       target = 'ngspacer-tooltip',
+                       placement = 'right',
+                       style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
+                ),
+
             html.Label('Please select pegRNA spacer(s) above to see associated ngRNAs', style = {'color':'grey', 'margin-top':'0px'}),
 
             dash_table.DataTable(
@@ -716,13 +770,47 @@ def display_page(pathname):
     else:
         return error_page
 
+# Load example data
+@app.callback(Output('pe-sequence-input','value'),
+    [Input('example-option', 'value')]
+)
+
+def update_input_check(example_values):
+    
+    if 'substitution' in example_values:
+        if 'insertion' in example_values:
+            if 'deletion' in example_values:
+                return('CACACCTACACTGCTCGAAGTAAATATGCGAAGCGCGCGGCCTGGCCGGAGGCGTTCCGCGCCGCCACGTGTTCGTTAACTGTTGATTGGTGGCACATAAGCAATCGTAGTCCGTCAAATTCAGCTCTGTTATCCCGGGCGTTATGTGTCAAATGGCGTAGAACGGGATTGACTGTTTGACGGTAGCTGCTGAGGCGG(G/T)A(+GTAA)G(-AGAC)CCTCCGTCGGGCTATGTCACTAATACTTTCCAAACGCCCCGTACCGATGCTGAACAAGTCGATGCAGGCTCCCGTCTTTGAAAAGGGGTAAACATACAAGTGGATAGATGATGGGTAGGGGCCTCCAATACATCCAACACTCTACGCCCTCTCCAAGAGCTAGAAGGGCACCCTGCAGTTGGAAAGGG') # Return example input with substitution, insertion, and deletion edits
+
+            else:
+                return('CACACCTACACTGCTCGAAGTAAATATGCGAAGCGCGCGGCCTGGCCGGAGGCGTTCCGCGCCGCCACGTGTTCGTTAACTGTTGATTGGTGGCACATAAGCAATCGTAGTCCGTCAAATTCAGCTCTGTTATCCCGGGCGTTATGTGTCAAATGGCGTAGAACGGGATTGACTGTTTGACGGTAGCTGCTGAGGCGG(G/T)A(+GTAA)GAGACCCTCCGTCGGGCTATGTCACTAATACTTTCCAAACGCCCCGTACCGATGCTGAACAAGTCGATGCAGGCTCCCGTCTTTGAAAAGGGGTAAACATACAAGTGGATAGATGATGGGTAGGGGCCTCCAATACATCCAACACTCTACGCCCTCTCCAAGAGCTAGAAGGGCACCCTGCAGTTGGAAAGGG') # Return example input with substitution and insertion edits
+
+        elif 'deletion' in example_values:
+            return('CACACCTACACTGCTCGAAGTAAATATGCGAAGCGCGCGGCCTGGCCGGAGGCGTTCCGCGCCGCCACGTGTTCGTTAACTGTTGATTGGTGGCACATAAGCAATCGTAGTCCGTCAAATTCAGCTCTGTTATCCCGGGCGTTATGTGTCAAATGGCGTAGAACGGGATTGACTGTTTGACGGTAGCTGCTGAGGCGG(G/T)AG(-AGAC)CCTCCGTCGGGCTATGTCACTAATACTTTCCAAACGCCCCGTACCGATGCTGAACAAGTCGATGCAGGCTCCCGTCTTTGAAAAGGGGTAAACATACAAGTGGATAGATGATGGGTAGGGGCCTCCAATACATCCAACACTCTACGCCCTCTCCAAGAGCTAGAAGGGCACCCTGCAGTTGGAAAGGG') # Return example input with substitution and deletion edits
+
+        else:
+            return('CACACCTACACTGCTCGAAGTAAATATGCGAAGCGCGCGGCCTGGCCGGAGGCGTTCCGCGCCGCCACGTGTTCGTTAACTGTTGATTGGTGGCACATAAGCAATCGTAGTCCGTCAAATTCAGCTCTGTTATCCCGGGCGTTATGTGTCAAATGGCGTAGAACGGGATTGACTGTTTGACGGTAGCTGCTGAGGCGG(G/T)AGAGACCCTCCGTCGGGCTATGTCACTAATACTTTCCAAACGCCCCGTACCGATGCTGAACAAGTCGATGCAGGCTCCCGTCTTTGAAAAGGGGTAAACATACAAGTGGATAGATGATGGGTAGGGGCCTCCAATACATCCAACACTCTACGCCCTCTCCAAGAGCTAGAAGGGCACCCTGCAGTTGGAAAGGG') # Return example input with substitution edit
+
+    elif 'insertion' in example_values:
+        if 'deletion' in example_values:
+            return('CACACCTACACTGCTCGAAGTAAATATGCGAAGCGCGCGGCCTGGCCGGAGGCGTTCCGCGCCGCCACGTGTTCGTTAACTGTTGATTGGTGGCACATAAGCAATCGTAGTCCGTCAAATTCAGCTCTGTTATCCCGGGCGTTATGTGTCAAATGGCGTAGAACGGGATTGACTGTTTGACGGTAGCTGCTGAGGCGGGA(+GTAA)G(-AGAC)CCTCCGTCGGGCTATGTCACTAATACTTTCCAAACGCCCCGTACCGATGCTGAACAAGTCGATGCAGGCTCCCGTCTTTGAAAAGGGGTAAACATACAAGTGGATAGATGATGGGTAGGGGCCTCCAATACATCCAACACTCTACGCCCTCTCCAAGAGCTAGAAGGGCACCCTGCAGTTGGAAAGGG') # Return example input with insertion and deletion edits
+
+        else:
+            return('CACACCTACACTGCTCGAAGTAAATATGCGAAGCGCGCGGCCTGGCCGGAGGCGTTCCGCGCCGCCACGTGTTCGTTAACTGTTGATTGGTGGCACATAAGCAATCGTAGTCCGTCAAATTCAGCTCTGTTATCCCGGGCGTTATGTGTCAAATGGCGTAGAACGGGATTGACTGTTTGACGGTAGCTGCTGAGGCGGGA(+GTAA)GAGACCCTCCGTCGGGCTATGTCACTAATACTTTCCAAACGCCCCGTACCGATGCTGAACAAGTCGATGCAGGCTCCCGTCTTTGAAAAGGGGTAAACATACAAGTGGATAGATGATGGGTAGGGGCCTCCAATACATCCAACACTCTACGCCCTCTCCAAGAGCTAGAAGGGCACCCTGCAGTTGGAAAGGG') # Return example input with insertion edit
+
+    elif 'deletion' in example_values:
+        return('CACACCTACACTGCTCGAAGTAAATATGCGAAGCGCGCGGCCTGGCCGGAGGCGTTCCGCGCCGCCACGTGTTCGTTAACTGTTGATTGGTGGCACATAAGCAATCGTAGTCCGTCAAATTCAGCTCTGTTATCCCGGGCGTTATGTGTCAAATGGCGTAGAACGGGATTGACTGTTTGACGGTAGCTGCTGAGGCGGGAG(-AGAC)CCTCCGTCGGGCTATGTCACTAATACTTTCCAAACGCCCCGTACCGATGCTGAACAAGTCGATGCAGGCTCCCGTCTTTGAAAAGGGGTAAACATACAAGTGGATAGATGATGGGTAGGGGCCTCCAATACATCCAACACTCTACGCCCTCTCCAAGAGCTAGAAGGGCACCCTGCAGTTGGAAAGGG') # Return example input with deletion edit
+
+    else:
+        return(None)
+
 @app.callback([Output('input-check', 'children'), Output('input-check', 'style'),],
     [Input('pe-sequence-input','value')]
 )
 
 def update_input_check(input_sequence):
 
-    if len(input_sequence) > 0:
+    if input_sequence is not None:
 
         input_sequence = ''.join(input_sequence.split())
         if len(input_sequence) <= 10000:
@@ -784,203 +872,211 @@ def update_input_check(input_sequence):
 
 def update_reference_sequence(input_check, selected_rows_peg, selected_rows_pegext, selected_rows_ng, input_sequence, store_peg_table, store_peg_table_total):
 
-    input_sequence = ''.join(input_sequence.split())
-    reference_sequence = input_sequence
-    edit_sequence = input_sequence
-    editformat2sequence_ref = {}
-    editformat2sequence_edit = {}
-    index_shift_ref = 0
-    index_shift_edit = 0
     annotations_ref = []
     annotations_edit = []
     annotations_aa_ref = []
     annotations_aa_edit = []
 
-    if 'Success' in input_check:
+    if input_sequence is not None:
+        input_sequence = ''.join(input_sequence.split())
+        reference_sequence = input_sequence
+        edit_sequence = input_sequence
+        editformat2sequence_ref = {}
+        editformat2sequence_edit = {}
+        index_shift_ref = 0
+        index_shift_edit = 0
 
-        edit_idxs = [[m.start(), m.end()] for m in re.finditer('\(.*?\)', input_sequence)]
-        for edit_idx in edit_idxs:
+        if 'Success' in input_check:
 
-            edit = input_sequence[edit_idx[0]:edit_idx[1]]
-            edit_length = edit_idx[1] - edit_idx[0]
+            edit_idxs = [[m.start(), m.end()] for m in re.finditer('\(.*?\)', input_sequence)]
+            for edit_idx in edit_idxs:
 
-            # Create edit format and number to sequence map
-            if '/' in edit:
-                editformat2sequence_ref[edit] = edit.split('/')[0].replace('(','')
-                annotations_ref.append({'start':edit_idx[0] - index_shift_ref, 'end':edit_idx[0] - index_shift_ref + len(edit.split('/')[0].replace('(','')), 'color':'#1E90FF', 'bgcolor':'#e8f3ff', 'underscore':True})
-                
-                aa_start = math.floor(float(edit_idx[0] - index_shift_ref)/3.0)
-                aa_stop = math.ceil(float(edit_idx[0] - index_shift_ref + len(edit.split('/')[0].replace('(','')))/3.0)
-                annotations_aa_ref.append({'start':aa_start, 'end':aa_stop, 'color':'#1E90FF', 'bgcolor':'#e8f3ff', 'underscore':True})
-                
-                index_shift_ref += edit_length - len(edit.split('/')[0].replace('(',''))
+                edit = input_sequence[edit_idx[0]:edit_idx[1]]
+                edit_length = edit_idx[1] - edit_idx[0]
 
-            elif '+' in edit:
-                editformat2sequence_ref[edit] = ''
-                annotations_ref.append({'start':edit_idx[0] - index_shift_ref, 'end':edit_idx[0] - index_shift_ref, 'color':'#3CB371', 'bgcolor':'#ebf7f0', 'underscore':True})
+                # Create edit format and number to sequence map
+                if '/' in edit:
+                    editformat2sequence_ref[edit] = edit.split('/')[0].replace('(','')
+                    annotations_ref.append({'start':edit_idx[0] - index_shift_ref, 'end':edit_idx[0] - index_shift_ref + len(edit.split('/')[0].replace('(','')), 'color':'#1E90FF', 'bgcolor':'#e8f3ff', 'underscore':True})
+                    
+                    aa_start = math.floor(float(edit_idx[0] - index_shift_ref)/3.0)
+                    aa_stop = math.ceil(float(edit_idx[0] - index_shift_ref + len(edit.split('/')[0].replace('(','')))/3.0)
+                    annotations_aa_ref.append({'start':aa_start, 'end':aa_stop, 'color':'#1E90FF', 'bgcolor':'#e8f3ff', 'underscore':True})
+                    
+                    index_shift_ref += edit_length - len(edit.split('/')[0].replace('(',''))
 
-                # aa_start = math.floor(float(edit_idx[0] - index_shift)/3.0)
-                # aa_stop = math.ceil(float(edit_idx[0] - index_shift)/3.0)
-                # annotations_aa.append({'start':aa_start, 'end':aa_stop, 'color':'#3CB371', 'bgcolor':'#ebf7f0', 'underscore':True})
+                elif '+' in edit:
+                    editformat2sequence_ref[edit] = ''
+                    annotations_ref.append({'start':edit_idx[0] - index_shift_ref, 'end':edit_idx[0] - index_shift_ref, 'color':'#3CB371', 'bgcolor':'#ebf7f0', 'underscore':True})
 
-                index_shift_ref += edit_length
+                    # aa_start = math.floor(float(edit_idx[0] - index_shift)/3.0)
+                    # aa_stop = math.ceil(float(edit_idx[0] - index_shift)/3.0)
+                    # annotations_aa.append({'start':aa_start, 'end':aa_stop, 'color':'#3CB371', 'bgcolor':'#ebf7f0', 'underscore':True})
 
-            elif '-' in edit:
-                editformat2sequence_ref[edit] = edit.split('-')[1].replace(')','')
-                annotations_ref.append({'start':edit_idx[0] - index_shift_ref, 'end':edit_idx[0] - index_shift_ref + len(edit.split('-')[1].replace(')','')), 'color':'#DC143C', 'bgcolor':'#fbe7eb', 'underscore':True})
+                    index_shift_ref += edit_length
 
-                aa_start = math.floor(float(edit_idx[0] - index_shift_ref)/3.0)
-                aa_stop = math.ceil(float(edit_idx[0] - index_shift_ref + len(edit.split('-')[1].replace(')','')))/3.0)
-                annotations_aa_ref.append({'start':aa_start, 'end':aa_stop, 'color':'#DC143C', 'bgcolor':'#fbe7eb', 'underscore':True})
+                elif '-' in edit:
+                    editformat2sequence_ref[edit] = edit.split('-')[1].replace(')','')
+                    annotations_ref.append({'start':edit_idx[0] - index_shift_ref, 'end':edit_idx[0] - index_shift_ref + len(edit.split('-')[1].replace(')','')), 'color':'#DC143C', 'bgcolor':'#fbe7eb', 'underscore':True})
 
-                index_shift_ref += edit_length - len(edit.split('-')[1].replace(')',''))
+                    aa_start = math.floor(float(edit_idx[0] - index_shift_ref)/3.0)
+                    aa_stop = math.ceil(float(edit_idx[0] - index_shift_ref + len(edit.split('-')[1].replace(')','')))/3.0)
+                    annotations_aa_ref.append({'start':aa_start, 'end':aa_stop, 'color':'#DC143C', 'bgcolor':'#fbe7eb', 'underscore':True})
 
-            # Create edit format and number to sequence map
-            if '/' in edit:
-                editformat2sequence_edit[edit] = edit.split('/')[1].replace(')','')
-                annotations_edit.append({'start':edit_idx[0] - index_shift_edit, 'end':edit_idx[0] - index_shift_edit + len(edit.split('/')[1].replace(')','')), 'color':'#1E90FF', 'bgcolor':'#e8f3ff', 'underscore':True})
+                    index_shift_ref += edit_length - len(edit.split('-')[1].replace(')',''))
 
-                aa_start = math.floor(float(edit_idx[0] - index_shift_edit)/3.0)
-                aa_stop = math.ceil(float(edit_idx[0] - index_shift_edit + len(edit.split('/')[1].replace(')','')))/3.0)
-                annotations_aa_edit.append({'start':aa_start, 'end':aa_stop, 'color':'#1E90FF', 'bgcolor':'#e8f3ff', 'underscore':True})
+                # Create edit format and number to sequence map
+                if '/' in edit:
+                    editformat2sequence_edit[edit] = edit.split('/')[1].replace(')','')
+                    annotations_edit.append({'start':edit_idx[0] - index_shift_edit, 'end':edit_idx[0] - index_shift_edit + len(edit.split('/')[1].replace(')','')), 'color':'#1E90FF', 'bgcolor':'#e8f3ff', 'underscore':True})
 
-                index_shift_edit += edit_length - len(edit.split('/')[1].replace(')',''))
+                    aa_start = math.floor(float(edit_idx[0] - index_shift_edit)/3.0)
+                    aa_stop = math.ceil(float(edit_idx[0] - index_shift_edit + len(edit.split('/')[1].replace(')','')))/3.0)
+                    annotations_aa_edit.append({'start':aa_start, 'end':aa_stop, 'color':'#1E90FF', 'bgcolor':'#e8f3ff', 'underscore':True})
 
-            elif '+' in edit:
-                editformat2sequence_edit[edit] = edit.split('+')[1].replace(')','')
-                annotations_edit.append({'start':edit_idx[0] - index_shift_edit, 'end':edit_idx[0] - index_shift_edit + len(edit.split('+')[1].replace(')','')), 'color':'#3CB371', 'bgcolor':'#ebf7f0', 'underscore':True})
+                    index_shift_edit += edit_length - len(edit.split('/')[1].replace(')',''))
 
-                aa_start = math.floor(float(edit_idx[0] - index_shift_edit)/3.0)
-                aa_stop = math.ceil(float(edit_idx[0] - index_shift_edit + len(edit.split('+')[1].replace(')','')))/3.0)
-                annotations_aa_edit.append({'start':aa_start, 'end':aa_stop, 'color':'#3CB371', 'bgcolor':'#ebf7f0', 'underscore':True})
-                index_shift_edit += edit_length -len(edit.split('+')[1].replace(')',''))
+                elif '+' in edit:
+                    editformat2sequence_edit[edit] = edit.split('+')[1].replace(')','')
+                    annotations_edit.append({'start':edit_idx[0] - index_shift_edit, 'end':edit_idx[0] - index_shift_edit + len(edit.split('+')[1].replace(')','')), 'color':'#3CB371', 'bgcolor':'#ebf7f0', 'underscore':True})
 
-            elif '-' in edit:
-                editformat2sequence_edit[edit] = ''
-                annotations_edit.append({'start':edit_idx[0] - index_shift_edit, 'end':edit_idx[0] - index_shift_edit, 'color':'#DC143C', 'bgcolor':'#fbe7eb', 'underscore':True})
+                    aa_start = math.floor(float(edit_idx[0] - index_shift_edit)/3.0)
+                    aa_stop = math.ceil(float(edit_idx[0] - index_shift_edit + len(edit.split('+')[1].replace(')','')))/3.0)
+                    annotations_aa_edit.append({'start':aa_start, 'end':aa_stop, 'color':'#3CB371', 'bgcolor':'#ebf7f0', 'underscore':True})
+                    index_shift_edit += edit_length -len(edit.split('+')[1].replace(')',''))
 
-                # aa_start = math.floor(float(edit_idx[0] - index_shift)/3.0)
-                # aa_stop = math.ceil(float(edit_idx[0] - index_shift)/3.0)
-                # annotations_aa.append({'start':aa_start, 'end':aa_stop, 'color':'#DC143C', 'bgcolor':'#fbe7eb', 'underscore':True})
+                elif '-' in edit:
+                    editformat2sequence_edit[edit] = ''
+                    annotations_edit.append({'start':edit_idx[0] - index_shift_edit, 'end':edit_idx[0] - index_shift_edit, 'color':'#DC143C', 'bgcolor':'#fbe7eb', 'underscore':True})
 
-                index_shift_edit += edit_length
+                    # aa_start = math.floor(float(edit_idx[0] - index_shift)/3.0)
+                    # aa_stop = math.ceil(float(edit_idx[0] - index_shift)/3.0)
+                    # annotations_aa.append({'start':aa_start, 'end':aa_stop, 'color':'#DC143C', 'bgcolor':'#fbe7eb', 'underscore':True})
 
-        for edit in editformat2sequence_ref:
-            reference_sequence = reference_sequence.replace(edit, editformat2sequence_ref[edit])
+                    index_shift_edit += edit_length
 
-        for edit in editformat2sequence_edit:
-            edit_sequence = edit_sequence.replace(edit, editformat2sequence_edit[edit])
+            for edit in editformat2sequence_ref:
+                reference_sequence = reference_sequence.replace(edit, editformat2sequence_ref[edit])
+
+            for edit in editformat2sequence_edit:
+                edit_sequence = edit_sequence.replace(edit, editformat2sequence_edit[edit])
 
 
-        # Visualizing pegRNA spacer in reference sequence
-        try:
-            current_annotation_ranges = []
-            for annotation in annotations_ref:
-                current_annotation_ranges.append([annotation['start'], annotation['end']])
+            # Visualizing pegRNA spacer in reference sequence
+            try:
+                current_annotation_ranges = []
+                for annotation in annotations_ref:
+                    current_annotation_ranges.append([annotation['start'], annotation['end']])
 
-            df_peg = pd.read_json(store_peg_table, orient='split')
-            spacer_sequences = list(df_peg.loc[selected_rows_peg, 'spacer sequence'].values)
+                df_peg = pd.read_json(store_peg_table, orient='split')
+                spacer_sequences = list(df_peg.loc[selected_rows_peg, 'spacer sequence'].values)
 
-            # Annotate pegRNA spacer sequences
-            for spacer_sequence in spacer_sequences:
+                # Annotate pegRNA spacer sequences
+                for spacer_sequence in spacer_sequences:
 
-                try:
-                    start_idx = re.search(spacer_sequence, reference_sequence, re.IGNORECASE).start()
-                    stop_idx = start_idx + len(spacer_sequence)
-                    for i in range(start_idx, stop_idx):
-                        if sum([1 if (x[0] <= i < x[1]) else 0 for x in current_annotation_ranges]) == 0:
-                            annotations_ref.append({'start':i, 'end':i + 1, 'bgcolor':'#d6d6d6'})
-                            current_annotation_ranges.append([i, i + 1])
+                    try:
+                        start_idx = re.search(spacer_sequence, reference_sequence, re.IGNORECASE).start()
+                        stop_idx = start_idx + len(spacer_sequence)
+                        for i in range(start_idx, stop_idx):
+                            if sum([1 if (x[0] <= i < x[1]) else 0 for x in current_annotation_ranges]) == 0:
+                                annotations_ref.append({'start':i, 'end':i + 1, 'bgcolor':'#dedede'})
+                                current_annotation_ranges.append([i, i + 1])
 
-                except:
-                    start_idx = re.search(reverse_complement(spacer_sequence), reference_sequence, re.IGNORECASE).start()
-                    stop_idx = start_idx + len(spacer_sequence)
-                    for i in range(start_idx, stop_idx):
-                        if sum([1 if (x[0] <= i < x[1]) else 0 for x in current_annotation_ranges]) == 0:
-                            annotations_ref.append({'start':i, 'end':i + 1, 'bgcolor':'#d6d6d6'})
-                            current_annotation_ranges.append([i, i + 1])
+                    except:
+                        start_idx = re.search(reverse_complement(spacer_sequence), reference_sequence, re.IGNORECASE).start()
+                        stop_idx = start_idx + len(spacer_sequence)
+                        for i in range(start_idx, stop_idx):
+                            if sum([1 if (x[0] <= i < x[1]) else 0 for x in current_annotation_ranges]) == 0:
+                                annotations_ref.append({'start':i, 'end':i + 1, 'bgcolor':'#dedede'})
+                                current_annotation_ranges.append([i, i + 1])
 
-        except:
-            pass
+            except:
+                pass
 
-        # Visualizing pegRNA extension in edit sequence
-        try:
-            current_annotation_ranges = []
-            for annotation in annotations_edit:
-                current_annotation_ranges.append([annotation['start'], annotation['end']])
+            # Visualizing pegRNA extension in edit sequence
+            try:
+                current_annotation_ranges = []
+                for annotation in annotations_edit:
+                    current_annotation_ranges.append([annotation['start'], annotation['end']])
 
-            df_peg = pd.read_json(store_peg_table, orient='split')
-            df_peg_total = pd.read_json(store_peg_table_total, orient='split')
+                df_peg = pd.read_json(store_peg_table, orient='split')
+                df_peg_total = pd.read_json(store_peg_table_total, orient='split')
 
-            peg_group = list(df_peg.loc[selected_rows_peg, 'spacer sequence'].values)
-            df_pegext = df_peg_total[df_peg_total['spacer sequence'].isin(peg_group)]
-            df_pegext = df_pegext[df_pegext['type'] == 'pegRNA']
-            df_pegext = df_pegext[['PBS length','PBS GC content','RTT length','RTT GC content','pegRNA extension']].drop_duplicates()
-            df_pegext.reset_index(drop=True, inplace=True)
-            pegext_sequences = list(df_pegext.loc[selected_rows_pegext, 'pegRNA extension'].values)
+                peg_group = list(df_peg.loc[selected_rows_peg, 'spacer sequence'].values)
+                df_pegext = df_peg_total[df_peg_total['spacer sequence'].isin(peg_group)]
+                df_pegext = df_pegext[df_pegext['type'] == 'pegRNA']
+                df_pegext = df_pegext[['PBS length','PBS GC content','RTT length','RTT GC content','pegRNA extension']].drop_duplicates()
+                df_pegext.reset_index(drop=True, inplace=True)
+                pegext_sequences = list(df_pegext.loc[selected_rows_pegext, 'pegRNA extension'].values)
 
-            # Annotate pegRNA spacer sequences
-            for pegext_sequence in pegext_sequences:
+                # Annotate pegRNA spacer sequences
+                for pegext_sequence in pegext_sequences:
 
-                try:
-                    start_idx = re.search(pegext_sequence, edit_sequence, re.IGNORECASE).start()
-                    stop_idx = start_idx + len(pegext_sequence)
-                    for i in range(start_idx, stop_idx):
-                        if sum([1 if (x[0] <= i < x[1]) else 0 for x in current_annotation_ranges]) == 0:
-                            annotations_edit.append({'start':i, 'end':i + 1, 'bgcolor':'#d6d6d6'})
-                            current_annotation_ranges.append([i, i + 1])
+                    try:
+                        start_idx = re.search(pegext_sequence, edit_sequence, re.IGNORECASE).start()
+                        stop_idx = start_idx + len(pegext_sequence)
+                        for i in range(start_idx, stop_idx):
+                            if sum([1 if (x[0] <= i < x[1]) else 0 for x in current_annotation_ranges]) == 0:
+                                annotations_edit.append({'start':i, 'end':i + 1, 'bgcolor':'#ffdb99'})
+                                current_annotation_ranges.append([i, i + 1])
 
-                except:
-                    start_idx = re.search(reverse_complement(pegext_sequence), edit_sequence, re.IGNORECASE).start()
-                    stop_idx = start_idx + len(pegext_sequence)
-                    for i in range(start_idx, stop_idx):
-                        if sum([1 if (x[0] <= i < x[1]) else 0 for x in current_annotation_ranges]) == 0:
-                            annotations_edit.append({'start':i, 'end':i + 1, 'bgcolor':'#d6d6d6'})
-                            current_annotation_ranges.append([i, i + 1])
+                    except:
+                        start_idx = re.search(reverse_complement(pegext_sequence), edit_sequence, re.IGNORECASE).start()
+                        stop_idx = start_idx + len(pegext_sequence)
+                        for i in range(start_idx, stop_idx):
+                            if sum([1 if (x[0] <= i < x[1]) else 0 for x in current_annotation_ranges]) == 0:
+                                annotations_edit.append({'start':i, 'end':i + 1, 'bgcolor':'#ffdb99'})
+                                current_annotation_ranges.append([i, i + 1])
 
-        except:
-            pass
+            except:
+                pass
 
-        # Visualizing ngRNA spacer in edit sequence
-        try:
-            current_annotation_ranges = []
-            for annotation in annotations_edit:
-                current_annotation_ranges.append([annotation['start'], annotation['end']])
+            # Visualizing ngRNA spacer in edit sequence
+            try:
+                current_annotation_ranges = []
+                for annotation in annotations_edit:
+                    current_annotation_ranges.append([annotation['start'], annotation['end']])
 
-            df_peg = pd.read_json(store_peg_table, orient='split')
-            df_peg_total = pd.read_json(store_peg_table_total, orient='split')
+                df_peg = pd.read_json(store_peg_table, orient='split')
+                df_peg_total = pd.read_json(store_peg_table_total, orient='split')
 
-            peg_group = list(df_peg.loc[selected_rows_peg, 'pegRNA group'].values)
-            df_ng = df_peg_total[df_peg_total['pegRNA group'].isin(peg_group)]
-            df_ng = df_ng[df_ng['type'] == 'ngRNA']
-            df_ng = df_ng[['spacer sequence','PAM','strand','nick-to-peg distance','spacer GC content','annotation']].drop_duplicates()
-            df_ng.reset_index(drop=True, inplace=True)
-            ngRNA_sequences = list(df_ng.loc[selected_rows_ng, 'spacer sequence'].values)
+                peg_group = list(df_peg.loc[selected_rows_peg, 'pegRNA group'].values)
+                df_ng = df_peg_total[df_peg_total['pegRNA group'].isin(peg_group)]
+                df_ng = df_ng[df_ng['type'] == 'ngRNA']
+                df_ng = df_ng[['spacer sequence','PAM','strand','nick-to-peg distance','spacer GC content','annotation']].drop_duplicates()
+                df_ng.reset_index(drop=True, inplace=True)
+                ngRNA_sequences = list(df_ng.loc[selected_rows_ng, 'spacer sequence'].values)
 
-            # Annotate pegRNA spacer sequences
-            for ngRNA_sequence in ngRNA_sequences:
+                # Annotate pegRNA spacer sequences
+                for ngRNA_sequence in ngRNA_sequences:
 
-                try:
-                    start_idx = re.search(ngRNA_sequence, edit_sequence, re.IGNORECASE).start()
-                    stop_idx = start_idx + len(ngRNA_sequence)
-                    for i in range(start_idx, stop_idx):
-                        if sum([1 if (x[0] <= i < x[1]) else 0 for x in current_annotation_ranges]) == 0:
-                            annotations_edit.append({'start':i, 'end':i + 1, 'bgcolor':'#d6d6d6'})
-                            current_annotation_ranges.append([i, i + 1])
+                    try:
+                        start_idx = re.search(ngRNA_sequence, edit_sequence, re.IGNORECASE).start()
+                        stop_idx = start_idx + len(ngRNA_sequence)
+                        for i in range(start_idx, stop_idx):
+                            if sum([1 if (x[0] <= i < x[1]) else 0 for x in current_annotation_ranges]) == 0:
+                                annotations_edit.append({'start':i, 'end':i + 1, 'bgcolor':'#d6d6d6'})
+                                current_annotation_ranges.append([i, i + 1])
 
-                except:
-                    start_idx = re.search(reverse_complement(ngRNA_sequence), edit_sequence, re.IGNORECASE).start()
-                    stop_idx = start_idx + len(ngRNA_sequence)
-                    for i in range(start_idx, stop_idx):
-                        if sum([1 if (x[0] <= i < x[1]) else 0 for x in current_annotation_ranges]) == 0:
-                            annotations_edit.append({'start':i, 'end':i + 1, 'bgcolor':'#d6d6d6'})
-                            current_annotation_ranges.append([i, i + 1])
+                    except:
+                        start_idx = re.search(reverse_complement(ngRNA_sequence), edit_sequence, re.IGNORECASE).start()
+                        stop_idx = start_idx + len(ngRNA_sequence)
+                        for i in range(start_idx, stop_idx):
+                            if sum([1 if (x[0] <= i < x[1]) else 0 for x in current_annotation_ranges]) == 0:
+                                annotations_edit.append({'start':i, 'end':i + 1, 'bgcolor':'#d6d6d6'})
+                                current_annotation_ranges.append([i, i + 1])
 
-        except:
-            pass
+            except:
+                pass
 
-        aa_sequence_ref = sequencetoaa(reference_sequence)
-        aa_sequence_edit = sequencetoaa(edit_sequence)
+            aa_sequence_ref = sequencetoaa(reference_sequence)
+            aa_sequence_edit = sequencetoaa(edit_sequence)
+
+        else:
+            reference_sequence = ' '
+            edit_sequence = ' '
+            aa_sequence_ref = ' '
+            aa_sequence_edit = ' '
 
     else:
         reference_sequence = ' '
