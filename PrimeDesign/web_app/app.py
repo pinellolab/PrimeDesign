@@ -3,6 +3,8 @@ import re
 import os
 import base64
 import urllib.parse
+import uuid
+import time
 import math
 import dash
 import dash_table
@@ -23,33 +25,41 @@ server = app.server
 server.secret_key = '\xfd\x00R\xb5\xbd\x83_t\xed\xdf\xc4\na\x08\xf7K\xc4\xfd\xa2do3\xa5\xdd'
 
 
-# UPLOAD_DIRECTORY = '/PrimeDesign/reports'
-# if not os.path.exists(UPLOAD_DIRECTORY):
-#     os.makedirs(UPLOAD_DIRECTORY)
+UPLOAD_DIRECTORY = '/PrimeDesign/reports'
+if not os.path.exists(UPLOAD_DIRECTORY):
+    os.makedirs(UPLOAD_DIRECTORY)
 
-# @server.route('/download/<path:path>')
-# def download(path):
-#     """Serve a file from the upload directory."""
-#     return send_from_directory(UPLOAD_DIRECTORY, path, as_attachment=True)
+@server.route('/download/<path:path>')
+def download(path):
+    """Serve a file from the upload directory."""
+    return send_from_directory(UPLOAD_DIRECTORY, path, as_attachment=True)
 
 peg_design_tmp = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
 df_tmp = pd.DataFrame.from_dict(peg_design_tmp)
+ 
+def serve_layout():
 
-app.layout = html.Div([
-    dcc.Location(id='url', refresh=False),
+    # session_id = str(uuid.uuid4())
+    session_id = str(time.strftime("%Y%m%d_%I.%M.%S.", time.localtime())) + str(int(round(time.time() * 1000)))[-2:]
 
-    html.Div([
+    return html.Div([
 
-        html.Img(src=app.get_asset_url('primedesign_logo.png'), width = '350px', style = {'margin-bottom': '0px', 'margin-right': '15px', 'padding-left': '15px'}),
+        dcc.Location(id='url', refresh=False),
+        html.Div(session_id, id='session-id', style={'display': 'none'}),
 
-        dcc.Link('Design', href='/', style = {'color':'#a6a6a6', 'text-decoration':'none', 'margin-right':'16px', 'font-size':'16px'}),
-        dcc.Link('About', href='/about', style = {'color':'#a6a6a6', 'text-decoration':'none', 'margin-right':'16px', 'font-size':'16px'}),
-        dcc.Link('Help', href='/help', style = {'color':'#a6a6a6', 'text-decoration':'none', 'font-size':'16px'}),
+        html.Div([
+            html.Img(src=app.get_asset_url('primedesign_logo.png'), width = '350px', style = {'margin-bottom': '0px', 'margin-right': '15px', 'padding-left': '15px'}),
 
-        ]),
+            dcc.Link('Design', href='/', style = {'color':'#a6a6a6', 'text-decoration':'none', 'margin-right':'16px', 'font-size':'16px'}),
+            dcc.Link('About', href='/about', style = {'color':'#a6a6a6', 'text-decoration':'none', 'margin-right':'16px', 'font-size':'16px'}),
+            dcc.Link('Help', href='/help', style = {'color':'#a6a6a6', 'text-decoration':'none', 'font-size':'16px'}),
 
-    html.Div(id='page-content')
-])
+            ]),
+
+        html.Div(id='page-content')
+    ])
+
+app.layout = serve_layout
 
 about_page = html.Div([
 
@@ -761,6 +771,7 @@ design_page = html.Div([
         ], className = 'row', style = {'padding-right': '15px', 'padding-left': '15px','margin': '0px'}), #'margin': '0px'
     
     html.Hr(),
+
 ])
 
 # Download file
@@ -772,19 +783,20 @@ def file_download_link(filename):
 # Multi page set up
 # Update the index
 @app.callback(Output('page-content', 'children'),
-              [dash.dependencies.Input('url', 'pathname')])
+              [Input('url', 'pathname')])
 def display_page(pathname):
+
     if pathname == '/':
-        return design_page
+        return(design_page)
 
     elif pathname == '/about':
-        return about_page
+        return(about_page)
 
     elif pathname == '/help':
-        return help_page
+        return(help_page)
 
     else:
-        return error_page
+        return(error_page)
 
 # Load example data
 @app.callback(Output('pe-sequence-input','value'),
@@ -1373,10 +1385,10 @@ def process_sequence(input_sequence):
 
 @app.callback([Output('peg-table', 'data'), Output('store-peg-table-total', 'children'), Output('store-peg-table', 'children')],
     [Input('input-check','children'), Input('pbs-range','value'), Input('rtt-range','value'), Input('nick-dist-range','value'), Input('extfirstbase-option','value'), Input('silentmutation-option','value')],
-    state = [State('pe-sequence-input','value')]
+    state = [State('pe-sequence-input','value'), State('session-id', 'children')]
 )
 
-def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, extfirstbase_filter, silent_mutation, input_sequence):
+def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, extfirstbase_filter, silent_mutation, input_sequence, session_id):
 
     target_design = {}
     peg_design = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
@@ -1906,6 +1918,8 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, e
     df_pegs = df_pegs.sort_values('peg-to-edit distance')
     df_pegs.reset_index(drop=True, inplace=True)
 
+    df.to_csv('/PrimeDesign/reports/PrimeDesign_%s.csv' % session_id)
+
     return(df_pegs.to_dict('records'), df.to_json(date_format='iso', orient='split'), df_pegs.to_json(date_format='iso', orient='split'))
 
 # Trigger pegRNA extension and ngRNA tables with pegRNA spacer selection
@@ -1956,23 +1970,11 @@ def update_ng_table(selected_row, store_peg_table_total, store_peg_table):
     return(df_ng.to_dict('records'))
 
 @app.callback(Output('download-link', 'href'),
-    [Input('store-peg-table-total', 'children')]
+    [Input('input-check','children')],
+    state = [State('session-id', 'children')]
 )
-def update_download_link(store_peg_table_total):
-
-    try:
-        # Open up stored peg table
-        # print(store_peg_table_total)
-        df_out = pd.read_json(store_peg_table_total, orient='split')
-        # print(df_out)
-
-    except:
-        df_out = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
-        df_out = pd.DataFrame.from_dict(df_out)
-
-    csv_string = df_out.to_csv(index = False, encoding='utf-8')
-    csv_string = "data:text/csv;charset=utf-8,%EF%BB%BF" + urllib.parse.quote(csv_string)
-    return(csv_string)
+def update_download_link(input_check, session_id):
+    return('/download/PrimeDesign_%s.csv' % session_id)
 
 if __name__ == '__main__':
     app.run_server(debug = True, port = 9994, host = '0.0.0.0')
