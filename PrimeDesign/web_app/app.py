@@ -929,7 +929,10 @@ def update_reference_sequence(input_check, selected_rows_peg, selected_rows_pege
                     
                     aa_start = math.floor(float(edit_idx[0] - index_shift_ref)/3.0)
                     aa_stop = math.ceil(float(edit_idx[0] - index_shift_ref + len(edit.split('/')[0].replace('(','')))/3.0)
-                    annotations_aa_ref.append({'start':aa_start, 'end':aa_stop, 'color':'#1E90FF', 'bgcolor':'#e8f3ff', 'underscore':True})
+
+                    annotation_entry = {'start':aa_start, 'end':aa_stop, 'color':'#1E90FF', 'bgcolor':'#e8f3ff', 'underscore':True}
+                    if annotation_entry not in annotations_aa_ref:
+                        annotations_aa_ref.append(annotation_entry)
                     
                     index_shift_ref += edit_length - len(edit.split('/')[0].replace('(',''))
 
@@ -949,7 +952,10 @@ def update_reference_sequence(input_check, selected_rows_peg, selected_rows_pege
 
                     aa_start = math.floor(float(edit_idx[0] - index_shift_ref)/3.0)
                     aa_stop = math.ceil(float(edit_idx[0] - index_shift_ref + len(edit.split('-')[1].replace(')','')))/3.0)
-                    annotations_aa_ref.append({'start':aa_start, 'end':aa_stop, 'color':'#DC143C', 'bgcolor':'#fbe7eb', 'underscore':True})
+
+                    annotation_entry = {'start':aa_start, 'end':aa_stop, 'color':'#DC143C', 'bgcolor':'#fbe7eb', 'underscore':True}
+                    if annotation_entry not in annotations_aa_ref:
+                        annotations_aa_ref.append(annotation_entry)
 
                     index_shift_ref += edit_length - len(edit.split('-')[1].replace(')',''))
 
@@ -960,7 +966,10 @@ def update_reference_sequence(input_check, selected_rows_peg, selected_rows_pege
 
                     aa_start = math.floor(float(edit_idx[0] - index_shift_edit)/3.0)
                     aa_stop = math.ceil(float(edit_idx[0] - index_shift_edit + len(edit.split('/')[1].replace(')','')))/3.0)
-                    annotations_aa_edit.append({'start':aa_start, 'end':aa_stop, 'color':'#1E90FF', 'bgcolor':'#e8f3ff', 'underscore':True})
+
+                    annotation_entry = {'start':aa_start, 'end':aa_stop, 'color':'#1E90FF', 'bgcolor':'#e8f3ff', 'underscore':True}
+                    if annotation_entry not in annotations_aa_edit:
+                        annotations_aa_edit.append(annotation_entry)
 
                     index_shift_edit += edit_length - len(edit.split('/')[1].replace(')',''))
 
@@ -970,7 +979,11 @@ def update_reference_sequence(input_check, selected_rows_peg, selected_rows_pege
 
                     aa_start = math.floor(float(edit_idx[0] - index_shift_edit)/3.0)
                     aa_stop = math.ceil(float(edit_idx[0] - index_shift_edit + len(edit.split('+')[1].replace(')','')))/3.0)
-                    annotations_aa_edit.append({'start':aa_start, 'end':aa_stop, 'color':'#3CB371', 'bgcolor':'#ebf7f0', 'underscore':True})
+
+                    annotation_entry = {'start':aa_start, 'end':aa_stop, 'color':'#3CB371', 'bgcolor':'#ebf7f0', 'underscore':True}
+                    if annotation_entry not in annotations_aa_edit:
+                        annotations_aa_edit.append(annotation_entry)
+
                     index_shift_edit += edit_length -len(edit.split('+')[1].replace(')',''))
 
                 elif '-' in edit:
@@ -989,6 +1002,11 @@ def update_reference_sequence(input_check, selected_rows_peg, selected_rows_pege
             for edit in editformat2sequence_edit:
                 edit_sequence = edit_sequence.replace(edit, editformat2sequence_edit[edit])
 
+            aa_sequence_ref = sequencetoaa(reference_sequence)
+            aa_sequence_edit = sequencetoaa(edit_sequence)
+
+            print(aa_sequence_ref)
+            print(aa_sequence_edit)
 
             # Visualizing pegRNA spacer in reference sequence
             try:
@@ -1096,9 +1114,6 @@ def update_reference_sequence(input_check, selected_rows_peg, selected_rows_pege
 
             except:
                 pass
-
-            aa_sequence_ref = sequencetoaa(reference_sequence)
-            aa_sequence_edit = sequencetoaa(edit_sequence)
 
         else:
             reference_sequence = ' '
@@ -1271,12 +1286,10 @@ for codon in codon_dict:
     codon_swap_2[codon] = sorted(codon_swap_2[codon], key = lambda x: x[1], reverse = True)
 
 def sequencetoaa(sequence):
-
     sequence = sequence.upper()
     codon_list = [sequence[i:i+3] for i in range(0, len(sequence), 3)]
     if len(codon_list[-1]) != 3:
         codon_list = codon_list[:-1]
-
     aa_sequence = ''.join(map(str, [codon_dict[x][1] for x in codon_list]))
     return(aa_sequence)
 
