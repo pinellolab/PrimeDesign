@@ -330,13 +330,13 @@ design_page = html.Div([
                 options=[
                     {'label': 'Substitution', 'value': 'substitution'},
                     {'label': 'Insertion', 'value': 'insertion'},
-                    {'label': 'Deletion', 'value': 'deletion'},
+                    {'label': 'Deletion examples', 'value': 'deletion'},
                 ],
                 value=[],
                 labelStyle={'display': 'inline'}
             ),
 
-            dbc.Tooltip('Edit formatting examples: Substitution (ATGC/CGTA)  |  Insertion (+ATGC)  |  Deletion (-ATGC)',
+            dbc.Tooltip('Edit formatting examples: Substitution (ATGC/CGTA)  |  Insertion (+ATGC) or (/ATGC)  |  Deletion (-ATGC) or (ATGC/)',
                        target = 'input-tooltip',
                        placement = 'right',
                        style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
@@ -344,7 +344,7 @@ design_page = html.Div([
 
             dcc.Textarea(
                 id='pe-sequence-input',
-                placeholder='Enter sequence to prime edit or load example input sequence above ...\n\nEdit formatting examples: Substitution (ATGC/CGTA)  |  Insertion (+ATGC)  |  Deletion (-ATGC)',
+                placeholder='Enter sequence to prime edit or load example input sequence above ...\n\nEdit formatting examples: Substitution (ATGC/CGTA)  |  Insertion (+ATGC) or (/ATGC)  |  Deletion (-ATGC) or (ATGC/)',
                 value='',
                 style = {'width': '100%', 'margin': '0px'},
                 className = 'textarea',
@@ -524,7 +524,7 @@ design_page = html.Div([
                       style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'},
                       className = 'dot'),
 
-                 dbc.Tooltip('Recommendation: ~13 nt',
+                 dbc.Tooltip('Initial recommendation: 12-14 nt',
                        target = 'pbs-tooltip',
                        placement = 'right',
                        style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
@@ -537,7 +537,7 @@ design_page = html.Div([
                 id = 'pbs-range',
                 min=5,
                 max=17,
-                value=[11, 15],
+                value=[12, 14],
                 allowCross=False
             ),
 
@@ -549,7 +549,7 @@ design_page = html.Div([
                       style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'},
                       className = 'dot'),
 
-                 dbc.Tooltip('Recommendation: ~10-16 nt',
+                 dbc.Tooltip('Initial recommendation: 10-20 nt',
                        target = 'rtt-tooltip',
                        placement = 'right',
                        style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
@@ -562,7 +562,7 @@ design_page = html.Div([
                 id = 'rtt-range',
                 min=5,
                 max=80,
-                value=[10, 16],
+                value=[10, 20],
                 allowCross=False
             ),
             
@@ -573,7 +573,7 @@ design_page = html.Div([
                       style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'},
                       className = 'dot'),
 
-                 dbc.Tooltip('Recommendation: ~50 bp',
+                 dbc.Tooltip('Initial recommendation: 50+ bp (unless PE3b option available)',
                        target = 'nick-dist-tooltip',
                        placement = 'right',
                        style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
@@ -597,7 +597,7 @@ design_page = html.Div([
                       style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'},
                       className = 'dot'),
 
-                 dbc.Tooltip('Recommendation: Yes',
+                 dbc.Tooltip('pegRNA extensions that start with a C base may exhibit lower editing efficiencies',
                        target = 'remove-first-c-base-tooltip',
                        placement = 'right',
                        style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
@@ -622,7 +622,7 @@ design_page = html.Div([
                       style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'},
                       className = 'dot'),
 
-                 dbc.Tooltip(children = 'This may improve prime editing efficiencies for coding sequence edits',
+                 dbc.Tooltip(children = 'Disrupting the PAM sequence via a silent mutation may improve prime editing efficiencies for coding sequence edits',
                        target = 'silent-mutation-tooltip',
                        placement = 'right',
                        style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
@@ -925,7 +925,11 @@ def update_reference_sequence(input_check, selected_rows_peg, selected_rows_pege
                 # Create edit format and number to sequence map
                 if '/' in edit:
                     editformat2sequence_ref[edit] = edit.split('/')[0].replace('(','')
-                    annotations_ref.append({'start':edit_idx[0] - index_shift_ref, 'end':edit_idx[0] - index_shift_ref + len(edit.split('/')[0].replace('(','')), 'color':'#1E90FF', 'bgcolor':'#e8f3ff', 'underscore':True})
+
+                    if len(edit.split('/')[1].replace(')','')) == 0:
+                        annotations_ref.append({'start':edit_idx[0] - index_shift_ref, 'end':edit_idx[0] - index_shift_ref + len(edit.split('/')[0].replace('(','')), 'color':'#DC143C', 'bgcolor':'#fbe7eb', 'underscore':True})
+                    else:
+                        annotations_ref.append({'start':edit_idx[0] - index_shift_ref, 'end':edit_idx[0] - index_shift_ref + len(edit.split('/')[0].replace('(','')), 'color':'#1E90FF', 'bgcolor':'#e8f3ff', 'underscore':True})
                     
                     aa_start = math.floor(float(edit_idx[0] - index_shift_ref)/3.0)
                     aa_stop = math.ceil(float(edit_idx[0] - index_shift_ref + len(edit.split('/')[0].replace('(','')))/3.0)
@@ -962,7 +966,11 @@ def update_reference_sequence(input_check, selected_rows_peg, selected_rows_pege
                 # Create edit format and number to sequence map
                 if '/' in edit:
                     editformat2sequence_edit[edit] = edit.split('/')[1].replace(')','')
-                    annotations_edit.append({'start':edit_idx[0] - index_shift_edit, 'end':edit_idx[0] - index_shift_edit + len(edit.split('/')[1].replace(')','')), 'color':'#1E90FF', 'bgcolor':'#e8f3ff', 'underscore':True})
+
+                    if len(edit.split('/')[0].replace('(','')) == 0:
+                        annotations_edit.append({'start':edit_idx[0] - index_shift_edit, 'end':edit_idx[0] - index_shift_edit + len(edit.split('/')[1].replace(')','')), 'color':'#3CB371', 'bgcolor':'#ebf7f0', 'underscore':True})
+                    else:
+                        annotations_edit.append({'start':edit_idx[0] - index_shift_edit, 'end':edit_idx[0] - index_shift_edit + len(edit.split('/')[1].replace(')','')), 'color':'#1E90FF', 'bgcolor':'#e8f3ff', 'underscore':True})
 
                     aa_start = math.floor(float(edit_idx[0] - index_shift_edit)/3.0)
                     aa_stop = math.ceil(float(edit_idx[0] - index_shift_edit + len(edit.split('/')[1].replace(')','')))/3.0)
@@ -1005,8 +1013,8 @@ def update_reference_sequence(input_check, selected_rows_peg, selected_rows_pege
             aa_sequence_ref = sequencetoaa(reference_sequence)
             aa_sequence_edit = sequencetoaa(edit_sequence)
 
-            print(aa_sequence_ref)
-            print(aa_sequence_edit)
+            # print(aa_sequence_ref)
+            # print(aa_sequence_edit)
 
             # Visualizing pegRNA spacer in reference sequence
             try:
