@@ -423,6 +423,8 @@ for target_name in target_design:
 	find_guides_editnumber_plus = [[m.start()] for m in re.finditer('(?=%s)' % pam_search.replace('[', '[123456789'), editnumber_sequence, re.IGNORECASE)]
 	find_guides_editnumber_minus = [[m.start()] for m in re.finditer('(?=%s)' % reverse_complement(pam_search).replace('[', '[123456789'), editnumber_sequence, re.IGNORECASE)]
 
+	editnumber2sequence = target_design[target_name]['editnumber2sequence']
+
 	# Find pegRNA spacers targeting (+) strand
 	if find_guides_ref_plus:
 
@@ -792,8 +794,11 @@ for target_name in target_design:
 					if (abs(nick_distance) >= nicking_distance_minimum) and (abs(nick_distance) <= nicking_distance_maximum):
 						pe_design[target_name][pegid][1].append([ng_nick_ref_idx, ng_spacer_sequence_edit, ng_pam_edit, ng_annotate, '+', nick_distance])
 
-	logger.info('Completed pegRNA and ngRNA search for %s out of %s sites ...' % (counter, total_regions))
+	if counter%1000 == 0:
+		logger.info('Completed pegRNA and ngRNA search for %s out of %s sites ...' % (counter, total_regions))
 	counter += 1
+
+logger.info('Completed pegRNA and ngRNA search for %s out of %s sites ...' % (counter - 1, total_regions))
 
 # Output pegRNAs
 pegRNAs_summary_f = '%s_PrimeDesign.csv' % str(time.strftime("%Y%m%d_%I.%M.%S", time.localtime()))
