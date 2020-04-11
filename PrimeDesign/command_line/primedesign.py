@@ -537,7 +537,10 @@ for target_name in target_design:
 				if spacer_sequence_edit.upper()	== spacer_sequence_ref.upper():
 					ng_annotate = 'PE3'
 				else:
-					ng_annotate = 'PE3b'
+					if spacer_sequence_edit.upper()[-10:] == spacer_sequence_ref.upper()[-10:]:
+						ng_annotate = 'PE3b-nonseed'
+					else:
+						ng_annotate = 'PE3b-seed'
 
 				# Store ngRNA spacer
 				nick_ref_idx = re.search(full_search_ref, reference_sequence).end() - (pe_format_length - cut_idx)
@@ -573,7 +576,10 @@ for target_name in target_design:
 				if spacer_sequence_edit.upper()	== spacer_sequence_ref.upper():
 					ng_annotate = 'PE3'
 				else:
-					ng_annotate = 'PE3b'
+					if spacer_sequence_edit.upper()[:10] == spacer_sequence_ref.upper()[:10]:
+						ng_annotate = 'PE3b-nonseed'
+					else:
+						ng_annotate = 'PE3b-seed'
 
 				# Store ngRNA spacer
 				nick_ref_idx = re.search(full_search_ref, reference_sequence).start() + (pe_format_length - cut_idx)
@@ -612,7 +618,7 @@ for target_name in target_design:
 						pe_pam_ref_silent_mutation = ''
 
 						# Construct pegRNA extension to encode intended edit(s)
-						# pegRNA_ext = edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + rtt_length]
+
 						# Patch for NGG PAMs - may need to build something more generalizable in the future
 						if (silent_mutation.upper() == 'Y') and (pe_format == 'NNNNNNNNNNNNNNNNN/NNN[NGG]'):
 
@@ -716,7 +722,7 @@ for target_name in target_design:
 						pe_pam_ref_silent_mutation = ''
 
 						# Construct pegRNA extension to encode intended edit(s)
-						# pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx + pbs_length]
+
 						# Patch for NGG PAMs - may need to build something more generalizable in the future
 						if (silent_mutation.upper() == 'Y') and (pe_format == 'NNNNNNNNNNNNNNNNN/NNN[NGG]'):
 						    

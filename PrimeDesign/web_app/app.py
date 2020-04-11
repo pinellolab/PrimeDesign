@@ -756,10 +756,16 @@ design_page = html.Div([
                 row_selectable = 'multi',
                 # filter_action = 'native',
                 style_data_conditional=[{
-                    'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PE3b'},
+                    'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PE3b-seed'},
                     'backgroundColor': "#62c096",
                     'color': 'white'
-                }]
+                },
+                {
+                    'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PE3b-nonseed'},
+                    'backgroundColor': "#62c096",
+                    'color': 'white'
+                },
+                ]
             ),
 
             html.Div(id='store-peg-table-total', style={'display': 'none'}),
@@ -1593,7 +1599,10 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, e
                         if spacer_sequence_edit.upper() == spacer_sequence_ref.upper():
                             ng_annotate = 'PE3'
                         else:
-                            ng_annotate = 'PE3b'
+                            if spacer_sequence_edit.upper()[-10:] == spacer_sequence_ref.upper()[-10:]:
+                                ng_annotate = 'PE3b-nonseed'
+                            else:
+                                ng_annotate = 'PE3b-seed'
 
                         # Store ngRNA spacer
                         nick_ref_idx = re.search(full_search_ref, reference_sequence).end() - (pe_format_length - cut_idx)
@@ -1629,7 +1638,10 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, e
                         if spacer_sequence_edit.upper() == spacer_sequence_ref.upper():
                             ng_annotate = 'PE3'
                         else:
-                            ng_annotate = 'PE3b'
+                            if spacer_sequence_edit.upper()[:10] == spacer_sequence_ref.upper()[:10]:
+                                ng_annotate = 'PE3b-nonseed'
+                            else:
+                                ng_annotate = 'PE3b-seed'
 
                         # Store ngRNA spacer
                         nick_ref_idx = re.search(full_search_ref, reference_sequence).start() + (pe_format_length - cut_idx)
