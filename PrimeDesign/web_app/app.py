@@ -48,11 +48,23 @@ def serve_layout():
         html.Div(session_id, id='session-id', style={'display': 'none'}),
 
         html.Div([
-            html.Img(src=app.get_asset_url('primedesign_logo.png'), width = '350px', style = {'margin-bottom': '0px', 'margin-right': '15px', 'padding-left': '15px'}),
+            html.Img(src=app.get_asset_url('primedesign_logo.png'), width = '350px', style = {'margin-bottom': '0px', 'margin-right': '20px', 'padding-left': '15px'}),
 
-            dcc.Link('Design', href='/', style = {'color':'#a6a6a6', 'text-decoration':'none', 'margin-right':'16px', 'font-size':'16px'}),
-            dcc.Link('About', href='/about', style = {'color':'#a6a6a6', 'text-decoration':'none', 'margin-right':'16px', 'font-size':'16px'}),
-            dcc.Link('Help', href='/help', style = {'color':'#a6a6a6', 'text-decoration':'none', 'font-size':'16px'}),
+            dcc.Link('Design', href='/', style = {'color':'#6cb7ff', 'text-decoration':'none', 'margin-right':'25px', 'font-size':'20px'}),
+            dcc.Link('About', href='/about', style = {'color':'#6cb7ff', 'text-decoration':'none', 'margin-right':'25px', 'font-size':'20px'}),
+            dcc.Link('Help', href='/help', style = {'color':'#6cb7ff', 'text-decoration':'none', 'margin-right':'25px', 'font-size':'20px'}),
+
+            dbc.Button(children = 'PrimeDesign GIF', outline = False, id='open', style = {'color':'#6cb7ff'}),
+            dbc.Modal(
+                [
+                    dbc.ModalHeader("Navigating PrimeDesign"),
+                    dbc.ModalBody(html.Img(src=app.get_asset_url('primedesign_demo.gif'), style = {'display':'block', 'margin-left':'auto', 'margin-right':'auto', 'width':'80%'}),),
+                    dbc.ModalFooter(
+                        dbc.Button("Close", id="close", className="ml-auto")
+                    ),
+                ],
+                id="modal",
+            ),
 
             ]),
 
@@ -683,6 +695,10 @@ design_page = html.Div([
                     'font-family':'HelveticaNeue',
                     'font-size':'14px'
                 },
+                style_table={
+                    'maxHeight': '300px',
+                    'overflowY': 'scroll'
+                },
                 sort_action = 'native',
                 sort_mode = 'multi',
                 # filter_action = 'native',
@@ -722,11 +738,15 @@ design_page = html.Div([
                     'font-family':'HelveticaNeue',
                     'font-size':'14px'
                 },
+                style_table={
+                    'maxHeight': '300px',
+                    'overflowY': 'scroll'
+                },
                 sort_action = 'native',
                 sort_mode = 'multi',
                 # filter_action = 'native',
-                row_selectable = 'multi',
-            ),
+                row_selectable = 'multi'
+                ),
 
             html.H6('ngRNA spacers', style = {'display': 'inline', 'margin':'0px', 'margin-right':'5px'}),
             html.Span('?', id = 'ngspacer-tooltip', style={'font-size':'11px', 'textAlign': 'center', 'color': 'white',}, className = 'dot'),
@@ -750,6 +770,10 @@ design_page = html.Div([
                     # 'fontWeight': 'bold',
                     'font-family':'HelveticaNeue','font-size':'14px'
 
+                },
+                style_table={
+                    'maxHeight': '300px',
+                    'overflowY': 'scroll'
                 },
                 sort_action = 'native',
                 sort_mode = 'multi',
@@ -779,6 +803,17 @@ design_page = html.Div([
     html.Hr(),
 
 ])
+
+# Modal
+@app.callback(
+    Output("modal", "is_open"),
+    [Input("open", "n_clicks"), Input("close", "n_clicks")],
+    [State("modal", "is_open")],
+)
+def toggle_modal(n1, n2, is_open):
+    if n1 or n2:
+        return not is_open
+    return is_open
 
 # Download file
 def file_download_link(filename):

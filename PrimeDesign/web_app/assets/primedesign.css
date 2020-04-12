@@ -30,8 +30,24 @@
   transition: background-color 0.2s ease 0s;
 }
 
-
 textarea:focus {
     background: none repeat scroll 0 0 #FFFFFF;
     outline-width: 0;
+}
+
+.modal {
+    position: fixed;
+    z-index: 1002; /* Sit on top, including modebar which has z=1001 */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    background-color: rgba(0, 0, 0, 0.6); /* Black w/ opacity */
+
+}
+
+.modal-content {
+     margin: 90px;
+    padding: 30px;
+    background-color: white;
 }

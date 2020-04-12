@@ -53,7 +53,7 @@ parser.add_argument('-f', '--file', required = True, type = str, help = '''Input
 # Inputs for the design parameters of pegRNAs and nicking gRNAs
 parser.add_argument('-pe_format', '--pe_format', type = str, default = 'NNNNNNNNNNNNNNNNN/NNN[NGG]', help = "***** Prime editing formatting including the spacer, cut index -> /, and protospacer adjacent motif (PAM) -> [PAM] (Default: NNNNNNNNNNNNNNNNN/NNN[NGG]). Examples: NNNNNNNNNNNNNNNNN/NNN[NGG], NNNNNNNNNNNNNNNNN/NNN[NG] *****\n\n")
 parser.add_argument('-pbs', '--pbs_length_list', type = int, default = 0, nargs = '+', help = '***** List of primer binding site (PBS) lengths for the pegRNA extension (Default: 10 to 16 nt). Example: 12 13 14 15 *****\n\n')
-parser.add_argument('-rt', '--rtt_length_list', type = int, default = 0, nargs = '+', help = '***** List of reverse transcription (RT) template lengths for the pegRNA extension (Default: 10 to 16 nt). Example: 10 15 20 *****\n')
+parser.add_argument('-rtt', '--rtt_length_list', type = int, default = 0, nargs = '+', help = '***** List of reverse transcription (RT) template lengths for the pegRNA extension (Default: 10 to 16 nt). Example: 10 15 20 *****\n')
 parser.add_argument('-nick_dist_min', '--nicking_distance_minimum', type = int, default = 0, nargs = '+', help = '***** Minimum nicking distance for designing ngRNAs upstream and downstream of a pegRNA (Default: 0). *****\n\n')
 parser.add_argument('-nick_dist_max', '--nicking_distance_maximum', type = int, default = 100, nargs = '+', help = '***** Maximum nicking distance for designing ngRNAs upstream and downstream of a pegRNA (Default: 100). *****\n\n')
 parser.add_argument('-silent_mut', '--silent_mutation', default = 'N', choices = ['N', 'n', 'Y', 'y'], type = str, help = '***** Introduce silent mutation into PAM assuming sequence is in-frame. Currently only available with SpCas9 PE (Default: N). *****\n\n')
@@ -75,9 +75,9 @@ silent_mutation = args.silent_mutation
 
 # Default PBS and RTT lengths to design
 if pbs_length_list == 0:
-	pbs_length_list = list(range(10, 17))
+	pbs_length_list = list(range(12, 15))
 if rtt_length_list == 0:
-	rtt_length_list = list(range(10, 35))
+	rtt_length_list = list(range(10, 21))
 
 # Output directory date and time stamped
 out_dir = args.out_dir
