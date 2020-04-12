@@ -50,9 +50,9 @@ def serve_layout():
         html.Div([
             html.Img(src=app.get_asset_url('primedesign_logo.png'), width = '350px', style = {'margin-bottom': '0px', 'margin-right': '20px', 'padding-left': '15px'}),
 
-            dcc.Link('Design', href='/', style = {'color':'#6cb7ff', 'text-decoration':'none', 'margin-right':'25px', 'font-size':'20px'}),
-            dcc.Link('About', href='/about', style = {'color':'#6cb7ff', 'text-decoration':'none', 'margin-right':'25px', 'font-size':'20px'}),
-            dcc.Link('Help', href='/help', style = {'color':'#6cb7ff', 'text-decoration':'none', 'margin-right':'25px', 'font-size':'20px'}),
+            dcc.Link('Design', href='/', style = {'color':'#6cb7ff', 'text-decoration':'none', 'margin-right':'25px', 'font-size':'18px'}),
+            dcc.Link('About', href='/about', style = {'color':'#6cb7ff', 'text-decoration':'none', 'margin-right':'25px', 'font-size':'18px'}),
+            dcc.Link('Help', href='/help', style = {'color':'#6cb7ff', 'text-decoration':'none', 'margin-right':'25px', 'font-size':'18px'}),
 
             dbc.Button(children = 'PrimeDesign GIF', outline = False, id='open', style = {'color':'#6cb7ff'}),
             dbc.Modal(
