@@ -7,6 +7,7 @@ import urllib.parse
 import uuid
 import time
 import math
+import glob
 import dash
 import dash_table
 import dash_bio as dashbio
@@ -28,6 +29,18 @@ server.secret_key = '\xfd\x00R\xb5\xbd\x83_t\xed\xdf\xc4\na\x08\xf7K\xc4\xfd\xa2
 UPLOAD_DIRECTORY = '/PrimeDesign/reports'
 if not os.path.exists(UPLOAD_DIRECTORY):
     os.makedirs(UPLOAD_DIRECTORY)
+
+# PrimeVar rsID and ClinVarID options
+design_files = glob.glob('/PrimeDesign/PrimeVar/*')
+clinvar_id_list = []
+rs_id_list = []
+for f in design_files:
+
+    clinvar_id_list.append(f.split('/')[3].split('@')[1])
+    rs_id_list.append(f.split('/')[3].split('@')[2])
+
+rs_id_options = [{'label':x, 'value':x} for x in rs_id_list]
+clinvar_id_options = [{'label':x, 'value':x} for x in clinvar_id_list]
 
 @server.route('/download/<path:path>')
 def download(path):
@@ -352,18 +365,18 @@ pooled_page = html.Div([
 
     html.Div([
 
-        html.Div([html.H3('Step 1: Set design parameters', style = {'display':'inline', 'margin-right':'5px',}), html.Span('?', id = 'parameters-tooltip', style={'font-size':'11px', 'textAlign': 'center', 'color': 'white',}, className = 'dot')], className = 'six columns', style = {'padding-top':'15px', 'padding-bottom':'10px'}),
-        dbc.Tooltip('Set prime editing parameters to be used for the pooled pegRNA and ngRNA design',
+        html.Div([html.H4('Step 1: Set design parameters', style = {'display':'inline', 'margin-right':'5px',}), html.Span('?', id = 'parameters-tooltip', style={'font-size':'11px', 'textAlign': 'center', 'color': 'white',}, className = 'dot')], className = 'six columns', style = {'padding-top':'15px', 'padding-bottom':'10px'}),
+        dbc.Tooltip('Set prime editing parameters to be used for pooled pegRNA and ngRNA design',
                target = 'parameters-tooltip',
                placement = 'right',
                style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
         ),
 
-        html.Div([html.H3('Step 2: Upload file', style = {'display':'inline', 'margin-right':'5px',}),
+        html.Div([html.H4('Step 2: Upload file', style = {'display':'inline', 'margin-right':'5px',}),
             html.Span('?', id = 'design-tables-tooltip', style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'}, className = 'dot'),
             html.Span(html.A(children = 'Download genome wide example file', id='download-example-pool', download="PrimeDesign_example_file.csv", href="/download/PrimeDesign_genome_wide_example_file.csv", target="_blank", style = {'font-size':'15px', 'color':'#6cb7ff', 'text-decoration':'underline','float':'right','padding-bottom':'0px','margin-bottom':'0px'}))], className = 'six columns', style = {'padding-top':'15px', 'padding-bottom':'10px'}),
 
-        dbc.Tooltip('Upload file containing input sequences for pooled pegRNA and ngRNA design',
+        dbc.Tooltip('Upload .csv file containing input sequences for pooled pegRNA and ngRNA design',
                target = 'design-tables-tooltip',
                placement = 'right',
                style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
@@ -396,7 +409,7 @@ pooled_page = html.Div([
                               style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'},
                               className = 'dot'),
 
-                        dbc.Tooltip('Genome-wide designs pegRNAs per input sequence, while saturation mutagenesis designs multiple pegRNAs to tile across the input sequence',
+                        dbc.Tooltip('The genome-wide option designs pegRNAs independently per input sequence, while the saturation mutagenesis option first constructs tiling edits across the input sequence and then designs pegRNAs to install these generated edits',
                             target = 'design-tooltip',
                             placement = 'right',
                             style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
@@ -458,7 +471,7 @@ pooled_page = html.Div([
                       style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'},
                       className = 'dot'),
 
-                 dbc.Tooltip('The unique number of pegRNA spacers to design per edit',
+                 dbc.Tooltip('The number of pegRNAs to design per edit (if possible), ranked by pegRNA annotation and then nick-to-edit distance',
                        target = 'npegs-tooltip',
                        placement = 'right',
                        style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
@@ -466,7 +479,7 @@ pooled_page = html.Div([
 
             ], className='row', style={'display' : 'flex'}),
 
-            html.Label(id = 'pbs-info', children = 'Number of unique pegRNA spacers to design per edit', style = {'color':'grey'}),
+            html.Label(id = 'pbs-info', children = 'Number of pegRNAs to design per edit', style = {'color':'grey'}),
             dcc.Slider(
                 id = 'npegs-pool',
                 min=1,
@@ -482,7 +495,7 @@ pooled_page = html.Div([
                       style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'},
                       className = 'dot'),
 
-                 dbc.Tooltip('The length of homology downstream of an edit to design pegRNAs',
+                 dbc.Tooltip('Length of 5-30 nt recommended for short edits (<10 nt). Length of 30+ nt recommended for longer edits (>10 nt)',
                        target = 'homology-downstream-tooltip',
                        placement = 'right',
                        style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
@@ -514,7 +527,7 @@ pooled_page = html.Div([
 
             ], className='row', style={'display' : 'flex'}),
 
-            html.Label(id = 'pbs-info', children = 'Primer binding site', style = {'color':'grey'}),
+            html.Label(id = 'pbs-info', children = 'Primer binding site length to use for pegRNA designs', style = {'color':'grey'}),
             dcc.Slider(
                 id = 'pbs-pool',
                 min=5,
@@ -530,7 +543,7 @@ pooled_page = html.Div([
                       style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'},
                       className = 'dot'),
 
-                 dbc.Tooltip('Initial recommendation: 10-20 nt',
+                 dbc.Tooltip('Initial recommendation: 50+ nt',
                        target = 'rtt-tooltip',
                        placement = 'right',
                        style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
@@ -538,7 +551,7 @@ pooled_page = html.Div([
 
             ], className='row', style={'display' : 'flex'}),
 
-            html.Label(id = 'rtt-info', children = 'Maximum reverse transcription template', style = {'color':'grey'}),
+            html.Label(id = 'rtt-info', children = 'Maximum reverse transcription template length for pegRNA designs', style = {'color':'grey'}),
             dcc.Slider(
                 id = 'rtt-pool',
                 min=5,
@@ -554,7 +567,7 @@ pooled_page = html.Div([
                       style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'},
                       className = 'dot'),
 
-                 dbc.Tooltip('The number of ngRNAs to design per pegRNA',
+                 dbc.Tooltip('The number of ngRNAs to design per pegRNA (if possible), ranked by ngRNA annotation and then ngRNA-to-pegRNA distance',
                        target = 'nngs-tooltip',
                        placement = 'right',
                        style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
@@ -742,7 +755,7 @@ pooled_page = html.Div([
 
             html.Br(),
 
-            html.H3('Step 3: Download PrimeDesign summary'),
+            html.H4('Step 3: Download PrimeDesign summary'),
 
             html.H5(id='update-design-pool' , children = 'Design incomplete', style = {'color':'#6a6a6a', 'font-size':'25px'}),
 
@@ -790,15 +803,465 @@ pooled_page = html.Div([
 
 database_page = html.Div([
 
-    html.H5('PrimeDatabase', style = {'margin-right':'5px','display':'inline'}),
-    html.Span('?', id = 'db-tooltip', style={'font-size':'11px', 'textAlign': 'center', 'color': 'white',}, className = 'dot'),
-    dbc.Tooltip('PrimeDatabase contains searchable pegRNA and ngRNA designs for installing and correcting ClinVar pathogenic variants',
-               target = 'db-tooltip',
+    html.Br(),
+
+    # html.Div([
+
+    #     html.H3('Welcome to PrimeVar!', style = {'margin-right':'5px','display':'inline', 'padding-top':'15px', 'padding-bottom':'10px'}),
+    #     html.Span('?', id = 'db-tooltip', style={'font-size':'11px', 'textAlign': 'center', 'color': 'white',}, className = 'dot'),
+    #     dbc.Tooltip('PrimeVar is a pegRNA and ngRNA design database for installing and correcting ClinVar pathogenic variants',
+    #                target = 'db-tooltip',
+    #                placement = 'right',
+    #                style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
+    #         ),
+
+    #     ]),
+
+    html.Div([
+
+        html.Div([
+
+            html.H4('Step 1: Search for ClinVar pathogenic variants'),
+
+            dcc.Dropdown(
+                id = 'rs-id-search',
+                options=rs_id_options,
+                placeholder='Search by dbSNP rs#'
+                ),
+
+            dcc.Dropdown(
+                id = 'clinvar-id-search',
+                options=clinvar_id_options,
+                placeholder='Search by ClinVar VariationID'),
+
+            ], className = 'six columns'),
+
+        html.Div([
+
+            html.H4('Step 2: Specify editing direction'),
+
+            dcc.Dropdown(
+                id = 'editing-direction',
+                options=[
+                    {'label': 'Install pathogenic variant', 'value': 'forward'},
+                    {'label': 'Correct pathogenic variant', 'value': 'reverse'},
+                ],
+                value='forward'
+            )  
+
+            ], className = 'six columns'),
+
+        ], className = 'row'),
+
+    html.Hr(),
+
+    html.Div([
+
+        html.H5('Visualize sequence'),
+
+        # dcc.Checklist(
+        #         id = 'protein-option-db',
+        #         options=[
+        #             {'label': 'Visualize amino acid sequence (assumes sequence is in-frame)', 'value': 'protein'},
+        #         ],
+        #         value=[]
+        #     ), 
+
+        html.Div([
+
+            html.H6('Reference DNA', style = {'margin':'0px', 'padding-bottom':'0px'}),
+            html.Label('Select pegRNA spacer(s) in design table to visualize', style = {'color':'grey', 'margin-top':'0px'}),
+            dashbio.SequenceViewer(
+                id = 'reference-sequence-db',
+                sequence = ' ',
+                badge =False,
+                charsPerLine = 80,
+                sequenceMaxHeight = '10000px',
+                search = False,
+                coverage = [],
+                # legend = [{'name':'Substitution', 'color':'#1E90FF', 'underscore':False}, {'name':'Insertion', 'color':'#3CB371', 'underscore':False}, {'name':'Deletion', 'color':'#DC143C', 'underscore':False}, {'name':'Selected pegRNA spacer', 'color':'#d6d6d6', 'underscore':False}]
+            ),
+
+            # html.Div(id = 'reference-protein-display-db', children = [
+
+            #     html.H6('Reference Protein', style = {'margin':'0px', 'padding-bottom':'0px'}),
+            #     dashbio.SequenceViewer(
+            #         id = 'reference-protein-sequence-db',
+            #         sequence = ' ',
+            #         badge =False,
+            #         charsPerLine = 80,
+            #         sequenceMaxHeight = '10000px',
+            #         search = False,
+            #         coverage = [],
+            #     ),
+
+            #     ], style = {'display':'none'}),
+
+            html.Div(id='store-sequence-db', style={'display': 'none'}),
+
+            html.Span('Substitution', style = {'color':'#1E90FF'}),
+            html.Span(' | '),
+            # html.Span('Insertion', style = {'color':'#3CB371'}),
+            # html.Span(' | '),
+            html.Span('Deletion', style = {'color':'#DC143C'}),
+            html.Span(' | '),
+            html.Span('pegRNA spacer', style = {'color':'#808080'}),
+
+            ], className = 'six columns', style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px','margin': '0px'}),
+            
+            html.Div([
+
+            # dcc.RadioItems(
+            #     id = 'sequence-option2',
+            #     options=[
+            #         {'label': 'Reference', 'value': 'ref'},
+            #         {'label': 'Edited', 'value': 'edit'},
+            #     ],
+            #     value='ref',
+            #     labelStyle={'display': 'inline-block'}
+            # ),
+
+            html.H6('Edited DNA', style = {'margin':'0px', 'padding-bottom':'0px'}),
+            html.Label('Select pegRNA extension(s) and ngRNA(s) in design tables to visualize', style = {'color':'grey', 'margin-top':'0px'}),
+            dashbio.SequenceViewer(
+                id = 'edit-sequence-db',
+                sequence = ' ',
+                badge =False,
+                charsPerLine = 80,
+                sequenceMaxHeight = '10000px',
+                search = False,
+                coverage = [],
+                # legend = [{'name':'Substitution', 'color':'#1E90FF', 'underscore':False}, {'name':'Insertion', 'color':'#3CB371', 'underscore':False}, {'name':'Deletion', 'color':'#DC143C', 'underscore':False}, {'name':'Selected pegRNA spacer', 'color':'#d6d6d6', 'underscore':False}]
+            ),
+
+            # html.Div(id = 'edit-protein-display-db', children = [
+
+            #     html.H6('Edited Protein', style = {'margin':'0px', 'padding-bottom':'0px'}),
+            #     dashbio.SequenceViewer(
+            #         id = 'edit-protein-sequence-db',
+            #         sequence = ' ',
+            #         badge =False,
+            #         charsPerLine = 80,
+            #         sequenceMaxHeight = '10000px',
+            #         search = False,
+            #         coverage = [],
+            #     ),
+
+            #     ], style = {'display':'none'}),
+
+            html.Div(id='store-sequence2-db', style={'display': 'none'}),
+
+            html.Span('Substitution', style = {'color':'#1E90FF'}),
+            html.Span(' | '),
+            html.Span('Insertion', style = {'color':'#3CB371'}),
+            html.Span(' | '),
+            # html.Span('Deletion', style = {'color':'#DC143C'}),
+            # html.Span(' | '),
+            html.Span('pegRNA extension', style = {'color':'#ffa500'}),
+            html.Span(' | '),
+            html.Span('ngRNA spacer', style = {'color':'#808080'}),
+
+            ], className = 'six columns', style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px', 'margin': '0px', 'float':'right'}),
+
+        ], className = 'row', style = {'padding-right': '15px', 'padding-left': '15px','margin': '0px'}),
+    
+    html.Br(),
+
+    html.Div([
+
+        html.Div([html.H5('Prime editing parameters', style = {'display':'inline', 'margin-right':'5px',}), html.Span('?', id = 'parameters-tooltip-db', style={'font-size':'11px', 'textAlign': 'center', 'color': 'white',}, className = 'dot')], className = 'three columns', style = {'padding-top':'15px'}),
+        dbc.Tooltip('Interactively design pegRNAs with the parameter slides below',
+               target = 'parameters-tooltip-db',
                placement = 'right',
                style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
-        ),
+         ),
 
-    ]),
+        html.Div([html.H5('Design tables', style = {'display':'inline', 'margin-right':'5px',}), html.Span('?', id = 'design-tables-tooltip-db', style={'font-size':'11px', 'textAlign': 'center', 'color': 'white',}, className = 'dot')], className = 'nine columns', style = {'padding-top':'15px'}),
+        dbc.Tooltip('Please select pegRNA spacer(s) to proceed with design of pegRNA extensions and ngRNAs',
+               target = 'design-tables-tooltip-db',
+               placement = 'right',
+               style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
+         ),
+
+        ], className = 'row', style = {'padding-right': '15px', 'padding-left': '15px','margin': '0px'}),
+
+    html.Div([
+
+        html.Div([
+
+            html.Div([
+
+                html.Label(id = 'pbs-title-db', children = 'PBS length', style = {'font-weight':'bold', 'margin-right':'5px'}),
+                html.Span('?',
+                      id = 'pbs-tooltip-db',
+                      style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'},
+                      className = 'dot'),
+
+                 dbc.Tooltip('Initial recommendation: 12-14 nt',
+                       target = 'pbs-tooltip-db',
+                       placement = 'right',
+                       style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
+                 ),
+
+            ], className='row', style={'display' : 'flex'}),
+
+            html.Label(id = 'pbs-info-db', children = 'Primer binding site', style = {'color':'grey'}),
+            dcc.RangeSlider(
+                id = 'pbs-range-db',
+                min=10,
+                max=17,
+                value=[12, 16],
+                allowCross=False
+            ),
+
+            html.Div([
+
+                html.Label(id = 'rtt-title-db', children = 'RTT length', style = {'font-weight':'bold', 'margin-right':'5px'}),
+                html.Span('?',
+                      id = 'rtt-tooltip-db',
+                      style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'},
+                      className = 'dot'),
+
+                 dbc.Tooltip('Initial recommendation: 10-20 nt',
+                       target = 'rtt-tooltip-db',
+                       placement = 'right',
+                       style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
+                 ),
+
+            ], className='row', style={'display' : 'flex'}),
+
+            html.Label(id = 'rtt-info-db', children = 'Reverse transcription template', style = {'color':'grey'}),
+            dcc.RangeSlider(
+                id = 'rtt-range-db',
+                min=10,
+                max=80,
+                value=[10, 50],
+                allowCross=False
+            ),
+            
+            html.Div([
+                html.Label(id = 'nick-dist-title-db', children = 'ngRNA distance', style = {'font-weight':'bold', 'margin-right':'5px'}),
+                html.Span('?',
+                      id = 'nick-dist-tooltip-db',
+                      style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'},
+                      className = 'dot'),
+
+                 dbc.Tooltip('Initial recommendation: 50+ bp (unless PE3b option available)',
+                       target = 'nick-dist-tooltip-db',
+                       placement = 'right',
+                       style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
+                 ),
+
+            ], className='row', style={'display' : 'flex'}),
+
+            html.Label(id = 'nick-dist-info-db', children = 'ngRNA to pegRNA distance', style = {'color':'grey'}),
+            dcc.RangeSlider(
+                id = 'nick-dist-range-db',
+                min=0,
+                max=120,
+                value=[0, 100],
+                allowCross=False
+            ),
+
+            html.Div([
+                html.Label(id = 'remove-first-c-base-db', children = 'Remove extensions with C first base', style = {'font-weight':'bold', 'margin-right':'5px'}),
+                html.Span('?',
+                      id = 'remove-first-c-base-tooltip-db',
+                      style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'},
+                      className = 'dot'),
+
+                 dbc.Tooltip('pegRNA extensions that start with a C base may exhibit lower editing efficiencies',
+                       target = 'remove-first-c-base-tooltip-db',
+                       placement = 'right',
+                       style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
+                 ),
+
+            ], className='row', style={'display' : 'flex'}),
+
+            dcc.RadioItems(
+                id = 'filter-c1-extension-option-db',
+                options=[
+                    {'label': 'Yes', 'value': 'yes'},
+                    {'label': 'No', 'value': 'no'},
+                ],
+                value='yes',
+                labelStyle={'display': 'inline-block'}
+            ),
+
+            html.Div([
+                html.Label(id = 'silent-mutation-db', children = 'Disrupt PAM with silent PAM mutation', style = {'font-weight':'bold', 'margin-right':'5px'}),
+                html.Span('?',
+                      id = 'silent-mutation-tooltip-db',
+                      style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'},
+                      className = 'dot'),
+
+                 dbc.Tooltip(children = 'Disrupting the PAM sequence via a silent mutation may improve prime editing efficiencies for coding sequence edits',
+                       target = 'silent-mutation-tooltip-db',
+                       placement = 'right',
+                       style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
+                 ),
+
+            ], className='row', style={'display' : 'flex'}),
+
+            dcc.RadioItems(
+                id = 'silentmutation-option-db',
+                options=[
+                    {'label': 'Yes', 'value': 'yes'},
+                    {'label': 'No', 'value': 'no'},
+                ],
+                value='no',
+                labelStyle={'display': 'inline-block'}
+            ),
+
+            ], className = 'three columns', style={'display': 'inline-block','border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px','margin':'0px',}), #'float':'left','width':'25%'
+
+        html.Div([
+
+            html.Div([
+
+                html.Div([html.H6('pegRNA spacers', style = {'display': 'inline', 'margin':'0px', 'margin-right':'5px'}), html.Span('?', id = 'pegspacer-tooltip-db', style={'font-size':'11px', 'textAlign': 'center', 'color': 'white',}, className = 'dot')], className = 'six columns'),
+
+                dbc.Tooltip('Table of all possible pegRNA spacer designs given parameter ranges - Please select pegRNA spacer(s) to proceed with design',
+                       target = 'pegspacer-tooltip-db',
+                       placement = 'right',
+                       style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
+                ),
+
+                html.Div([
+
+                    html.A(
+                        children = 'Download designs',
+                        id='download-link-db',
+                        download="PrimeDesign_PrimeVar.csv",
+                        href="",
+                        target="_blank",
+                        style = {'font-size':'20px', 'color':'#6cb7ff', 'text-decoration':'none'}
+                    ),
+
+                    ], className = 'six columns', style = {'text-align':'right', 'padding-bottom':'0px'}),
+
+                ], className = 'row', style = {'display':'inline', 'margin':'0px'}),
+
+            html.Label('Increase RTT length if no pegRNA spacer designs are available', style = {'color':'grey', 'margin-top':'0px'}),
+
+            dash_table.DataTable(
+                id = 'peg-table-db',
+                columns = [{'name': i, 'id': i} for i in ['spacer sequence','PAM','strand','peg-to-edit distance','spacer GC content','annotation']],
+                data = df_tmp.to_dict('records'),
+                style_cell={'textAlign': 'left', 'padding': '5px'},
+                # style_as_list_view=True,
+                style_header={
+                    'backgroundColor': 'white',
+                    # 'fontWeight': 'bold',
+                    'font-family':'HelveticaNeue',
+                    'font-size':'14px'
+                },
+                style_table={
+                    'maxHeight': '300px',
+                    'overflowY': 'scroll'
+                },
+                sort_action = 'native',
+                sort_mode = 'multi',
+                # filter_action = 'native',
+                row_selectable = 'multi',
+                style_data_conditional=[{
+                    'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PAM_disrupted'},
+                    'backgroundColor': "#62c096",
+                    'color': 'white'
+                },
+                {
+                    'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PAM_disrupted_silent_mutation'},
+                    'backgroundColor': "#62c096",
+                    'color': 'white'
+                }]
+            ),
+
+            html.H6('pegRNA extensions', style = {'display': 'inline', 'margin':'0px', 'margin-right':'5px'}),
+            html.Span('?', id = 'pegext-tooltip-db', style={'font-size':'11px', 'textAlign': 'center', 'color': 'white',}, className = 'dot'),
+
+            dbc.Tooltip('Table of all possible pegRNA extensions given parameter ranges - Please select pegRNA spacer(s) to proceed with design',
+                       target = 'pegext-tooltip-db',
+                       placement = 'right',
+                       style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
+                ),
+
+            html.Label('Please select pegRNA spacer(s) above to see associated extensions', style = {'color':'grey', 'margin-top':'0px'}),
+
+            dash_table.DataTable(
+                id = 'pegext-table-db',
+                columns = [{'name': i, 'id': i} for i in ['PBS length','PBS GC content','RTT length','RTT GC content','pegRNA extension']],
+                data = df_tmp.to_dict('records'),
+                style_cell={'textAlign': 'left', 'padding': '5px'},
+                # style_as_list_view=True,
+                style_header={
+                    'backgroundColor': 'white',
+                    # 'fontWeight': 'bold',
+                    'font-family':'HelveticaNeue',
+                    'font-size':'14px'
+                },
+                style_table={
+                    'maxHeight': '300px',
+                    'overflowY': 'scroll'
+                },
+                sort_action = 'native',
+                sort_mode = 'multi',
+                # filter_action = 'native',
+                row_selectable = 'multi'
+                ),
+
+            html.H6('ngRNA spacers', style = {'display': 'inline', 'margin':'0px', 'margin-right':'5px'}),
+            html.Span('?', id = 'ngspacer-tooltip-db', style={'font-size':'11px', 'textAlign': 'center', 'color': 'white',}, className = 'dot'),
+
+            dbc.Tooltip('Table of all possible ngRNAs given parameter ranges - Please select pegRNA spacer(s) to proceed with design',
+                       target = 'ngspacer-tooltip-db',
+                       placement = 'right',
+                       style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
+                ),
+
+            html.Label('Please select pegRNA spacer(s) above to see associated ngRNAs', style = {'color':'grey', 'margin-top':'0px'}),
+
+            dash_table.DataTable(
+                id = 'ng-table-db',
+                columns = [{'name': i, 'id': i} for i in ['spacer sequence','PAM','strand','nick-to-peg distance','spacer GC content','annotation']],
+                data = df_tmp.to_dict('records'),
+                style_cell={'textAlign': 'left', 'padding': '5px'},
+                # style_as_list_view=True,
+                style_header={
+                    'backgroundColor': 'white',
+                    # 'fontWeight': 'bold',
+                    'font-family':'HelveticaNeue','font-size':'14px'
+
+                },
+                style_table={
+                    'maxHeight': '300px',
+                    'overflowY': 'scroll'
+                },
+                sort_action = 'native',
+                sort_mode = 'multi',
+                row_selectable = 'multi',
+                # filter_action = 'native',
+                style_data_conditional=[{
+                    'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PE3b-seed'},
+                    'backgroundColor': "#62c096",
+                    'color': 'white'
+                },
+                {
+                    'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PE3b-nonseed'},
+                    'backgroundColor': "#62c096",
+                    'color': 'white'
+                },
+                ]
+            ),
+
+            html.Div(id='store-peg-table-total-db', style={'display': 'none'}),
+            html.Div(id='store-peg-table-db', style={'display': 'none'}),
+
+
+            ], className = 'nine columns', style={'display': 'inline-block','border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px',}), #'float':'right','width':'70%'
+
+        ], className = 'row'), ####### END OF INSERT
+
+    ], className = 'row', style = {'padding-right': '15px', 'padding-left': '15px','margin': '0px'}),
 
 design_page = html.Div([
 
@@ -1128,7 +1591,7 @@ design_page = html.Div([
                         download="PrimeDesign.csv",
                         href="",
                         target="_blank",
-                        style = {'font-size':'20px', 'color':'#98CCFF', 'text-decoration':'none'}
+                        style = {'font-size':'20px', 'color':'#6cb7ff', 'text-decoration':'none'}
                     ),
 
                     ], className = 'six columns', style = {'text-align':'right', 'padding-bottom':'0px'}),
@@ -1158,12 +1621,12 @@ design_page = html.Div([
                 # filter_action = 'native',
                 row_selectable = 'multi',
                 style_data_conditional=[{
-                    'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PAM_mutated'},
+                    'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PAM_disrupted'},
                     'backgroundColor': "#62c096",
                     'color': 'white'
                 },
                 {
-                    'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PAM_mutated_silent_mutation'},
+                    'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PAM_disrupted_silent_mutation'},
                     'backgroundColor': "#62c096",
                     'color': 'white'
                 }]
@@ -1693,7 +2156,7 @@ def update_npegs_title(n_pegs):
 )
 
 def update_homology_downstream_title(homology_downstream):
-    return('Length of homology downstream: %s' % (homology_downstream))
+    return('Length of homology downstream: %s nt' % (homology_downstream))
 
 @app.callback(Output('pbs-title-pool', 'children'),
     [Input('pbs-pool','value')]
@@ -2147,7 +2610,7 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                 pe_annotate = 'PAM_intact'
 
                             else:
-                                pe_annotate = 'PAM_mutated'
+                                pe_annotate = 'PAM_disrupted'
 
                         # Store pegRNA spacer
                         nick_ref_idx = match[0] + cut_idx
@@ -2187,7 +2650,7 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                 pe_annotate = 'PAM_intact'
 
                             else:
-                                pe_annotate = 'PAM_mutated'
+                                pe_annotate = 'PAM_disrupted'
 
                         # Store pegRNA spacer
                         nick_ref_idx = match[0] + (pe_format_length - cut_idx)
@@ -2322,7 +2785,7 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                                 new_codon = codon_swap_0[original_codon][0][0].lower()
                                                 pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 3] + new_codon + edit_sequence[pe_nick_edit_idx + 6:pe_nick_edit_idx + rtt_length])
                                                 pe_pam_ref_silent_mutation = pe_pam_ref + '-to-' + new_codon
-                                                pe_annotate = 'PAM_mutated_silent_mutation'
+                                                pe_annotate = 'PAM_disrupted_silent_mutation'
 
                                             else:
                                                 pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + rtt_length])
@@ -2335,13 +2798,13 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                                 new_codon = codon_swap_1_1[original_codon_1][0][0].lower()
                                                 pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 2] + new_codon + edit_sequence[pe_nick_edit_idx + 5:pe_nick_edit_idx + rtt_length])
                                                 pe_pam_ref_silent_mutation = pe_pam_ref + '-to-' + new_codon[1:] + original_codon_2[:1].lower()
-                                                pe_annotate = 'PAM_mutated_silent_mutation'
+                                                pe_annotate = 'PAM_disrupted_silent_mutation'
 
                                             elif len(codon_swap_1_2[original_codon_2.upper()]) > 1:
                                                 new_codon = codon_swap_1_2[original_codon_2][0][0].lower()
                                                 pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 5] + new_codon + edit_sequence[pe_nick_edit_idx + 8:pe_nick_edit_idx + rtt_length])
                                                 pe_pam_ref_silent_mutation = pe_pam_ref + '-to-' + original_codon_1[1:].lower() + new_codon[:1]
-                                                pe_annotate = 'PAM_mutated_silent_mutation'
+                                                pe_annotate = 'PAM_disrupted_silent_mutation'
 
                                             else:
                                                 pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + rtt_length])
@@ -2353,7 +2816,7 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                                 new_codon = codon_swap_2[original_codon][0][0].lower()
                                                 pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 4] + new_codon + edit_sequence[pe_nick_edit_idx + 7:pe_nick_edit_idx + rtt_length])
                                                 pe_pam_ref_silent_mutation = pe_pam_ref + '-to-' + edit_sequence[pe_nick_edit_idx + 3:pe_nick_edit_idx + 4].lower() + new_codon[:2]
-                                                pe_annotate = 'PAM_mutated_silent_mutation'
+                                                pe_annotate = 'PAM_disrupted_silent_mutation'
 
                                             else:
                                                 pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + rtt_length])
@@ -2463,7 +2926,7 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                                 new_codon = codon_swap_2[original_codon][0][0].lower()
                                                 pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx - 6] + new_codon + edit_sequence[pe_nick_edit_idx - 3:pe_nick_edit_idx + pbs_length]
                                                 pe_pam_ref_silent_mutation = reverse_complement(pe_pam_ref) + '-to-' + reverse_complement(new_codon)
-                                                pe_annotate = 'PAM_mutated_silent_mutation'
+                                                pe_annotate = 'PAM_disrupted_silent_mutation'
 
                                             else:
                                                 pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx + pbs_length]
@@ -2475,7 +2938,7 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                                 new_codon = codon_swap_0[original_codon][0][0].lower()
                                                 pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx - 7] + new_codon + edit_sequence[pe_nick_edit_idx - 4:pe_nick_edit_idx + pbs_length]
                                                 pe_pam_ref_silent_mutation = reverse_complement(pe_pam_ref) + '-to-' + reverse_complement(new_codon[1:] + edit_sequence[pe_nick_edit_idx - 4:pe_nick_edit_idx - 3].lower())
-                                                pe_annotate = 'PAM_mutated_silent_mutation'
+                                                pe_annotate = 'PAM_disrupted_silent_mutation'
 
                                             else:
                                                 pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx + pbs_length]
@@ -2488,13 +2951,13 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                                 new_codon = codon_swap_1_1[original_codon_1][0][0].lower()
                                                 pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx - 8] + new_codon + edit_sequence[pe_nick_edit_idx - 5:pe_nick_edit_idx + pbs_length]
                                                 pe_pam_ref_silent_mutation = reverse_complement(pe_pam_ref) + '-to-' + reverse_complement(new_codon[2:] + original_codon_2[:2].lower())
-                                                pe_annotate = 'PAM_mutated_silent_mutation'
+                                                pe_annotate = 'PAM_disrupted_silent_mutation'
 
                                             elif len(codon_swap_1_2[original_codon_2.upper()]) > 1:
                                                 new_codon = codon_swap_1_2[original_codon_2][0][0].lower()
                                                 pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 5] + new_codon + edit_sequence[pe_nick_edit_idx + 8:pe_nick_edit_idx + rtt_length])
                                                 pe_pam_ref_silent_mutation = reverse_complement(pe_pam_ref) + '-to-' + reverse_complement(original_codon_1[2:].lower() + new_codon[:2])
-                                                pe_annotate = 'PAM_mutated_silent_mutation'
+                                                pe_annotate = 'PAM_disrupted_silent_mutation'
 
                                             else:
                                                 pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx + pbs_length]
@@ -2905,7 +3368,7 @@ def run_pegDesigner_pooled(input_check, contents, filename, pool_type, satmut_ty
                                 pe_annotate = 'PAM_intact'
 
                             else:
-                                pe_annotate = 'PAM_mutated'
+                                pe_annotate = 'PAM_disrupted'
 
                         # Store pegRNA spacer
                         nick_ref_idx = match[0] + cut_idx
@@ -2945,7 +3408,7 @@ def run_pegDesigner_pooled(input_check, contents, filename, pool_type, satmut_ty
                                 pe_annotate = 'PAM_intact'
 
                             else:
-                                pe_annotate = 'PAM_mutated'
+                                pe_annotate = 'PAM_disrupted'
 
                         # Store pegRNA spacer
                         nick_ref_idx = match[0] + (pe_format_length - cut_idx)
@@ -3082,7 +3545,7 @@ def run_pegDesigner_pooled(input_check, contents, filename, pool_type, satmut_ty
                                         pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 3] + new_codon + edit_sequence[pe_nick_edit_idx + 6:pe_nick_edit_idx + rtt_length])
                                         pegRNA_ext_max = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 3] + new_codon + edit_sequence[pe_nick_edit_idx + 6:pe_nick_edit_idx + rtt_max_length_pooled])
                                         pe_pam_ref_silent_mutation = pe_pam_ref + '-to-' + new_codon
-                                        pe_annotate = 'PAM_mutated_silent_mutation'
+                                        pe_annotate = 'PAM_disrupted_silent_mutation'
 
                                     else:
                                         pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + rtt_length])
@@ -3097,14 +3560,14 @@ def run_pegDesigner_pooled(input_check, contents, filename, pool_type, satmut_ty
                                         pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 2] + new_codon + edit_sequence[pe_nick_edit_idx + 5:pe_nick_edit_idx + rtt_length])
                                         pegRNA_ext_max = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 2] + new_codon + edit_sequence[pe_nick_edit_idx + 5:pe_nick_edit_idx + rtt_max_length_pooled])
                                         pe_pam_ref_silent_mutation = pe_pam_ref + '-to-' + new_codon[1:] + original_codon_2[:1].lower()
-                                        pe_annotate = 'PAM_mutated_silent_mutation'
+                                        pe_annotate = 'PAM_disrupted_silent_mutation'
 
                                     elif len(codon_swap_1_2[original_codon_2.upper()]) > 1:
                                         new_codon = codon_swap_1_2[original_codon_2][0][0].lower()
                                         pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 5] + new_codon + edit_sequence[pe_nick_edit_idx + 8:pe_nick_edit_idx + rtt_length])
                                         pegRNA_ext_max = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 5] + new_codon + edit_sequence[pe_nick_edit_idx + 8:pe_nick_edit_idx + rtt_max_length_pooled])
                                         pe_pam_ref_silent_mutation = pe_pam_ref + '-to-' + original_codon_1[1:].lower() + new_codon[:1]
-                                        pe_annotate = 'PAM_mutated_silent_mutation'
+                                        pe_annotate = 'PAM_disrupted_silent_mutation'
 
                                     else:
                                         pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + rtt_length])
@@ -3118,7 +3581,7 @@ def run_pegDesigner_pooled(input_check, contents, filename, pool_type, satmut_ty
                                         pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 4] + new_codon + edit_sequence[pe_nick_edit_idx + 7:pe_nick_edit_idx + rtt_length])
                                         pegRNA_ext_max = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 4] + new_codon + edit_sequence[pe_nick_edit_idx + 7:pe_nick_edit_idx + rtt_max_length_pooled])
                                         pe_pam_ref_silent_mutation = pe_pam_ref + '-to-' + edit_sequence[pe_nick_edit_idx + 3:pe_nick_edit_idx + 4].lower() + new_codon[:2]
-                                        pe_annotate = 'PAM_mutated_silent_mutation'
+                                        pe_annotate = 'PAM_disrupted_silent_mutation'
 
                                     else:
                                         pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + rtt_length])
@@ -3133,7 +3596,7 @@ def run_pegDesigner_pooled(input_check, contents, filename, pool_type, satmut_ty
                             pegRNA_ext_max = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + rtt_max_length_pooled])
 
                         # Check to see if pegRNA extension is within input sequence
-                        if 'PAM_mutated' in pe_annotate:
+                        if 'PAM_disrupted' in pe_annotate:
                             pe_annotate_code = 0
                         else:
                             pe_annotate_code = 1
@@ -3154,7 +3617,7 @@ def run_pegDesigner_pooled(input_check, contents, filename, pool_type, satmut_ty
                                 pe_design[target_name][pegid][0].append([pe_nick_ref_idx, pe_spacer_sequence, pe_pam_ref_silent_mutation, pe_annotate, '+', pbs_length, rtt_length, pegRNA_ext, pegRNA_ext_max, nick2lastedit_length])
 
                     # Create pegID
-                    if 'PAM_mutated' in pe_annotate:
+                    if 'PAM_disrupted' in pe_annotate:
                         pe_annotate_code = 0
                     else:
                         pe_annotate_code = 1
@@ -3216,7 +3679,7 @@ def run_pegDesigner_pooled(input_check, contents, filename, pool_type, satmut_ty
                                         pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx - 6] + new_codon + edit_sequence[pe_nick_edit_idx - 3:pe_nick_edit_idx + pbs_length]
                                         pegRNA_ext_max = edit_sequence[pe_nick_edit_idx - rtt_max_length_pooled:pe_nick_edit_idx - 6] + new_codon + edit_sequence[pe_nick_edit_idx - 3:pe_nick_edit_idx + pbs_length]
                                         pe_pam_ref_silent_mutation = reverse_complement(pe_pam_ref) + '-to-' + reverse_complement(new_codon)
-                                        pe_annotate = 'PAM_mutated_silent_mutation'
+                                        pe_annotate = 'PAM_disrupted_silent_mutation'
 
                                     else:
                                         pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx + pbs_length]
@@ -3230,7 +3693,7 @@ def run_pegDesigner_pooled(input_check, contents, filename, pool_type, satmut_ty
                                         pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx - 7] + new_codon + edit_sequence[pe_nick_edit_idx - 4:pe_nick_edit_idx + pbs_length]
                                         pegRNA_ext_max = edit_sequence[pe_nick_edit_idx - rtt_max_length_pooled:pe_nick_edit_idx - 7] + new_codon + edit_sequence[pe_nick_edit_idx - 4:pe_nick_edit_idx + pbs_length]
                                         pe_pam_ref_silent_mutation = reverse_complement(pe_pam_ref) + '-to-' + reverse_complement(new_codon[1:] + edit_sequence[pe_nick_edit_idx - 4:pe_nick_edit_idx - 3].lower())
-                                        pe_annotate = 'PAM_mutated_silent_mutation'
+                                        pe_annotate = 'PAM_disrupted_silent_mutation'
 
                                     else:
                                         pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx + pbs_length]
@@ -3245,7 +3708,7 @@ def run_pegDesigner_pooled(input_check, contents, filename, pool_type, satmut_ty
                                         pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx - 8] + new_codon + edit_sequence[pe_nick_edit_idx - 5:pe_nick_edit_idx + pbs_length]
                                         pegRNA_ext_max = edit_sequence[pe_nick_edit_idx - rtt_max_length_pooled:pe_nick_edit_idx - 8] + new_codon + edit_sequence[pe_nick_edit_idx - 5:pe_nick_edit_idx + pbs_length]
                                         pe_pam_ref_silent_mutation = reverse_complement(pe_pam_ref) + '-to-' + reverse_complement(new_codon[2:] + original_codon_2[:2].lower())
-                                        pe_annotate = 'PAM_mutated_silent_mutation'
+                                        pe_annotate = 'PAM_disrupted_silent_mutation'
 
                                     elif len(codon_swap_1_2[original_codon_2.upper()]) > 1:
                                         new_codon = codon_swap_1_2[original_codon_2][0][0].lower()
@@ -3253,7 +3716,7 @@ def run_pegDesigner_pooled(input_check, contents, filename, pool_type, satmut_ty
                                         pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx - 5] + new_codon + edit_sequence[pe_nick_edit_idx - 2:pe_nick_edit_idx + pbs_length]
                                         pegRNA_ext_max = edit_sequence[pe_nick_edit_idx - rtt_max_length_pooled:pe_nick_edit_idx - 5] + new_codon + edit_sequence[pe_nick_edit_idx - 2:pe_nick_edit_idx + pbs_length]
                                         pe_pam_ref_silent_mutation = reverse_complement(pe_pam_ref) + '-to-' + reverse_complement(original_codon_1[2:].lower() + new_codon[:2])
-                                        pe_annotate = 'PAM_mutated_silent_mutation'
+                                        pe_annotate = 'PAM_disrupted_silent_mutation'
 
                                     else:
                                         pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx + pbs_length]
@@ -3268,7 +3731,7 @@ def run_pegDesigner_pooled(input_check, contents, filename, pool_type, satmut_ty
                             pegRNA_ext_max = edit_sequence[pe_nick_edit_idx - rtt_max_length_pooled:pe_nick_edit_idx + pbs_length]
 
                         # Check to see if pegRNA extension is within input sequence
-                        if 'PAM_mutated' in pe_annotate:
+                        if 'PAM_disrupted' in pe_annotate:
                             pe_annotate_code = 0
                         else:
                             pe_annotate_code = 1
@@ -3290,7 +3753,7 @@ def run_pegDesigner_pooled(input_check, contents, filename, pool_type, satmut_ty
                                 pe_design[target_name][pegid][0].append([pe_nick_ref_idx, reverse_complement(pe_spacer_sequence), pe_pam_ref_silent_mutation, pe_annotate, '-', pbs_length, rtt_length, pegRNA_ext, pegRNA_ext_max, nick2lastedit_length])
 
                     # Create pegID
-                    if 'PAM_mutated' in pe_annotate:
+                    if 'PAM_disrupted' in pe_annotate:
                         pe_annotate_code = 0
                     else:
                         pe_annotate_code = 1
@@ -3597,6 +4060,326 @@ def update_formatting_container(pooled_design_type):
         return({'display':'none'}, {'display':'block'})
     else:
         return({'display':'block'}, {'display':'none'})
+
+
+### Logic for PrimeVar
+@app.callback([Output('reference-sequence-db', 'sequence'), Output('reference-sequence-db', 'coverage'), Output('edit-sequence-db', 'sequence'), Output('edit-sequence-db', 'coverage')],
+    [Input('rs-id-search','value'), Input('clinvar-id-search','value'), Input('editing-direction','value'), Input('peg-table-db','selected_rows'), Input('pegext-table-db','selected_rows'), Input('ng-table-db','selected_rows')],
+    state = [State('store-peg-table-db', 'children'), State('store-peg-table-total-db', 'children')]
+)
+
+def update_reference_sequence(rs_id_search, clinvar_id_search, editing_direction, selected_rows_peg, selected_rows_pegext, selected_rows_ng, store_peg_table, store_peg_table_total):
+
+    annotations_ref = []
+    annotations_edit = []
+
+    if (rs_id_search is not None) or (clinvar_id_search is not None):
+        
+        if editing_direction == 'forward':
+            design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*forward*' % str(rs_id_search))) + list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*forward*' % str(clinvar_id_search)))
+
+        else:
+            design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*reverse*' % str(rs_id_search))) + list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*reverse*' % str(clinvar_id_search)))
+
+        df = pd.read_csv(design_files[0], names = ['Target_name', 'Target_sequence', 'pegRNA_number', 'gRNA_type', 'Spacer_sequence', 'Spacer_GC_content', 'PAM_sequence', 'Extension_sequence', 'Strand', 'Annotation', 'pegRNA-to-edit_distance', 'Nick_index', 'ngRNA-to-pegRNA_distance', 'PBS_length', 'PBS_GC_content', 'RTT_length', 'RTT_GC_content', 'First_extension_nucleotide', 'Spacer_sequence_order_TOP', 'Spacer_sequence_order_BOTTOM', 'pegRNA_extension_sequence_order_TOP', 'pegRNA_extension_sequence_order_BOTTOM'], header = None)
+        input_sequence = df.Target_sequence[0]
+
+        reference_sequence = input_sequence
+        edit_sequence = input_sequence
+        editformat2sequence_ref = {}
+        editformat2sequence_edit = {}
+        index_shift_ref = 0
+        index_shift_edit = 0
+
+        edit_idxs = [[m.start(), m.end()] for m in re.finditer('\(.*?\)', input_sequence)]
+        for edit_idx in edit_idxs:
+
+            edit = input_sequence[edit_idx[0]:edit_idx[1]]
+            edit_length = edit_idx[1] - edit_idx[0]
+
+            # Create edit format and number to sequence map
+            if '/' in edit:
+                editformat2sequence_ref[edit] = edit.split('/')[0].replace('(','')
+
+                if len(edit.split('/')[1].replace(')','')) == 0:
+                    annotations_ref.append({'start':edit_idx[0] - index_shift_ref, 'end':edit_idx[0] - index_shift_ref + len(edit.split('/')[0].replace('(','')), 'color':'#DC143C', 'bgcolor':'#fbe7eb', 'underscore':True})
+                else:
+                    annotations_ref.append({'start':edit_idx[0] - index_shift_ref, 'end':edit_idx[0] - index_shift_ref + len(edit.split('/')[0].replace('(','')), 'color':'#1E90FF', 'bgcolor':'#e8f3ff', 'underscore':True})
+                
+                index_shift_ref += edit_length - len(edit.split('/')[0].replace('(',''))
+
+            elif '+' in edit:
+                editformat2sequence_ref[edit] = ''
+                annotations_ref.append({'start':edit_idx[0] - index_shift_ref, 'end':edit_idx[0] - index_shift_ref, 'color':'#3CB371', 'bgcolor':'#ebf7f0', 'underscore':True})
+
+                index_shift_ref += edit_length
+
+            elif '-' in edit:
+                editformat2sequence_ref[edit] = edit.split('-')[1].replace(')','')
+                annotations_ref.append({'start':edit_idx[0] - index_shift_ref, 'end':edit_idx[0] - index_shift_ref + len(edit.split('-')[1].replace(')','')), 'color':'#DC143C', 'bgcolor':'#fbe7eb', 'underscore':True})
+
+                index_shift_ref += edit_length - len(edit.split('-')[1].replace(')',''))
+
+            # Create edit format and number to sequence map
+            if '/' in edit:
+                editformat2sequence_edit[edit] = edit.split('/')[1].replace(')','')
+
+                if len(edit.split('/')[0].replace('(','')) == 0:
+                    annotations_edit.append({'start':edit_idx[0] - index_shift_edit, 'end':edit_idx[0] - index_shift_edit + len(edit.split('/')[1].replace(')','')), 'color':'#3CB371', 'bgcolor':'#ebf7f0', 'underscore':True})
+                else:
+                    annotations_edit.append({'start':edit_idx[0] - index_shift_edit, 'end':edit_idx[0] - index_shift_edit + len(edit.split('/')[1].replace(')','')), 'color':'#1E90FF', 'bgcolor':'#e8f3ff', 'underscore':True})
+
+                index_shift_edit += edit_length - len(edit.split('/')[1].replace(')',''))
+
+            elif '+' in edit:
+                editformat2sequence_edit[edit] = edit.split('+')[1].replace(')','')
+                annotations_edit.append({'start':edit_idx[0] - index_shift_edit, 'end':edit_idx[0] - index_shift_edit + len(edit.split('+')[1].replace(')','')), 'color':'#3CB371', 'bgcolor':'#ebf7f0', 'underscore':True})
+
+                index_shift_edit += edit_length -len(edit.split('+')[1].replace(')',''))
+
+            elif '-' in edit:
+                editformat2sequence_edit[edit] = ''
+                annotations_edit.append({'start':edit_idx[0] - index_shift_edit, 'end':edit_idx[0] - index_shift_edit, 'color':'#DC143C', 'bgcolor':'#fbe7eb', 'underscore':True})
+
+                index_shift_edit += edit_length
+
+        for edit in editformat2sequence_ref:
+            reference_sequence = reference_sequence.replace(edit, editformat2sequence_ref[edit])
+
+        for edit in editformat2sequence_edit:
+            edit_sequence = edit_sequence.replace(edit, editformat2sequence_edit[edit])
+
+        # Visualizing pegRNA spacer in reference sequence
+        try:
+            current_annotation_ranges = []
+            for annotation in annotations_ref:
+                current_annotation_ranges.append([annotation['start'], annotation['end']])
+
+            df_peg = pd.read_json(store_peg_table, orient='split')
+            spacer_sequences = list(df_peg.loc[selected_rows_peg, 'spacer sequence'].values)
+
+            # Annotate pegRNA spacer sequences
+            for spacer_sequence in spacer_sequences:
+
+                try:
+                    start_idx = re.search(spacer_sequence, reference_sequence, re.IGNORECASE).start()
+                    stop_idx = start_idx + len(spacer_sequence)
+                    for i in range(start_idx, stop_idx):
+                        if sum([1 if (x[0] <= i < x[1]) else 0 for x in current_annotation_ranges]) == 0:
+                            annotations_ref.append({'start':i, 'end':i + 1, 'bgcolor':'#dedede'})
+                            current_annotation_ranges.append([i, i + 1])
+
+                except:
+                    start_idx = re.search(reverse_complement(spacer_sequence), reference_sequence, re.IGNORECASE).start()
+                    stop_idx = start_idx + len(spacer_sequence)
+                    for i in range(start_idx, stop_idx):
+                        if sum([1 if (x[0] <= i < x[1]) else 0 for x in current_annotation_ranges]) == 0:
+                            annotations_ref.append({'start':i, 'end':i + 1, 'bgcolor':'#dedede'})
+                            current_annotation_ranges.append([i, i + 1])
+
+        except:
+            pass
+
+        # Visualizing pegRNA extension in edit sequence
+        try:
+            current_annotation_ranges = []
+            for annotation in annotations_edit:
+                current_annotation_ranges.append([annotation['start'], annotation['end']])
+
+            df_peg = pd.read_json(store_peg_table, orient='split')
+            df_peg_total = pd.read_json(store_peg_table_total, orient='split')
+
+            peg_group = list(df_peg.loc[selected_rows_peg, 'spacer sequence'].values)
+            df_pegext = df_peg_total[df_peg_total['spacer sequence'].isin(peg_group)]
+            df_pegext = df_pegext[df_pegext['type'] == 'pegRNA']
+            df_pegext = df_pegext[['PBS length','PBS GC content','RTT length','RTT GC content','pegRNA extension']].drop_duplicates()
+            df_pegext.reset_index(drop=True, inplace=True)
+            pegext_sequences = list(df_pegext.loc[selected_rows_pegext, 'pegRNA extension'].values)
+
+            # Annotate pegRNA spacer sequences
+            for pegext_sequence in pegext_sequences:
+
+                try:
+                    start_idx = re.search(pegext_sequence, edit_sequence, re.IGNORECASE).start()
+                    stop_idx = start_idx + len(pegext_sequence)
+                    for i in range(start_idx, stop_idx):
+                        if sum([1 if (x[0] <= i < x[1]) else 0 for x in current_annotation_ranges]) == 0:
+                            annotations_edit.append({'start':i, 'end':i + 1, 'bgcolor':'#ffdb99'})
+                            current_annotation_ranges.append([i, i + 1])
+
+                except:
+                    start_idx = re.search(reverse_complement(pegext_sequence), edit_sequence, re.IGNORECASE).start()
+                    stop_idx = start_idx + len(pegext_sequence)
+                    for i in range(start_idx, stop_idx):
+                        if sum([1 if (x[0] <= i < x[1]) else 0 for x in current_annotation_ranges]) == 0:
+                            annotations_edit.append({'start':i, 'end':i + 1, 'bgcolor':'#ffdb99'})
+                            current_annotation_ranges.append([i, i + 1])
+
+        except:
+            pass
+
+        # Visualizing ngRNA spacer in edit sequence
+        try:
+            current_annotation_ranges = []
+            for annotation in annotations_edit:
+                current_annotation_ranges.append([annotation['start'], annotation['end']])
+
+            df_peg = pd.read_json(store_peg_table, orient='split')
+            df_peg_total = pd.read_json(store_peg_table_total, orient='split')
+
+            peg_group = list(df_peg.loc[selected_rows_peg, 'pegRNA group'].values)
+            df_ng = df_peg_total[df_peg_total['pegRNA group'].isin(peg_group)]
+            df_ng = df_ng[df_ng['type'] == 'ngRNA']
+            df_ng = df_ng[['spacer sequence','PAM','strand','nick-to-peg distance','spacer GC content','annotation']].drop_duplicates()
+            df_ng.reset_index(drop=True, inplace=True)
+            ngRNA_sequences = list(df_ng.loc[selected_rows_ng, 'spacer sequence'].values)
+
+            # Annotate pegRNA spacer sequences
+            for ngRNA_sequence in ngRNA_sequences:
+
+                try:
+                    start_idx = re.search(ngRNA_sequence, edit_sequence, re.IGNORECASE).start()
+                    stop_idx = start_idx + len(ngRNA_sequence)
+                    for i in range(start_idx, stop_idx):
+                        if sum([1 if (x[0] <= i < x[1]) else 0 for x in current_annotation_ranges]) == 0:
+                            annotations_edit.append({'start':i, 'end':i + 1, 'bgcolor':'#d6d6d6'})
+                            current_annotation_ranges.append([i, i + 1])
+
+                except:
+                    start_idx = re.search(reverse_complement(ngRNA_sequence), edit_sequence, re.IGNORECASE).start()
+                    stop_idx = start_idx + len(ngRNA_sequence)
+                    for i in range(start_idx, stop_idx):
+                        if sum([1 if (x[0] <= i < x[1]) else 0 for x in current_annotation_ranges]) == 0:
+                            annotations_edit.append({'start':i, 'end':i + 1, 'bgcolor':'#d6d6d6'})
+                            current_annotation_ranges.append([i, i + 1])
+
+        except:
+            pass
+
+    else:
+        reference_sequence = ' '
+        edit_sequence = ' '
+
+    return(reference_sequence, annotations_ref, edit_sequence, annotations_edit)
+
+@app.callback([Output('peg-table-db', 'data'), Output('store-peg-table-total-db', 'children'), Output('store-peg-table-db', 'children')],
+    [Input('rs-id-search','value'), Input('clinvar-id-search','value'), Input('editing-direction','value'), Input('pbs-range-db','value'), Input('rtt-range-db','value'), Input('nick-dist-range-db','value'), Input('filter-c1-extension-option-db','value'), Input('silentmutation-option-db','value')],
+)
+
+def update_database_tables(rs_id_search, clinvar_id_search, editing_direction, pbs_range, rtt_range, nicking_distance_range, filter_c1_extension, silent_mutation):
+
+    if (rs_id_search is not None) or (clinvar_id_search is not None):
+        
+        if editing_direction == 'forward':
+            design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*forward*' % str(rs_id_search))) + list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*forward*' % str(clinvar_id_search)))
+
+        else:
+            design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*reverse*' % str(rs_id_search))) + list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*reverse*' % str(clinvar_id_search)))
+
+        df = pd.read_csv(design_files[0], names = ['Target_name', 'Target_sequence', 'pegRNA group', 'type', 'spacer sequence', 'spacer GC content', 'PAM', 'pegRNA extension', 'strand', 'annotation', 'peg-to-edit distance', 'Nick_index', 'nick-to-peg distance', 'PBS length', 'PBS GC content', 'RTT length', 'RTT GC content', 'extension first base', 'Spacer_sequence_order_TOP', 'Spacer_sequence_order_BOTTOM', 'pegRNA_extension_sequence_order_TOP', 'pegRNA_extension_sequence_order_BOTTOM'], header = None)
+        df = df.replace('PAM_mutated','PAM_disrupted')
+
+        # Start filtering
+        # df = df[(df['PBS length'] >= pbs_range[0]) & (df['PBS length'] <= pbs_range[1])]
+        # df = df[(df['RTT length'] >= rtt_range[0]) & (df['RTT length'] <= rtt_range[1])]
+        # df = df[(df['nick-to-peg distance'] >= nicking_distance_range[0]) & (df['nick-to-peg distance'] <= nicking_distance_range[1])]
+
+        if filter_c1_extension == 'yes':
+            df = df[df['extension first base'] != 'C']
+            df.reset_index(drop=True, inplace=True)
+
+        df_pegs = df[df['type'] == 'pegRNA']
+        df_pegs = df_pegs[(df_pegs['RTT length'] >= rtt_range[0]) & (df_pegs['RTT length'] <= rtt_range[1])]
+        df_pegs = df_pegs[['pegRNA group','spacer sequence','PAM','strand','peg-to-edit distance','spacer GC content','annotation']].drop_duplicates()
+        df_pegs['spacer GC content'] = df_pegs['spacer GC content'].round(2)
+        df_pegs = df_pegs.sort_values('peg-to-edit distance')
+        df_pegs.reset_index(drop=True, inplace=True)
+
+        df.to_csv('/PrimeDesign/reports/PrimeVar_rs%s_variationID%s.csv' % (str(rs_id_search), str(clinvar_id_search)))
+
+    else:
+        peg_design = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
+        df = pd.DataFrame.from_dict(peg_design)
+        df_pegs = pd.DataFrame.from_dict(peg_design)
+
+    return(df_pegs.to_dict('records'), df.to_json(date_format='iso', orient='split'), df_pegs.to_json(date_format='iso', orient='split'))
+
+# Trigger pegRNA extension and ngRNA tables with pegRNA spacer selection for PrimeVar database
+@app.callback(Output('pegext-table-db', 'data'),
+    [Input('peg-table-db','selected_rows'), Input('store-peg-table-total-db', 'children'), Input('store-peg-table-db', 'children')],
+    state = [State('pbs-range-db','value'), State('rtt-range-db','value'),]
+)
+
+def update_pegext_table(selected_row, store_peg_table_total, store_peg_table, pbs_range, rtt_range):
+
+    try:
+        # Open up stored peg table
+        df_peg = pd.read_json(store_peg_table, orient='split')
+        df_peg_total = pd.read_json(store_peg_table_total, orient='split')
+
+        spacer_sequence = list(df_peg.loc[selected_row, 'spacer sequence'].values)
+        df_pegext = df_peg_total[df_peg_total['spacer sequence'].isin(spacer_sequence)]
+        df_pegext = df_pegext[df_pegext['type'] == 'pegRNA']
+        df_pegext = df_pegext[['PBS length','PBS GC content','RTT length','RTT GC content','pegRNA extension']].drop_duplicates()
+        df_pegext['PBS GC content'] = df_pegext['PBS GC content'].round(2)
+        df_pegext['RTT GC content'] = df_pegext['RTT GC content'].round(2)
+        df_pegext = df_pegext[(df_pegext['PBS length'] >= pbs_range[0]) & (df_pegext['PBS length'] <= pbs_range[1])]
+        df_pegext = df_pegext[(df_pegext['RTT length'] >= rtt_range[0]) & (df_pegext['RTT length'] <= rtt_range[1])]
+        df_pegext.reset_index(drop=True, inplace=True)
+
+    except:
+        df_pegext = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
+        df_pegext = pd.DataFrame.from_dict(df_pegext)
+
+    return(df_pegext.to_dict('records'))
+
+@app.callback(Output('ng-table-db', 'data'),
+    [Input('peg-table-db','selected_rows'), Input('store-peg-table-total-db', 'children'), Input('store-peg-table-db', 'children')],
+    state = [State('nick-dist-range-db','value')]
+)
+
+def update_ng_table(selected_row, store_peg_table_total, store_peg_table, nicking_distance_range):
+
+    try:
+        # Open up stored peg table
+        df_peg = pd.read_json(store_peg_table, orient='split')
+        df_peg_total = pd.read_json(store_peg_table_total, orient='split')
+
+        peg_group = list(df_peg.loc[selected_row, 'pegRNA group'].values)
+        df_ng = df_peg_total[df_peg_total['pegRNA group'].isin(peg_group)]
+        df_ng = df_ng[df_ng['type'] == 'ngRNA']
+        df_ng = df_ng[['spacer sequence','PAM','strand','nick-to-peg distance','spacer GC content','annotation']].drop_duplicates()
+        df_ng['spacer GC content'] = df_ng['spacer GC content'].round(2)
+        df_ng = df_ng[(df_ng['nick-to-peg distance'] >= nicking_distance_range[0]) & (df_ng['nick-to-peg distance'] <= nicking_distance_range[1])]
+        df_ng.reset_index(drop=True, inplace=True)
+
+    except:
+        df_ng = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
+        df_ng = pd.DataFrame.from_dict(df_ng)
+
+    return(df_ng.to_dict('records'))
+
+@app.callback(Output('pbs-title-db', 'children'),
+    [Input('pbs-range-db','value')]
+)
+
+def update_pbs_title(pbs_range):
+    return('PBS length: %s - %s nt' % (pbs_range[0], pbs_range[1]))
+
+@app.callback(Output('rtt-title-db', 'children'),
+    [Input('rtt-range-db','value')]
+)
+
+def update_pbs_title(rtt_range):
+    return('RTT length: %s - %s nt' % (rtt_range[0], rtt_range[1]))
+
+@app.callback(Output('nick-dist-title-db', 'children'),
+    [Input('nick-dist-range-db','value')]
+)
+
+def update_pbs_title(nick_dist_range):
+    return('Nicking distance: %s - %s bp' % (nick_dist_range[0], nick_dist_range[1]))
+
 
 if __name__ == '__main__':
     app.run_server(debug = True, port = 9994, host = '0.0.0.0')
