@@ -4,6 +4,7 @@ import os
 import io
 import base64
 import urllib.parse
+from zipfile import ZipFile
 import uuid
 import time
 import math
@@ -4276,6 +4277,9 @@ def update_database_tables(rs_id_search, clinvar_id_search, editing_direction, p
         else:
             design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*reverse*' % str(rs_id_search))) + list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*reverse*' % str(clinvar_id_search)))
 
+        # zip_file = ZipFile(design_files[0])
+
+        # df = pd.read_csv(zip_file.open(design_files[0].split('PrimeVar/')[1].replace('.zip', '')), names = ['Target_name', 'Target_sequence', 'pegRNA group', 'type', 'spacer sequence', 'spacer GC content', 'PAM', 'pegRNA extension', 'strand', 'annotation', 'peg-to-edit distance', 'Nick_index', 'nick-to-peg distance', 'PBS length', 'PBS GC content', 'RTT length', 'RTT GC content', 'extension first base', 'Spacer_sequence_order_TOP', 'Spacer_sequence_order_BOTTOM', 'pegRNA_extension_sequence_order_TOP', 'pegRNA_extension_sequence_order_BOTTOM'], header = None)
         df = pd.read_csv(design_files[0], names = ['Target_name', 'Target_sequence', 'pegRNA group', 'type', 'spacer sequence', 'spacer GC content', 'PAM', 'pegRNA extension', 'strand', 'annotation', 'peg-to-edit distance', 'Nick_index', 'nick-to-peg distance', 'PBS length', 'PBS GC content', 'RTT length', 'RTT GC content', 'extension first base', 'Spacer_sequence_order_TOP', 'Spacer_sequence_order_BOTTOM', 'pegRNA_extension_sequence_order_TOP', 'pegRNA_extension_sequence_order_BOTTOM'], header = None)
         df = df.replace('PAM_mutated','PAM_disrupted')
 
