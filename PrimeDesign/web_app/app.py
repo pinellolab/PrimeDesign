@@ -31,17 +31,17 @@ UPLOAD_DIRECTORY = '/PrimeDesign/reports'
 if not os.path.exists(UPLOAD_DIRECTORY):
     os.makedirs(UPLOAD_DIRECTORY)
 
-# PrimeVar rsID and ClinVarID options
-design_files = glob.glob('/PrimeDesign/PrimeVar/*')
-clinvar_id_list = []
-rs_id_list = []
-for f in design_files:
+# # PrimeVar rsID and ClinVarID options
+# design_files = glob.glob('/PrimeDesign/PrimeVar/*')
+# clinvar_id_list = []
+# rs_id_list = []
+# for f in design_files:
 
-    clinvar_id_list.append(f.split('/')[3].split('@')[1])
-    rs_id_list.append(f.split('/')[3].split('@')[2])
+#     clinvar_id_list.append(f.split('/')[3].split('@')[1])
+#     rs_id_list.append(f.split('/')[3].split('@')[2])
 
-rs_id_options = [{'label':x, 'value':x} for x in rs_id_list]
-clinvar_id_options = [{'label':x, 'value':x} for x in clinvar_id_list]
+# rs_id_options = [{'label':x, 'value':x} for x in rs_id_list]
+# clinvar_id_options = [{'label':x, 'value':x} for x in clinvar_id_list]
 
 @server.route('/download/<path:path>')
 def download(path):
@@ -825,15 +825,37 @@ database_page = html.Div([
             html.H4('Step 1: Search for ClinVar pathogenic variants'),
 
             dcc.Dropdown(
-                id = 'rs-id-search',
-                options=rs_id_options,
-                placeholder='Search by dbSNP rs#'
+                id = 'primevar-id-search-type',
+                options=[{'label':'dsbSNP rs#', 'value':'rs'}, {'label':'ClinVar VariationID', 'value':'clinvar'}],
+                value = 'rs',
+                style = {'size':'50', 'min-width': '300px'}
                 ),
 
-            dcc.Dropdown(
-                id = 'clinvar-id-search',
-                options=clinvar_id_options,
-                placeholder='Search by ClinVar VariationID'),
+            dcc.Input(
+                id = 'primevar-id-search',
+                placeholder='Enter variant # here',
+                type='text',
+                value='',
+                style = {'size':'50', 'min-width': '300px'}
+                # size = '30',
+            ),
+
+            # dcc.Dropdown(
+            #     id = 'primevar-id-search-type',
+            #     options=[{'label':'dsbSNP rs#', 'value':'rs'}, {'label':'ClinVar VariationID', 'value':'clinvar'}],
+            #     value = 'rs',
+            #     style = {'width':'15px'}
+            #     ),
+
+            # dcc.Input(
+            #     id = 'primevar-id-search',
+            #     placeholder='Enter variant #',
+            #     type='text',
+            #     value='',
+            #     size = '30'
+            # ),
+
+            html.Label(id = 'primevar-input-check', children = '', style = {'font-weight':'bold'}),
 
             ], className = 'six columns'),
 
@@ -843,12 +865,9 @@ database_page = html.Div([
 
             dcc.Dropdown(
                 id = 'editing-direction',
-                options=[
-                    {'label': 'Install pathogenic variant', 'value': 'forward'},
-                    {'label': 'Correct pathogenic variant', 'value': 'reverse'},
-                ],
-                value='forward'
-            )  
+                options=[{'label':'Install pathogenic variant', 'value':'forward'}, {'label':'Correct pathogenic variant', 'value':'reverse'}],
+                value = 'forward'
+                ),
 
             ], className = 'six columns'),
 
@@ -858,7 +877,7 @@ database_page = html.Div([
 
     html.Div([
 
-        html.H5('Visualize sequence'),
+        html.H5('Visualize sequence', style = {'padding-bottom':'0px'}),
 
         # dcc.Checklist(
         #         id = 'protein-option-db',
@@ -964,7 +983,7 @@ database_page = html.Div([
 
             ], className = 'six columns', style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px', 'margin': '0px', 'float':'right'}),
 
-        ], className = 'row', style = {'padding-right': '15px', 'padding-left': '15px','margin': '0px'}),
+        ], className = 'row', style = {'padding-right': '0px', 'padding-left': '0px','margin': '0px'}),
     
     html.Br(),
 
@@ -984,7 +1003,7 @@ database_page = html.Div([
                style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
          ),
 
-        ], className = 'row', style = {'padding-right': '15px', 'padding-left': '15px','margin': '0px'}),
+        ], className = 'row', style = {'padding-right': '0px', 'padding-left': '0px','margin': '0px'}),
 
     html.Div([
 
@@ -4064,25 +4083,78 @@ def update_formatting_container(pooled_design_type):
 
 
 ### Logic for PrimeVar
-@app.callback([Output('reference-sequence-db', 'sequence'), Output('reference-sequence-db', 'coverage'), Output('edit-sequence-db', 'sequence'), Output('edit-sequence-db', 'coverage')],
-    [Input('rs-id-search','value'), Input('clinvar-id-search','value'), Input('editing-direction','value'), Input('peg-table-db','selected_rows'), Input('pegext-table-db','selected_rows'), Input('ng-table-db','selected_rows')],
-    state = [State('store-peg-table-db', 'children'), State('store-peg-table-total-db', 'children')]
+
+@app.callback([Output('primevar-input-check', 'children'), Output('primevar-input-check', 'style'),],
+    [Input('primevar-id-search-type','value'), Input('primevar-id-search','value'), Input('editing-direction', 'value')]
 )
 
-def update_reference_sequence(rs_id_search, clinvar_id_search, editing_direction, selected_rows_peg, selected_rows_pegext, selected_rows_ng, store_peg_table, store_peg_table_total):
+def update_input_check(primevar_id_search_type, primevar_id_search, editing_direction):
+
+    if (primevar_id_search is not None):
+
+        if editing_direction == 'forward':
+
+            if primevar_id_search_type == 'rs':
+                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@*@%s@*forward*' % str(primevar_id_search)))
+
+            else:
+                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*@*forward*' % str(primevar_id_search)))
+
+        else:
+
+            if primevar_id_search_type == 'rs':
+                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@*@%s@*reverse*' % str(primevar_id_search)))
+
+            else:
+                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*@*reverse*' % str(primevar_id_search)))
+
+        if len(design_files) > 0:
+            sequence_check = 'Success: Input sequence has correct formatting'
+            sequence_check_style = {'color':'#6bb6ff'}
+
+        else:
+            sequence_check = 'The variant ID provided is not available'
+            sequence_check_style = {'color':'#ff4d4d'}
+
+    else:
+        sequence_check = 'No variant ID has been provided'
+        sequence_check_style = {'color':'#ff4d4d'}
+
+    return(sequence_check, sequence_check_style)
+
+
+@app.callback([Output('reference-sequence-db', 'sequence'), Output('reference-sequence-db', 'coverage'), Output('edit-sequence-db', 'sequence'), Output('edit-sequence-db', 'coverage')],
+    [Input('primevar-input-check','children'), Input('peg-table-db','selected_rows'), Input('pegext-table-db','selected_rows'), Input('ng-table-db','selected_rows')],
+    state = [State('primevar-id-search-type','value'), State('primevar-id-search','value'), State('editing-direction','value'), State('store-peg-table-db', 'children'), State('store-peg-table-total-db', 'children')]
+)
+
+def update_reference_sequence(primevar_input, selected_rows_peg, selected_rows_pegext, selected_rows_ng, primevar_id_search_type, primevar_id_search, editing_direction, store_peg_table, store_peg_table_total):
 
     annotations_ref = []
     annotations_edit = []
 
-    if (rs_id_search is not None) or (clinvar_id_search is not None):
+    if 'Success' in primevar_input:
         
         if editing_direction == 'forward':
-            design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*forward*' % str(rs_id_search))) + list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*forward*' % str(clinvar_id_search)))
+
+            if primevar_id_search_type == 'rs':
+                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@*@%s@*forward*' % str(primevar_id_search)))
+
+            else:
+                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*@*forward*' % str(primevar_id_search)))
 
         else:
-            design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*reverse*' % str(rs_id_search))) + list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*reverse*' % str(clinvar_id_search)))
 
-        df = pd.read_csv(design_files[0], names = ['Target_name', 'Target_sequence', 'pegRNA_number', 'gRNA_type', 'Spacer_sequence', 'Spacer_GC_content', 'PAM_sequence', 'Extension_sequence', 'Strand', 'Annotation', 'pegRNA-to-edit_distance', 'Nick_index', 'ngRNA-to-pegRNA_distance', 'PBS_length', 'PBS_GC_content', 'RTT_length', 'RTT_GC_content', 'First_extension_nucleotide', 'Spacer_sequence_order_TOP', 'Spacer_sequence_order_BOTTOM', 'pegRNA_extension_sequence_order_TOP', 'pegRNA_extension_sequence_order_BOTTOM'], header = None)
+            if primevar_id_search_type == 'rs':
+                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@*@%s@*reverse*' % str(primevar_id_search)))
+
+            else:
+                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*@*reverse*' % str(primevar_id_search)))
+
+        zip_file = ZipFile(design_files[0])
+
+        df = pd.read_csv(zip_file.open(design_files[0].split('PrimeVar/')[1].replace('.zip', '')), names = ['Target_name', 'Target_sequence', 'pegRNA group', 'type', 'spacer sequence', 'spacer GC content', 'PAM', 'pegRNA extension', 'strand', 'annotation', 'peg-to-edit distance', 'Nick_index', 'nick-to-peg distance', 'PBS length', 'PBS GC content', 'RTT length', 'RTT GC content', 'extension first base', 'Spacer_sequence_order_TOP', 'Spacer_sequence_order_BOTTOM', 'pegRNA_extension_sequence_order_TOP', 'pegRNA_extension_sequence_order_BOTTOM'], header = None)
+        # df = pd.read_csv(design_files[0], names = ['Target_name', 'Target_sequence', 'pegRNA_number', 'gRNA_type', 'Spacer_sequence', 'Spacer_GC_content', 'PAM_sequence', 'Extension_sequence', 'Strand', 'Annotation', 'pegRNA-to-edit_distance', 'Nick_index', 'ngRNA-to-pegRNA_distance', 'PBS_length', 'PBS_GC_content', 'RTT_length', 'RTT_GC_content', 'First_extension_nucleotide', 'Spacer_sequence_order_TOP', 'Spacer_sequence_order_BOTTOM', 'pegRNA_extension_sequence_order_TOP', 'pegRNA_extension_sequence_order_BOTTOM'], header = None)
         input_sequence = df.Target_sequence[0]
 
         reference_sequence = input_sequence
@@ -4264,23 +4336,34 @@ def update_reference_sequence(rs_id_search, clinvar_id_search, editing_direction
     return(reference_sequence, annotations_ref, edit_sequence, annotations_edit)
 
 @app.callback([Output('peg-table-db', 'data'), Output('store-peg-table-total-db', 'children'), Output('store-peg-table-db', 'children')],
-    [Input('rs-id-search','value'), Input('clinvar-id-search','value'), Input('editing-direction','value'), Input('pbs-range-db','value'), Input('rtt-range-db','value'), Input('nick-dist-range-db','value'), Input('filter-c1-extension-option-db','value'), Input('silentmutation-option-db','value')],
+    [Input('primevar-input-check','children'), Input('pbs-range-db','value'), Input('rtt-range-db','value'), Input('nick-dist-range-db','value'), Input('filter-c1-extension-option-db','value'), Input('silentmutation-option-db','value')],
+    state = [State('primevar-id-search-type','value'), State('primevar-id-search','value'), State('editing-direction', 'value')]
 )
 
-def update_database_tables(rs_id_search, clinvar_id_search, editing_direction, pbs_range, rtt_range, nicking_distance_range, filter_c1_extension, silent_mutation):
+def update_database_tables(primevar_input, pbs_range, rtt_range, nicking_distance_range, filter_c1_extension, silent_mutation, primevar_id_search_type, primevar_id_search, editing_direction):
 
-    if (rs_id_search is not None) or (clinvar_id_search is not None):
+    if 'Success' in primevar_input:
         
         if editing_direction == 'forward':
-            design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*forward*' % str(rs_id_search))) + list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*forward*' % str(clinvar_id_search)))
+
+            if primevar_id_search_type == 'rs':
+                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@*@%s@*forward*' % str(primevar_id_search)))
+
+            else:
+                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*@*forward*' % str(primevar_id_search)))
 
         else:
-            design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*reverse*' % str(rs_id_search))) + list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*reverse*' % str(clinvar_id_search)))
 
-        # zip_file = ZipFile(design_files[0])
+            if primevar_id_search_type == 'rs':
+                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@*@%s@*reverse*' % str(primevar_id_search)))
 
-        # df = pd.read_csv(zip_file.open(design_files[0].split('PrimeVar/')[1].replace('.zip', '')), names = ['Target_name', 'Target_sequence', 'pegRNA group', 'type', 'spacer sequence', 'spacer GC content', 'PAM', 'pegRNA extension', 'strand', 'annotation', 'peg-to-edit distance', 'Nick_index', 'nick-to-peg distance', 'PBS length', 'PBS GC content', 'RTT length', 'RTT GC content', 'extension first base', 'Spacer_sequence_order_TOP', 'Spacer_sequence_order_BOTTOM', 'pegRNA_extension_sequence_order_TOP', 'pegRNA_extension_sequence_order_BOTTOM'], header = None)
-        df = pd.read_csv(design_files[0], names = ['Target_name', 'Target_sequence', 'pegRNA group', 'type', 'spacer sequence', 'spacer GC content', 'PAM', 'pegRNA extension', 'strand', 'annotation', 'peg-to-edit distance', 'Nick_index', 'nick-to-peg distance', 'PBS length', 'PBS GC content', 'RTT length', 'RTT GC content', 'extension first base', 'Spacer_sequence_order_TOP', 'Spacer_sequence_order_BOTTOM', 'pegRNA_extension_sequence_order_TOP', 'pegRNA_extension_sequence_order_BOTTOM'], header = None)
+            else:
+                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*@*reverse*' % str(primevar_id_search)))
+
+        zip_file = ZipFile(design_files[0])
+
+        df = pd.read_csv(zip_file.open(design_files[0].split('PrimeVar/')[1].replace('.zip', '')), names = ['Target_name', 'Target_sequence', 'pegRNA group', 'type', 'spacer sequence', 'spacer GC content', 'PAM', 'pegRNA extension', 'strand', 'annotation', 'peg-to-edit distance', 'Nick_index', 'nick-to-peg distance', 'PBS length', 'PBS GC content', 'RTT length', 'RTT GC content', 'extension first base', 'Spacer_sequence_order_TOP', 'Spacer_sequence_order_BOTTOM', 'pegRNA_extension_sequence_order_TOP', 'pegRNA_extension_sequence_order_BOTTOM'], header = None)
+        # df = pd.read_csv(design_files[0], names = ['Target_name', 'Target_sequence', 'pegRNA group', 'type', 'spacer sequence', 'spacer GC content', 'PAM', 'pegRNA extension', 'strand', 'annotation', 'peg-to-edit distance', 'Nick_index', 'nick-to-peg distance', 'PBS length', 'PBS GC content', 'RTT length', 'RTT GC content', 'extension first base', 'Spacer_sequence_order_TOP', 'Spacer_sequence_order_BOTTOM', 'pegRNA_extension_sequence_order_TOP', 'pegRNA_extension_sequence_order_BOTTOM'], header = None)
         df = df.replace('PAM_mutated','PAM_disrupted')
 
         # Start filtering
@@ -4299,7 +4382,11 @@ def update_database_tables(rs_id_search, clinvar_id_search, editing_direction, p
         df_pegs = df_pegs.sort_values('peg-to-edit distance')
         df_pegs.reset_index(drop=True, inplace=True)
 
-        df.to_csv('/PrimeDesign/reports/PrimeVar_rs%s_variationID%s.csv' % (str(rs_id_search), str(clinvar_id_search)))
+        if primevar_id_search_type == 'rs':
+            df.to_csv('/PrimeDesign/reports/PrimeVar_dbSNPrs%s.csv' % (str(primevar_id_search)))
+
+        else:
+            df.to_csv('/PrimeDesign/reports/PrimeVar_ClinVarVariationID%s.csv' % (str(primevar_id_search)))
 
     else:
         peg_design = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
