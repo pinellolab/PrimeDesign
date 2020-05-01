@@ -43,6 +43,19 @@ if not os.path.exists(UPLOAD_DIRECTORY):
 # rs_id_options = [{'label':x, 'value':x} for x in rs_id_list]
 # clinvar_id_options = [{'label':x, 'value':x} for x in clinvar_id_list]
 
+# Primevar mapping
+primevar_map = {'clinvar':{'forward':{}, 'reverse':{},},'rs':{'forward':{}, 'reverse':{},}}
+with open('/PrimeDesign/PrimeVar/PrimeVar_mapping.csv', 'r') as f:
+    for line in f:
+
+        try:
+            variationid, rsid, direction, path = line.strip('\n').split(',')
+            primevar_map['clinvar'][direction][variationid] = path
+            primevar_map['rs'][direction][rsid] = path
+
+        except:
+            pass
+
 @server.route('/download/<path:path>')
 def download(path):
     """Serve a file from the upload directory."""
@@ -804,7 +817,7 @@ pooled_page = html.Div([
 
 database_page = html.Div([
 
-    html.Br(),
+    # html.Br(),
 
     # html.Div([
 
@@ -822,13 +835,20 @@ database_page = html.Div([
 
         html.Div([
 
-            html.H4('Step 1: Search for ClinVar pathogenic variants'),
+            html.H4('Search PrimeVar'),
+
+            dcc.Dropdown(
+                id = 'editing-direction',
+                options=[{'label':'Install the pathogenic variant', 'value':'forward'}, {'label':'Correct the pathogenic variant', 'value':'reverse'}],
+                value = 'forward',
+                style = {'width':'500px', 'min-width': '300px', 'margin-bottom':'5px'}
+                ),
 
             dcc.Dropdown(
                 id = 'primevar-id-search-type',
                 options=[{'label':'dsbSNP rs#', 'value':'rs'}, {'label':'ClinVar VariationID', 'value':'clinvar'}],
                 value = 'rs',
-                style = {'size':'50', 'min-width': '300px'}
+                style = {'width':'500px', 'min-width': '300px'}
                 ),
 
             dcc.Input(
@@ -836,7 +856,7 @@ database_page = html.Div([
                 placeholder='Enter variant # here',
                 type='text',
                 value='',
-                style = {'size':'50', 'min-width': '300px'}
+                style = {'width':'500px', 'min-width': '300px'}
                 # size = '30',
             ),
 
@@ -861,17 +881,39 @@ database_page = html.Div([
 
         html.Div([
 
-            html.H4('Step 2: Specify editing direction'),
+            html.H4('Recommended Designs', style = {'margin-bottom':'0px'}),
 
-            dcc.Dropdown(
-                id = 'editing-direction',
-                options=[{'label':'Install pathogenic variant', 'value':'forward'}, {'label':'Correct pathogenic variant', 'value':'reverse'}],
-                value = 'forward'
-                ),
+            html.Div([
 
-            ], className = 'six columns'),
+                html.Div([
 
-        ], className = 'row'),
+                    html.H6('pegRNA design', style = {'margin-top':'0px'}),
+
+                    html.Div([
+
+                        # html.H6('pegRNA design'),
+
+                        ], style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px','margin': '0px'}),
+
+                    ], className = 'six columns'),
+
+                html.Div([
+
+                    html.H6('ngRNA design', style = {'margin-top':'0px'}),
+
+                    html.Div([
+
+                        # html.H6('ngRNA design'),
+
+                        ], style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px','margin': '0px'}),
+
+                    ], className = 'six columns'),
+
+                ], className = 'row', style = {'padding-right': '0px', 'padding-left': '0px','margin': '0px'}),
+
+            ], className = 'six columns',),
+
+        ], className = 'row', style = {'padding-right': '0px','padding-left': '0px','padding-top': '15px','padding-bottom': '15px','margin': '0px'}),
 
     html.Hr(),
 
@@ -1319,9 +1361,45 @@ design_page = html.Div([
 
             html.Label(id = 'input-check', children = '', style = {'font-weight':'bold'}),
             
-            ], className = 'twelve columns'),
+            ], className = 'six columns'),
+
+        html.Div([
+
+            html.H4('Recommended Designs', style = {'margin-bottom':'0px'}),
+
+            html.Div([
+
+                html.Div([
+
+                    html.H6('pegRNA design', style = {'margin-top':'0px'}),
+
+                    html.Div([
+
+                        # html.H6('pegRNA design'),
+
+                        ], style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px','margin': '0px'}),
+
+                    ], className = 'six columns'),
+
+                html.Div([
+
+                    html.H6('ngRNA design', style = {'margin-top':'0px'}),
+
+                    html.Div([
+
+                        # html.H6('ngRNA design'),
+
+                        ], style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px','margin': '0px'}),
+
+                    ], className = 'six columns'),
+
+                ], className = 'row', style = {'padding-right': '0px', 'padding-left': '0px','margin': '0px'}),
+
+            ], className = 'six columns',),
 
         ], className = 'row', style = {'padding': '15px','margin': '0px'}),
+
+    html.Hr(),
 
     html.Div([
 
@@ -4092,29 +4170,15 @@ def update_input_check(primevar_id_search_type, primevar_id_search, editing_dire
 
     if (primevar_id_search is not None):
 
-        if editing_direction == 'forward':
-
-            if primevar_id_search_type == 'rs':
-                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@*@%s@*forward*' % str(primevar_id_search)))
-
-            else:
-                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*@*forward*' % str(primevar_id_search)))
-
-        else:
-
-            if primevar_id_search_type == 'rs':
-                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@*@%s@*reverse*' % str(primevar_id_search)))
-
-            else:
-                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*@*reverse*' % str(primevar_id_search)))
-
-        if len(design_files) > 0:
-            sequence_check = 'Success: Input sequence has correct formatting'
+        try:
+            tmp = primevar_map[primevar_id_search_type][editing_direction][primevar_id_search]
+            sequence_check = 'Success'
             sequence_check_style = {'color':'#6bb6ff'}
 
-        else:
-            sequence_check = 'The variant ID provided is not available'
+        except:
+            sequence_check = 'Designs are not available'
             sequence_check_style = {'color':'#ff4d4d'}
+
 
     else:
         sequence_check = 'No variant ID has been provided'
@@ -4134,27 +4198,10 @@ def update_reference_sequence(primevar_input, selected_rows_peg, selected_rows_p
     annotations_edit = []
 
     if 'Success' in primevar_input:
-        
-        if editing_direction == 'forward':
 
-            if primevar_id_search_type == 'rs':
-                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@*@%s@*forward*' % str(primevar_id_search)))
+        zip_file = ZipFile('/PrimeDesign/PrimeVar/' + primevar_map[primevar_id_search_type][editing_direction][primevar_id_search])
+        df = pd.read_csv(zip_file.open(primevar_map[primevar_id_search_type][editing_direction][primevar_id_search].replace('.zip', '')), names = ['Target_name', 'Target_sequence', 'pegRNA group', 'type', 'spacer sequence', 'spacer GC content', 'PAM', 'pegRNA extension', 'strand', 'annotation', 'peg-to-edit distance', 'Nick_index', 'nick-to-peg distance', 'PBS length', 'PBS GC content', 'RTT length', 'RTT GC content', 'extension first base', 'Spacer_sequence_order_TOP', 'Spacer_sequence_order_BOTTOM', 'pegRNA_extension_sequence_order_TOP', 'pegRNA_extension_sequence_order_BOTTOM'], header = None)
 
-            else:
-                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*@*forward*' % str(primevar_id_search)))
-
-        else:
-
-            if primevar_id_search_type == 'rs':
-                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@*@%s@*reverse*' % str(primevar_id_search)))
-
-            else:
-                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*@*reverse*' % str(primevar_id_search)))
-
-        zip_file = ZipFile(design_files[0])
-
-        df = pd.read_csv(zip_file.open(design_files[0].split('PrimeVar/')[1].replace('.zip', '')), names = ['Target_name', 'Target_sequence', 'pegRNA group', 'type', 'spacer sequence', 'spacer GC content', 'PAM', 'pegRNA extension', 'strand', 'annotation', 'peg-to-edit distance', 'Nick_index', 'nick-to-peg distance', 'PBS length', 'PBS GC content', 'RTT length', 'RTT GC content', 'extension first base', 'Spacer_sequence_order_TOP', 'Spacer_sequence_order_BOTTOM', 'pegRNA_extension_sequence_order_TOP', 'pegRNA_extension_sequence_order_BOTTOM'], header = None)
-        # df = pd.read_csv(design_files[0], names = ['Target_name', 'Target_sequence', 'pegRNA_number', 'gRNA_type', 'Spacer_sequence', 'Spacer_GC_content', 'PAM_sequence', 'Extension_sequence', 'Strand', 'Annotation', 'pegRNA-to-edit_distance', 'Nick_index', 'ngRNA-to-pegRNA_distance', 'PBS_length', 'PBS_GC_content', 'RTT_length', 'RTT_GC_content', 'First_extension_nucleotide', 'Spacer_sequence_order_TOP', 'Spacer_sequence_order_BOTTOM', 'pegRNA_extension_sequence_order_TOP', 'pegRNA_extension_sequence_order_BOTTOM'], header = None)
         input_sequence = df.Target_sequence[0]
 
         reference_sequence = input_sequence
@@ -4343,33 +4390,11 @@ def update_reference_sequence(primevar_input, selected_rows_peg, selected_rows_p
 def update_database_tables(primevar_input, pbs_range, rtt_range, nicking_distance_range, filter_c1_extension, silent_mutation, primevar_id_search_type, primevar_id_search, editing_direction):
 
     if 'Success' in primevar_input:
-        
-        if editing_direction == 'forward':
 
-            if primevar_id_search_type == 'rs':
-                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@*@%s@*forward*' % str(primevar_id_search)))
+        zip_file = ZipFile('/PrimeDesign/PrimeVar/' + primevar_map[primevar_id_search_type][editing_direction][primevar_id_search])
+        df = pd.read_csv(zip_file.open(primevar_map[primevar_id_search_type][editing_direction][primevar_id_search].replace('.zip', '')), names = ['Target_name', 'Target_sequence', 'pegRNA group', 'type', 'spacer sequence', 'spacer GC content', 'PAM', 'pegRNA extension', 'strand', 'annotation', 'peg-to-edit distance', 'Nick_index', 'nick-to-peg distance', 'PBS length', 'PBS GC content', 'RTT length', 'RTT GC content', 'extension first base', 'Spacer_sequence_order_TOP', 'Spacer_sequence_order_BOTTOM', 'pegRNA_extension_sequence_order_TOP', 'pegRNA_extension_sequence_order_BOTTOM'], header = None)
 
-            else:
-                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*@*forward*' % str(primevar_id_search)))
-
-        else:
-
-            if primevar_id_search_type == 'rs':
-                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@*@%s@*reverse*' % str(primevar_id_search)))
-
-            else:
-                design_files = list(glob.glob('/PrimeDesign/PrimeVar/*@%s@*@*reverse*' % str(primevar_id_search)))
-
-        zip_file = ZipFile(design_files[0])
-
-        df = pd.read_csv(zip_file.open(design_files[0].split('PrimeVar/')[1].replace('.zip', '')), names = ['Target_name', 'Target_sequence', 'pegRNA group', 'type', 'spacer sequence', 'spacer GC content', 'PAM', 'pegRNA extension', 'strand', 'annotation', 'peg-to-edit distance', 'Nick_index', 'nick-to-peg distance', 'PBS length', 'PBS GC content', 'RTT length', 'RTT GC content', 'extension first base', 'Spacer_sequence_order_TOP', 'Spacer_sequence_order_BOTTOM', 'pegRNA_extension_sequence_order_TOP', 'pegRNA_extension_sequence_order_BOTTOM'], header = None)
-        # df = pd.read_csv(design_files[0], names = ['Target_name', 'Target_sequence', 'pegRNA group', 'type', 'spacer sequence', 'spacer GC content', 'PAM', 'pegRNA extension', 'strand', 'annotation', 'peg-to-edit distance', 'Nick_index', 'nick-to-peg distance', 'PBS length', 'PBS GC content', 'RTT length', 'RTT GC content', 'extension first base', 'Spacer_sequence_order_TOP', 'Spacer_sequence_order_BOTTOM', 'pegRNA_extension_sequence_order_TOP', 'pegRNA_extension_sequence_order_BOTTOM'], header = None)
         df = df.replace('PAM_mutated','PAM_disrupted')
-
-        # Start filtering
-        # df = df[(df['PBS length'] >= pbs_range[0]) & (df['PBS length'] <= pbs_range[1])]
-        # df = df[(df['RTT length'] >= rtt_range[0]) & (df['RTT length'] <= rtt_range[1])]
-        # df = df[(df['nick-to-peg distance'] >= nicking_distance_range[0]) & (df['nick-to-peg distance'] <= nicking_distance_range[1])]
 
         if filter_c1_extension == 'yes':
             df = df[df['extension first base'] != 'C']
