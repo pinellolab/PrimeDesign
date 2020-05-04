@@ -31,18 +31,6 @@ UPLOAD_DIRECTORY = '/PrimeDesign/reports'
 if not os.path.exists(UPLOAD_DIRECTORY):
     os.makedirs(UPLOAD_DIRECTORY)
 
-# # PrimeVar rsID and ClinVarID options
-# design_files = glob.glob('/PrimeDesign/PrimeVar/*')
-# clinvar_id_list = []
-# rs_id_list = []
-# for f in design_files:
-
-#     clinvar_id_list.append(f.split('/')[3].split('@')[1])
-#     rs_id_list.append(f.split('/')[3].split('@')[2])
-
-# rs_id_options = [{'label':x, 'value':x} for x in rs_id_list]
-# clinvar_id_options = [{'label':x, 'value':x} for x in clinvar_id_list]
-
 # Primevar mapping
 primevar_map = {'clinvar':{'forward':{}, 'reverse':{},},'rs':{'forward':{}, 'reverse':{},}}
 with open('/PrimeDesign/PrimeVar/PrimeVar_mapping.csv', 'r') as f:
@@ -138,6 +126,7 @@ about_page = html.Div([
     html.Div([
         ''' edits, and is generalizable for both single and combinatorial edits.
         Given an edit of interest, PrimeDesign identifies all possible prime editing guide RNAs (pegRNAs) and nicking guide RNAs (ngRNAs) within a specified parameter range for the optimization of prime editing.
+        PrimeDesign also offers the functionality to design genome-wide and saturation mutagenesis libraries (PooledDesign) and provides a comprehensive database of pegRNA and ngRNA designs to install or correct ClinVar pathogenic variants (PrimeVar).
         In addition to the web application, PrimeDesign is also available as a stand-alone command line tool for more flexible and higher-throughput PrimeDesign functions.
         The command line tool is available here: 
         '''
@@ -221,6 +210,7 @@ help_page = html.Div([
     html.Div([
         ''' edits, and is generalizable for both single and combinatorial edits.
         Given an edit of interest, PrimeDesign identifies all possible prime editing guide RNAs (pegRNAs) and nicking guide RNAs (ngRNAs) within a specified parameter range for the optimization of prime editing.
+        PrimeDesign also offers the functionality to design genome-wide and saturation mutagenesis libraries (PooledDesign) and provides a comprehensive database of pegRNA and ngRNA designs to install or correct ClinVar pathogenic variants (PrimeVar).
         In addition to the web application, PrimeDesign is also available as a stand-alone command line tool for more flexible and higher-throughput PrimeDesign functions.
         The command line tool is available here: 
         '''
@@ -255,11 +245,11 @@ help_page = html.Div([
         html.Br(),
 
         html.Span('Insertion', style = {'color':'#3CB371', 'font-size':'20px'}),
-        html.Span(': (+insertion)', style = {'font-size':'20px'}),
+        html.Span(': (+insertion) or (/insertion)', style = {'font-size':'20px'}),
         html.Br(),
 
         html.Span('Deletion', style = {'color':'#DC143C', 'font-size':'20px'}),
-        html.Span(': (-deletion)', style = {'font-size':'20px'}),
+        html.Span(': (-deletion) or (deletion/)', style = {'font-size':'20px'}),
 
 
         ], style = {'text-align':'center'}),
@@ -711,11 +701,11 @@ pooled_page = html.Div([
                         html.Br(),
 
                         html.Span('Insertion', style = {'color':'#3CB371', 'font-size':'15px'}),
-                        html.Span(': (+insertion)', style = {'font-size':'15px', 'color':'#6a6a6a'}),
+                        html.Span(': (+insertion) or (/insertion)', style = {'font-size':'15px', 'color':'#6a6a6a'}),
                         html.Br(),
 
                         html.Span('Deletion', style = {'color':'#DC143C', 'font-size':'15px'}),
-                        html.Span(': (-deletion)', style = {'font-size':'15px', 'color':'#6a6a6a'}),
+                        html.Span(': (-deletion) or (deletion/)', style = {'font-size':'15px', 'color':'#6a6a6a'}),
 
                         ], style = {'display':'block'}),
 
@@ -856,7 +846,7 @@ database_page = html.Div([
                 placeholder='Enter variant # here',
                 type='text',
                 value='',
-                style = {'width':'500px', 'min-width': '300px'}
+                style = {'width':'500px', 'min-width': '300px',}
                 # size = '30',
             ),
 
@@ -875,7 +865,7 @@ database_page = html.Div([
             #     size = '30'
             # ),
 
-            html.Label(id = 'primevar-input-check', children = '', style = {'font-weight':'bold'}),
+            html.Label(id = 'primevar-input-check', children = '', style = {'font-weight':'bold',}),
 
             ], className = 'six columns'),
 
@@ -891,7 +881,7 @@ database_page = html.Div([
 
                     html.Div([
 
-                        # html.H6('pegRNA design'),
+                        html.Label('Coming soon!'),
 
                         ], style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px','margin': '0px'}),
 
@@ -903,7 +893,7 @@ database_page = html.Div([
 
                     html.Div([
 
-                        # html.H6('ngRNA design'),
+                        html.Label('Coming soon!'),
 
                         ], style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px','margin': '0px'}),
 
@@ -915,7 +905,7 @@ database_page = html.Div([
 
         ], className = 'row', style = {'padding-right': '0px','padding-left': '0px','padding-top': '15px','padding-bottom': '15px','margin': '0px'}),
 
-    html.Hr(),
+    html.Hr(style = {'margin-top':'5px', 'margin-bottom':'10px'}),
 
     html.Div([
 
@@ -1331,7 +1321,7 @@ design_page = html.Div([
 
         html.Div([
 
-            html.H5('Input sequence', style = {'margin-right':'5px','display':'inline'}),
+            html.H4('Input sequence', style = {'margin-right':'5px','display':'inline'}),
             html.Span('?', id = 'input-tooltip', style={'font-size':'11px', 'textAlign': 'center', 'color': 'white',}, className = 'dot'),
 
             dcc.Checklist(
@@ -1365,7 +1355,7 @@ design_page = html.Div([
 
         html.Div([
 
-            html.H4('Recommended Designs', style = {'margin-bottom':'0px'}),
+            html.H4('Recommended Designs', style = {'margin-bottom':'0px','display':'inline'}),
 
             html.Div([
 
@@ -1375,7 +1365,30 @@ design_page = html.Div([
 
                     html.Div([
 
-                        # html.H6('pegRNA design'),
+                        html.Div([
+
+                            html.Div([html.Label('Annotation:', style = {'display':'inline-block', 'font-weight':'bold','padding-right':'5px'}), html.Label(id = 'pegrna-annotation-recommend', style = {'display':'inline-block'}),]),
+
+                            ], className = 'row'),
+
+                        html.Div([
+
+                            html.Div([html.Label('PBS length:', style = {'display':'inline-block', 'font-weight':'bold','padding-right':'5px'}), html.Label(id = 'pegrna-pbs-recommend', style = {'display':'inline-block'})], className = 'six columns'),
+                            html.Div([html.Label('RTT length:', style = {'display':'inline-block', 'font-weight':'bold','padding-right':'5px'}), html.Label(id = 'pegrna-rtt-recommend', style = {'display':'inline-block'})], className = 'six columns', style = {'padding-bottom':'0px'}),
+
+                            ], className = 'row'),
+
+                        html.Hr(style = {'margin-top':'7px', 'margin-bottom':'7px',}),
+
+                        html.Label('Spacer oligo top:', style = {'font-weight':'bold'}),
+                        html.Label(id = 'pegrna-spacer-recommend-top', style = {'overflow':'auto',}),
+                        html.Label('Spacer oligo bottom:', style = {'font-weight':'bold'}),
+                        html.Label(id = 'pegrna-spacer-recommend-bottom', style = {'overflow':'auto',}),
+                        html.Label('Extension oligo top:', style = {'font-weight':'bold'}),
+                        html.Label(id = 'pegrna-ext-recommend-top', style = {'overflow':'auto',}),
+                        html.Label('Extension oligo bottom:', style = {'font-weight':'bold'}),
+                        html.Label(id = 'pegrna-ext-recommend-bottom', style = {'overflow':'auto',}),
+
 
                         ], style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px','margin': '0px'}),
 
@@ -1387,7 +1400,24 @@ design_page = html.Div([
 
                     html.Div([
 
-                        # html.H6('ngRNA design'),
+                        html.Div([
+
+                            html.Div([html.Label('Annotation: ', style = {'display':'inline-block', 'font-weight':'bold','padding-right':'5px'}), html.Label(id = 'ngrna-annotation-recommend', style = {'display':'inline-block'}),]),
+
+                            ], className = 'row'),
+
+                        html.Div([
+
+                            html.Div([html.Label('Nicking distance: ', style = {'display':'inline-block', 'font-weight':'bold','padding-right':'5px'}), html.Label(id = 'ngrna-distance-recommend', style = {'display':'inline-block'}),]),
+
+                            ], className = 'row'),
+
+                        html.Hr(style = {'margin-top':'7px', 'margin-bottom':'7px',}),
+
+                        html.Label('Spacer oligo top:', style = {'font-weight':'bold'}),
+                        html.Label(id = 'ngrna-spacer-recommend-top', style = {'overflow':'auto',}),
+                        html.Label('Spacer oligo bottom:', style = {'font-weight':'bold'}),
+                        html.Label(id = 'ngrna-spacer-recommend-bottom', style = {'overflow':'auto',}),
 
                         ], style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px','margin': '0px'}),
 
@@ -1399,7 +1429,11 @@ design_page = html.Div([
 
         ], className = 'row', style = {'padding': '15px','margin': '0px'}),
 
-    html.Hr(),
+    html.Div([
+
+        html.Hr(style = {'margin-top':'5px', 'margin-bottom':'10px',}),
+
+        ], style = {'padding-left':'15px', 'padding-right':'15px'}),
 
     html.Div([
 
@@ -1957,10 +1991,10 @@ def update_input_check(input_sequence):
 
 @app.callback([Output('reference-sequence', 'sequence'), Output('reference-sequence', 'coverage'), Output('reference-protein-sequence', 'sequence'), Output('reference-protein-sequence', 'coverage'), Output('edit-sequence', 'sequence'), Output('edit-sequence', 'coverage'), Output('edit-protein-sequence', 'sequence'), Output('edit-protein-sequence', 'coverage')],
     [Input('input-check','children'), Input('peg-table','selected_rows'), Input('pegext-table','selected_rows'), Input('ng-table','selected_rows')],
-    state = [State('pe-sequence-input','value'), State('store-peg-table', 'children'), State('store-peg-table-total', 'children')]
+    state = [State('pe-sequence-input','value'), State('pbs-range','value'), State('rtt-range','value'), State('nick-dist-range','value'), State('store-peg-table', 'children'), State('store-peg-table-total', 'children')]
 )
 
-def update_reference_sequence(input_check, selected_rows_peg, selected_rows_pegext, selected_rows_ng, input_sequence, store_peg_table, store_peg_table_total):
+def update_reference_sequence(input_check, selected_rows_peg, selected_rows_pegext, selected_rows_ng, input_sequence, pbs_range, rtt_range, nicking_distance_range, store_peg_table, store_peg_table_total):
 
     annotations_ref = []
     annotations_edit = []
@@ -2130,6 +2164,11 @@ def update_reference_sequence(input_check, selected_rows_peg, selected_rows_pege
                 df_pegext = df_peg_total[df_peg_total['spacer sequence'].isin(peg_group)]
                 df_pegext = df_pegext[df_pegext['type'] == 'pegRNA']
                 df_pegext = df_pegext[['PBS length','PBS GC content','RTT length','RTT GC content','pegRNA extension']].drop_duplicates()
+
+                # df_pegext = df_pegext[(df_pegext['PBS length'] >= pbs_range[0]) & (df_pegext['PBS length'] <= pbs_range[1])]
+                # df_pegext = df_pegext[(df_pegext['RTT length'] >= rtt_range[0]) & (df_pegext['RTT length'] <= rtt_range[1])]
+                df_pegext = df_pegext.sort_values(['PBS length', 'RTT length'])
+
                 df_pegext.reset_index(drop=True, inplace=True)
                 pegext_sequences = list(df_pegext.loc[selected_rows_pegext, 'pegRNA extension'].values)
 
@@ -2168,6 +2207,10 @@ def update_reference_sequence(input_check, selected_rows_peg, selected_rows_pege
                 df_ng = df_peg_total[df_peg_total['pegRNA group'].isin(peg_group)]
                 df_ng = df_ng[df_ng['type'] == 'ngRNA']
                 df_ng = df_ng[['spacer sequence','PAM','strand','nick-to-peg distance','spacer GC content','annotation']].drop_duplicates()
+
+                df_ng = df_ng[(abs(df_ng['nick-to-peg distance']) >= nicking_distance_range[0]) & (abs(df_ng['nick-to-peg distance']) <= nicking_distance_range[1])]
+                df_ng = df_ng.sort_values(['nick-to-peg distance'])
+
                 df_ng.reset_index(drop=True, inplace=True)
                 ngRNA_sequences = list(df_ng.loc[selected_rows_ng, 'spacer sequence'].values)
 
@@ -2284,7 +2327,7 @@ def update_ngrnas_title(n_ngRNAs):
 def update_nickdist_title(nick_dist_range):
     return('Nicking distance: %s bp' % (nick_dist_range))
 
-### Section to run pegDesigner code
+### Section to run PrimeDesign code
 
 # Helper functions
 def gc_content(sequence):
@@ -2599,24 +2642,39 @@ def saturating_mutagenesis_input_sequences(target_name, target_sequence, sm_type
 
     return(sm_target_name_list, sm_target_sequence_list)
 
-@app.callback([Output('peg-table', 'data'), Output('store-peg-table-total', 'children'), Output('store-peg-table', 'children')],
+@app.callback([Output('peg-table', 'data'), Output('store-peg-table-total', 'children'), Output('store-peg-table', 'children'), Output('pegrna-spacer-recommend-top', 'children'), Output('pegrna-spacer-recommend-bottom', 'children'), Output('pegrna-ext-recommend-top', 'children'), Output('pegrna-ext-recommend-bottom', 'children'), Output('pegrna-annotation-recommend', 'children'), Output('pegrna-pbs-recommend', 'children'), Output('pegrna-rtt-recommend', 'children'), Output('ngrna-spacer-recommend-top', 'children'), Output('ngrna-spacer-recommend-bottom', 'children'), Output('ngrna-annotation-recommend', 'children'), Output('ngrna-distance-recommend', 'children')],
     [Input('input-check','children'), Input('pbs-range','value'), Input('rtt-range','value'), Input('nick-dist-range','value'), Input('filter-c1-extension-option','value'), Input('silentmutation-option','value')],
     state = [State('pe-sequence-input','value'), State('session-id', 'children')]
 )
 
-def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, filter_c1_extension, silent_mutation, input_sequence, session_id):
+def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, filter_c1_extension, silent_mutation, input_sequence, session_id):
+
 
     target_design = {}
-    peg_design = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
+    peg_design = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[],}
 
     if 'Success' in input_check:
 
         input_sequence = ''.join(input_sequence.split())
         pe_format = 'NNNNNNNNNNNNNNNNN/NNN[NGG]'
-        nicking_distance_minimum = nicking_distance_range[0]
-        nicking_distance_maximum = nicking_distance_range[1]
+        # nicking_distance_minimum = nicking_distance_range[0]
+        # nicking_distance_maximum = nicking_distance_range[1]
         pbs_length_list = list(range(pbs_range[0], pbs_range[1] + 1))
         rtt_length_list = list(range(rtt_range[0], rtt_range[1] + 1))
+
+        if 14 not in pbs_length_list:
+            pbs_length_list.append(14)
+            pbs_length_list = sorted(pbs_length_list)
+
+        if 80 not in rtt_length_list:
+            rtt_length_list.append(80)
+            rtt_length_list = sorted(rtt_length_list)
+
+        nicking_distance_minimum = 0
+        nicking_distance_maximum = 120
+        # pbs_length_list = list(range(5, 18))
+        # rtt_length_list = list(range(5, 81))
+
         target_sequence = input_sequence#.upper()
         target_name = 'user-input'
 
@@ -2948,8 +3006,15 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                     peg_design['RTT length'].append(rtt_length)
                                     peg_design['RTT GC content'].append(gc_content(pegRNA_ext[:rtt_length]))
                                     peg_design['annotation'].append(pe_annotate)
-                                    peg_design['spacer top strand oligo'].append('caccG' + pe_spacer_sequence[1:] + 'gtttt')
-                                    peg_design['spacer bottom strand oligo'].append('ctctaaaac' + reverse_complement('G' + pe_spacer_sequence[1:]))
+
+                                    if pe_spacer_sequence[0] == 'G':
+                                        peg_design['spacer top strand oligo'].append('cacc' + pe_spacer_sequence + 'gtttt')
+                                        peg_design['spacer bottom strand oligo'].append('ctctaaaac' + reverse_complement(pe_spacer_sequence))
+
+                                    else:
+                                        peg_design['spacer top strand oligo'].append('caccG' + pe_spacer_sequence + 'gtttt')
+                                        peg_design['spacer bottom strand oligo'].append('ctctaaaac' + reverse_complement('G' + pe_spacer_sequence))
+
                                     peg_design['pegRNA extension top strand oligo'].append('gtgc' + pegRNA_ext)
                                     peg_design['pegRNA extension bottom strand oligo'].append('aaaa' + reverse_complement(pegRNA_ext))
 
@@ -2977,8 +3042,15 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                 peg_design['RTT length'].append('')
                                 peg_design['RTT GC content'].append('')
                                 peg_design['annotation'].append(ng_annotate)
-                                peg_design['spacer top strand oligo'].append('caccG' + reverse_complement(ng_spacer_sequence_edit)[1:])
-                                peg_design['spacer bottom strand oligo'].append('aaac' + reverse_complement('G' + reverse_complement(ng_spacer_sequence_edit)[1:]))
+
+                                if reverse_complement(ng_spacer_sequence_edit)[0] == 'G':
+                                    peg_design['spacer top strand oligo'].append('cacc' + reverse_complement(ng_spacer_sequence_edit))
+                                    peg_design['spacer bottom strand oligo'].append('aaac' + reverse_complement(reverse_complement(ng_spacer_sequence_edit)))
+
+                                else:
+                                    peg_design['spacer top strand oligo'].append('caccG' + reverse_complement(ng_spacer_sequence_edit))
+                                    peg_design['spacer bottom strand oligo'].append('aaac' + reverse_complement('G' + reverse_complement(ng_spacer_sequence_edit)))
+
                                 peg_design['pegRNA extension top strand oligo'].append('')
                                 peg_design['pegRNA extension bottom strand oligo'].append('')
 
@@ -3089,8 +3161,15 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                     peg_design['RTT length'].append(rtt_length)
                                     peg_design['RTT GC content'].append(gc_content(pegRNA_ext[:rtt_length]))
                                     peg_design['annotation'].append(pe_annotate)
-                                    peg_design['spacer top strand oligo'].append('caccG' + reverse_complement(pe_spacer_sequence)[1:] + 'gtttt')
-                                    peg_design['spacer bottom strand oligo'].append('ctctaaaac' + reverse_complement('G' + reverse_complement(pe_spacer_sequence)[1:]))
+
+                                    if reverse_complement(pe_spacer_sequence)[0] == 'G':
+                                        peg_design['spacer top strand oligo'].append('cacc' + reverse_complement(pe_spacer_sequence) + 'gtttt')
+                                        peg_design['spacer bottom strand oligo'].append('ctctaaaac' + reverse_complement(reverse_complement(pe_spacer_sequence)))
+
+                                    else:
+                                        peg_design['spacer top strand oligo'].append('caccG' + reverse_complement(pe_spacer_sequence) + 'gtttt')
+                                        peg_design['spacer bottom strand oligo'].append('ctctaaaac' + reverse_complement('G' + reverse_complement(pe_spacer_sequence)))
+
                                     peg_design['pegRNA extension top strand oligo'].append('gtgc' + pegRNA_ext)
                                     peg_design['pegRNA extension bottom strand oligo'].append('aaaa' + reverse_complement(pegRNA_ext))
 
@@ -3118,8 +3197,15 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                 peg_design['RTT length'].append('')
                                 peg_design['RTT GC content'].append('')
                                 peg_design['annotation'].append(ng_annotate)
-                                peg_design['spacer top strand oligo'].append('caccG' + ng_spacer_sequence_edit[1:])
-                                peg_design['spacer bottom strand oligo'].append('aaac' + reverse_complement('G' + ng_spacer_sequence_edit[1:]))
+
+                                if ng_spacer_sequence_edit[0] == 'G':
+                                    peg_design['spacer top strand oligo'].append('cacc' + ng_spacer_sequence_edit)
+                                    peg_design['spacer bottom strand oligo'].append('aaac' + reverse_complement(ng_spacer_sequence_edit))
+
+                                else:
+                                    peg_design['spacer top strand oligo'].append('caccG' + ng_spacer_sequence_edit)
+                                    peg_design['spacer bottom strand oligo'].append('aaac' + reverse_complement('G' + ng_spacer_sequence_edit))
+
                                 peg_design['pegRNA extension top strand oligo'].append('')
                                 peg_design['pegRNA extension bottom strand oligo'].append('')
 
@@ -3132,24 +3218,117 @@ def run_pegDesigner(input_check, pbs_range, rtt_range, nicking_distance_range, f
         df = pd.DataFrame.from_dict(peg_design)
 
     if filter_c1_extension == 'yes':
-        df = df[df['extension first base'] != 'C']
+        df = df[(df['extension first base'] != 'C') | (df['RTT length'] == 80)]
         df.reset_index(drop=True, inplace=True)
 
     df_pegs = df[df['type'] == 'pegRNA']
+
+    # Find recommended pegRNA
+    if len(df_pegs.sort_values(['annotation', 'peg-to-edit distance'])['pegRNA group']) > 0:
+
+        pegrna_group = df_pegs.sort_values(['annotation', 'peg-to-edit distance'])['pegRNA group'].values[0]
+        rtt_length_optimal = min(df_pegs[df_pegs['pegRNA group'] == pegrna_group]['peg-to-edit distance']) + 9
+
+        # find_peg = 0
+        extension_first_base = 'C'
+        while (extension_first_base == 'C') and (rtt_length_optimal < 80):
+            rtt_length_optimal += 1
+            extension_first_base = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == 80)]['pegRNA extension'].values[0][80-int(rtt_length_optimal):80][0]
+
+        # if len(df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == (rtt_length_optimal - 1))]) > 0:
+        if extension_first_base != 'C':
+
+            pbs_extension_recommended = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == 80)]['pegRNA extension'].values[0][80:]
+            rtt_extension_max = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == 80)]['pegRNA extension'].values[0][:80]
+            extension_recommended = rtt_extension_max[-rtt_length_optimal:] + pbs_extension_recommended
+
+            peg_spacer_top_recommended = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == 80)]['spacer top strand oligo'].values[0]
+            peg_spacer_bottom_recommended = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == 80)]['spacer bottom strand oligo'].values[0]
+            peg_ext_top_recommended = 'gtgc' + extension_recommended
+            peg_ext_bottom_recommended = 'aaaa' + reverse_complement(extension_recommended)
+
+            peg_annotation_recommended = ' %s' % str(df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == 80)]['annotation'].values[0]).replace('_', ' ')
+            peg_pbs_recommended = '14 nt'
+            peg_rtt_recommended = '%s nt' % str(rtt_length_optimal)
+
+            # Find recommended ngRNA
+            df_ngs = df[(df['type'] == 'ngRNA') & (df['pegRNA group'] == pegrna_group)]
+            df_ngs['optimal_distance'] = abs(abs(df_ngs['nick-to-peg distance']) - 75)
+            df_ngs = df_ngs.sort_values(['annotation', 'optimal_distance'], ascending = [False, True])
+
+            if len(df_ngs.sort_values(['annotation', 'optimal_distance'], ascending = [False, True])['spacer top strand oligo']) > 0:
+
+                ng_spacer_top_recommended = df_ngs.sort_values(['annotation', 'optimal_distance'], ascending = [False, True])['spacer top strand oligo'].values[0]
+                ng_spacer_bottom_recommended = df_ngs.sort_values(['annotation', 'optimal_distance'], ascending = [False, True])['spacer bottom strand oligo'].values[0]
+                ng_annotation_recommended = ' %s' % str(df_ngs.sort_values(['annotation', 'optimal_distance'], ascending = [False, True])['annotation'].values[0]).replace('_', ' ')
+                ng_distance_recommended = ' %s bp' % str(df_ngs.sort_values(['annotation', 'optimal_distance'], ascending = [False, True])['nick-to-peg distance'].values[0])
+
+            else:
+
+                ng_spacer_top_recommended = 'n/a'
+                ng_spacer_bottom_recommended = 'n/a'
+                ng_annotation_recommended = 'n/a'
+                ng_distance_recommended = 'n/a'
+
+        else:
+
+            peg_spacer_top_recommended = 'n/a'
+            peg_spacer_bottom_recommended = 'n/a'
+            peg_ext_top_recommended = 'n/a'
+            peg_ext_bottom_recommended = 'n/a'
+
+            peg_annotation_recommended = ' n/a'
+            peg_pbs_recommended = ' n/a'
+            peg_rtt_recommended = ' n/a'
+
+            ng_spacer_top_recommended = 'n/a'
+            ng_spacer_bottom_recommended = 'n/a'
+            ng_annotation_recommended = ' n/a'
+            ng_distance_recommended = ' n/a'
+
+    else:
+
+        peg_spacer_top_recommended = ''
+        peg_spacer_bottom_recommended = ''
+        peg_ext_top_recommended = ''
+        peg_ext_bottom_recommended = ''
+
+        peg_annotation_recommended = ''
+        peg_pbs_recommended = ''
+        peg_rtt_recommended = ''
+
+        ng_spacer_top_recommended = ''
+        ng_spacer_bottom_recommended = ''
+        ng_annotation_recommended = ''
+        ng_distance_recommended = ''
+
+
+    # # Filter dataframes
+    if pbs_range[1] < 14:
+        df = df[df['PBS length'] != 14]
+        df_pegs = df_pegs[df_pegs['PBS length'] != 14]
+
+    if rtt_range[1] < 80:
+        df = df[df['RTT length'] != 80]
+        df_pegs = df_pegs[df_pegs['RTT length'] != 80]
+
+    # # Filter pegrna dataframe
+    # df = df[((df['type'] == 'pegRNA') & (df['RTT length'] >= rtt_range[0]) & (df['RTT length'] <= rtt_range[1]) & (df['PBS length'] >= pbs_range[0]) & (df['PBS length'] <= pbs_range[1])) | ((df['type'] == 'ngRNA') & (abs(df['nick-to-peg distance']) >= nicking_distance_range[0]) & (abs(df['nick-to-peg distance']) <= nicking_distance_range[1]))]
+    # df_pegs = df_pegs[(df_pegs['RTT length'] >= rtt_range[0]) & (df_pegs['RTT length'] <= rtt_range[1])]
+
     df_pegs = df_pegs[['pegRNA group','spacer sequence','PAM','strand','peg-to-edit distance','spacer GC content','annotation']].drop_duplicates()
     df_pegs = df_pegs.sort_values('peg-to-edit distance')
     df_pegs.reset_index(drop=True, inplace=True)
 
     df.to_csv('/PrimeDesign/reports/PrimeDesign_%s.csv' % session_id)
 
-    return(df_pegs.to_dict('records'), df.to_json(date_format='iso', orient='split'), df_pegs.to_json(date_format='iso', orient='split'))
+    return(df_pegs.to_dict('records'), df.to_json(date_format='iso', orient='split'), df_pegs.to_json(date_format='iso', orient='split'), peg_spacer_top_recommended, peg_spacer_bottom_recommended, peg_ext_top_recommended, peg_ext_bottom_recommended, peg_annotation_recommended, peg_pbs_recommended, peg_rtt_recommended, ng_spacer_top_recommended, ng_spacer_bottom_recommended, ng_annotation_recommended, ng_distance_recommended)
 
-# Trigger pegRNA extension and ngRNA tables with pegRNA spacer selection
 @app.callback(Output('pegext-table', 'data'),
-    [Input('peg-table','selected_rows'), Input('store-peg-table-total', 'children'), Input('store-peg-table', 'children')]
+    [Input('peg-table','selected_rows'), Input('pbs-range','value'), Input('rtt-range','value'), Input('filter-c1-extension-option','value'), Input('store-peg-table-total', 'children'), Input('store-peg-table', 'children')]
 )
 
-def update_pegext_table(selected_row, store_peg_table_total, store_peg_table):
+def update_pegext_table(selected_row, pbs_range, rtt_range, filter_c1_extension, store_peg_table_total, store_peg_table):
 
     try:
         # Open up stored peg table
@@ -3160,6 +3339,11 @@ def update_pegext_table(selected_row, store_peg_table_total, store_peg_table):
         df_pegext = df_peg_total[df_peg_total['spacer sequence'].isin(spacer_sequence)]
         df_pegext = df_pegext[df_pegext['type'] == 'pegRNA']
         df_pegext = df_pegext[['PBS length','PBS GC content','RTT length','RTT GC content','pegRNA extension']].drop_duplicates()
+
+        # df_pegext = df_pegext[(df_pegext['PBS length'] >= pbs_range[0]) & (df_pegext['PBS length'] <= pbs_range[1])]
+        # df_pegext = df_pegext[(df_pegext['RTT length'] >= rtt_range[0]) & (df_pegext['RTT length'] <= rtt_range[1])]
+        df_pegext = df_pegext.sort_values(['PBS length', 'RTT length'])
+
         df_pegext.reset_index(drop=True, inplace=True)
 
     except:
@@ -3169,10 +3353,10 @@ def update_pegext_table(selected_row, store_peg_table_total, store_peg_table):
     return(df_pegext.to_dict('records'))
 
 @app.callback(Output('ng-table', 'data'),
-    [Input('peg-table','selected_rows'), Input('store-peg-table-total', 'children'), Input('store-peg-table', 'children')]
+    [Input('peg-table','selected_rows'), Input('nick-dist-range', 'value'), Input('store-peg-table-total', 'children'), Input('store-peg-table', 'children')]
 )
 
-def update_ng_table(selected_row, store_peg_table_total, store_peg_table):
+def update_ng_table(selected_row, nicking_distance_range, store_peg_table_total, store_peg_table):
 
     try:
         # Open up stored peg table
@@ -3183,6 +3367,10 @@ def update_ng_table(selected_row, store_peg_table_total, store_peg_table):
         df_ng = df_peg_total[df_peg_total['pegRNA group'].isin(peg_group)]
         df_ng = df_ng[df_ng['type'] == 'ngRNA']
         df_ng = df_ng[['spacer sequence','PAM','strand','nick-to-peg distance','spacer GC content','annotation']].drop_duplicates()
+
+        df_ng = df_ng[(abs(df_ng['nick-to-peg distance']) >= nicking_distance_range[0]) & (abs(df_ng['nick-to-peg distance']) <= nicking_distance_range[1])]
+        df_ng = df_ng.sort_values(['nick-to-peg distance'])
+
         df_ng.reset_index(drop=True, inplace=True)
 
     except:
@@ -3336,7 +3524,7 @@ def update_input_check(contents, filename, list_of_dates, pooled_design_type):
     state = [State('upload-data','contents'), State('upload-data', 'filename'), State('design-option-pool','value'), State('satmut-type','value'), State('npegs-pool','value'), State('homology-downstream-pool','value'), State('pbs-pool','value'), State('rtt-pool','value'), State('nngs-pool','value'), State('nick-dist-pool','value'), State('filter-c1-extension-option-pool','value'), State('silentmutation-option-pool','value'), State('session-id', 'children')]
 )
 
-def run_pegDesigner_pooled(input_check, contents, filename, pool_type, satmut_type, number_of_pegrnas, homology_downstream, pbs_length_pooled, rtt_max_length_pooled, number_of_ngrnas, nicking_distance_pooled, filter_c1_extension, silent_mutation, session_id):
+def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_type, number_of_pegrnas, homology_downstream, pbs_length_pooled, rtt_max_length_pooled, number_of_ngrnas, nicking_distance_pooled, filter_c1_extension, silent_mutation, session_id):
 
     target_design = {}
     peg_design = {'Target_name':[], 'Target_sequence':[], 'pegRNA_number':[],'gRNA_type':[], 'Spacer_sequence':[],'Spacer_GC_content':[],'PAM_sequence':[],'Strand':[],'pegRNA-to-edit_distance':[],'ngRNA-to-pegRNA_distance':[],'pegRNA_extension':[], 'First_extension_nucleotide':[],'PBS_length':[],'PBS_GC_content':[],'RTT_length':[],'RTT_GC_content':[],'Annotation':[],'Spacer_top_strand_oligo':[], 'Spacer_bottom_strand_oligo':[], 'pegRNA_extension_top_strand_oligo':[], 'pegRNA_extension_bottom_strand_oligo':[]}
@@ -4189,10 +4377,10 @@ def update_input_check(primevar_id_search_type, primevar_id_search, editing_dire
 
 @app.callback([Output('reference-sequence-db', 'sequence'), Output('reference-sequence-db', 'coverage'), Output('edit-sequence-db', 'sequence'), Output('edit-sequence-db', 'coverage')],
     [Input('primevar-input-check','children'), Input('peg-table-db','selected_rows'), Input('pegext-table-db','selected_rows'), Input('ng-table-db','selected_rows')],
-    state = [State('primevar-id-search-type','value'), State('primevar-id-search','value'), State('editing-direction','value'), State('store-peg-table-db', 'children'), State('store-peg-table-total-db', 'children')]
+    state = [State('pbs-range-db','value'), State('rtt-range-db','value'), State('nick-dist-range-db','value'), State('primevar-id-search-type','value'), State('primevar-id-search','value'), State('editing-direction','value'), State('store-peg-table-db', 'children'), State('store-peg-table-total-db', 'children')]
 )
 
-def update_reference_sequence(primevar_input, selected_rows_peg, selected_rows_pegext, selected_rows_ng, primevar_id_search_type, primevar_id_search, editing_direction, store_peg_table, store_peg_table_total):
+def update_reference_sequence(primevar_input, selected_rows_peg, selected_rows_pegext, selected_rows_ng, pbs_range, rtt_range, nicking_distance_range, primevar_id_search_type, primevar_id_search, editing_direction, store_peg_table, store_peg_table_total):
 
     annotations_ref = []
     annotations_edit = []
@@ -4313,6 +4501,10 @@ def update_reference_sequence(primevar_input, selected_rows_peg, selected_rows_p
             df_pegext = df_peg_total[df_peg_total['spacer sequence'].isin(peg_group)]
             df_pegext = df_pegext[df_pegext['type'] == 'pegRNA']
             df_pegext = df_pegext[['PBS length','PBS GC content','RTT length','RTT GC content','pegRNA extension']].drop_duplicates()
+
+            df_pegext = df_pegext[(df_pegext['PBS length'] >= pbs_range[0]) & (df_pegext['PBS length'] <= pbs_range[1])]
+            df_pegext = df_pegext[(df_pegext['RTT length'] >= rtt_range[0]) & (df_pegext['RTT length'] <= rtt_range[1])]
+
             df_pegext.reset_index(drop=True, inplace=True)
             pegext_sequences = list(df_pegext.loc[selected_rows_pegext, 'pegRNA extension'].values)
 
@@ -4351,6 +4543,9 @@ def update_reference_sequence(primevar_input, selected_rows_peg, selected_rows_p
             df_ng = df_peg_total[df_peg_total['pegRNA group'].isin(peg_group)]
             df_ng = df_ng[df_ng['type'] == 'ngRNA']
             df_ng = df_ng[['spacer sequence','PAM','strand','nick-to-peg distance','spacer GC content','annotation']].drop_duplicates()
+
+            df_ng = df_ng[(abs(df_ng['nick-to-peg distance']) >= nicking_distance_range[0]) & (abs(df_ng['nick-to-peg distance']) <= nicking_distance_range[1])]
+
             df_ng.reset_index(drop=True, inplace=True)
             ngRNA_sequences = list(df_ng.loc[selected_rows_ng, 'spacer sequence'].values)
 
@@ -4466,7 +4661,7 @@ def update_ng_table(selected_row, store_peg_table_total, store_peg_table, nickin
         df_ng = df_ng[df_ng['type'] == 'ngRNA']
         df_ng = df_ng[['spacer sequence','PAM','strand','nick-to-peg distance','spacer GC content','annotation']].drop_duplicates()
         df_ng['spacer GC content'] = df_ng['spacer GC content'].round(2)
-        df_ng = df_ng[(df_ng['nick-to-peg distance'] >= nicking_distance_range[0]) & (df_ng['nick-to-peg distance'] <= nicking_distance_range[1])]
+        df_ng = df_ng[(abs(df_ng['nick-to-peg distance']) >= nicking_distance_range[0]) & (abs(df_ng['nick-to-peg distance']) <= nicking_distance_range[1])]
         df_ng.reset_index(drop=True, inplace=True)
 
     except:
