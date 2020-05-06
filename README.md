@@ -37,12 +37,32 @@ Users can specify the following options:
       Prime editing formatting including the spacer, cut index -> /, and protospacer adjacent motif (PAM) -> [PAM] (Default: NNNNNNNNNNNNNNNNN/NNN[NGG]). Examples: NNNNNNNNNNNNNNNNN/NNN[NGG], NNNNNNNNNNNNNNNNN/NNN[NG]
 -pbs, --pbs_length_list
       List of primer binding site (PBS) lengths for the pegRNA extension (Default: 10 to 16 nt). Example: 12 13 14 15
--rt, --rt_length_list
+-rtt, --rtt_length_list
       List of reverse transcription (RT) template lengths for the pegRNA extension (Default: 10 to 16 nt). Example: 10 15 20
 -nick_dist_min, --nicking_distance_minimum
       Minimum nicking distance for designing ngRNAs upstream and downstream of a pegRNA (Default: 0).
 -nick_dist_max, --nicking_distance_maximum
       Maximum nicking distance for designing ngRNAs upstream and downstream of a pegRNA (Default: 100).
+-filter_c1, --filter_c1_extension
+      Option to filter against pegRNA extensions that start with a C base.
+-silent_mut, --silent_mutation
+      Introduce silent mutation into PAM assuming sequence is in-frame. Currently only available with SpCas9.
+-genome_wide, --genome_wide_design
+      Whether or not this is a genome-wide pooled design. This option designs a set of pegRNAs per input without ranging PBS and RTT parameters.
+-sat_mut, --saturation_mutagenesis
+      Saturation mutagenesis design with prime editing. The 'aa' option makes amino acid changes and the 'base' option makes DNA base changes. (Options: aa, base)
+-n_pegrnas, --number_of_pegrnas
+      The maximum number of pegRNAs to design for each input sequence. The pegRNAs are ranked by 1) PAM disrupted > PAM intact then 2) distance to edit. (Default: 3)
+n_ngrnas, --number_of_ngrnas
+      The maximum number of ngRNAs to design for each input sequence. The ngRNAs are ranked by 1) PE3b-seed > PE3b-nonseed > PE3 then 2) deviation from nicking_distance_pooled. (Default: 3)
+-nick_dist_pooled, --nicking_distance_pooled
+      The nicking distance between pegRNAs and ngRNAs for pooled designs. PE3b annotation is priority (PE3b seed -> PE3b non-seed), followed by nicking distance closest to this parameter. (Default: 75 bp)
+-homology_downstream, --homology_downstream
+      For pooled designs (genome_wide or saturation_mutagenesis needs to be indicated), this parameter determines the RT extension length downstream of an edit for pegRNA designs. (Default: 10)
+-pbs_pooled, --pbs_length_pooled
+      The PBS length to design pegRNAs for pooled design applications. (Default: 14 nt)
+rtt_pooled, --rtt_max_length_pooled
+      The maximum RTT length to design pegRNAs for pooled design applications. (Default: 50 nt)
 -out, --out_dir
       Name of output directory. (Default: ./DATETIMESTAMP_PrimeDesign)
 ```
@@ -51,8 +71,8 @@ Users can specify the following options:
 PrimeDesign takes in a single input sequence to design pegRNAs and ngRNAs for prime editing. The input sequence encodes both the reference and edited sequence with the following formatting:
 
 * Substitution:     (reference/edit)
-* Insertion:        (+insertion)
-* Deletion:         (-deletion)
+* Insertion:        (+insertion) or (/insertion)
+* Deletion:         (-deletion) or (deletion/)
 
 ### Examples
 **Reference sequence:** GCCTGTGACTAACTGCGCCAAAACGTCTTCCAATCCCCTTATCCAATTTA
