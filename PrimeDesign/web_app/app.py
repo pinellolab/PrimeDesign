@@ -91,7 +91,7 @@ def serve_layout():
             dbc.Modal(
                 [
                     dbc.ModalHeader("Navigating PrimeDesign"),
-                    dbc.ModalBody(html.Img(src=app.get_asset_url('primedesign_demo.gif'), style = {'display':'block', 'margin-left':'auto', 'margin-right':'auto', 'width':'80%'}),),
+                    dbc.ModalBody(html.Img(src=app.get_asset_url('primedesign_design_demo.gif'), style = {'display':'block', 'margin-left':'auto', 'margin-right':'auto', 'width':'80%'}),),
                     dbc.ModalFooter(
                         dbc.Button("Close", id="close", className="ml-auto")
                     ),
@@ -349,7 +349,7 @@ help_page = html.Div([
 
         ], style = {'display':'block','line-height':'100%'}),
 
-    html.Img(src=app.get_asset_url('primedesign_demo.gif'), style = {'display':'block', 'margin-left':'auto', 'margin-right':'auto', 'width':'80%'}),
+    html.Img(src=app.get_asset_url('primedesign_design_demo.gif'), style = {'display':'block', 'margin-left':'auto', 'margin-right':'auto', 'width':'80%'}),
 
     ], style = {'padding': '15px','margin': '0px'}),
 
@@ -761,16 +761,20 @@ pooled_page = html.Div([
 
             html.H4('Step 3: Download PrimeDesign summary'),
 
-            html.H5(id='update-design-pool' , children = 'Design incomplete', style = {'color':'#6a6a6a', 'font-size':'25px'}),
+            dcc.Loading(id='loading-7', children=[
 
-            html.A(
-                children = ' ',
-                id='download-link-pool',
-                download="PrimeDesign_Pooled.csv",
-                href="",
-                target="_blank",
-                style = {'font-size':'25px', 'color':'#6cb7ff', 'text-decoration':'underline'}
-            ),
+                html.H5(id='update-design-pool' , children = 'Design incomplete', style = {'color':'#6a6a6a', 'font-size':'25px'}),
+
+                html.A(
+                    children = ' ',
+                    id='download-link-pool',
+                    download="PrimeDesign_Pooled.csv",
+                    href="",
+                    target="_blank",
+                    style = {'font-size':'25px', 'color':'#6cb7ff', 'text-decoration':'underline'}
+                ),
+
+            ], type='default'),
 
             ], className = 'six columns'),
 
@@ -843,7 +847,7 @@ database_page = html.Div([
 
             dcc.Input(
                 id = 'primevar-id-search',
-                placeholder='Enter variant # here',
+                placeholder='Enter variant # here (e.g. 113993960)',
                 type='text',
                 value='',
                 style = {'width':'500px', 'min-width': '300px',}
@@ -1196,37 +1200,41 @@ database_page = html.Div([
 
             html.Label('Increase RTT length if no pegRNA spacer designs are available', style = {'color':'grey', 'margin-top':'0px'}),
 
-            dash_table.DataTable(
-                id = 'peg-table-db',
-                columns = [{'name': i, 'id': i} for i in ['spacer sequence','PAM','strand','peg-to-edit distance','spacer GC content','annotation']],
-                data = df_tmp.to_dict('records'),
-                style_cell={'textAlign': 'left', 'padding': '5px'},
-                # style_as_list_view=True,
-                style_header={
-                    'backgroundColor': 'white',
-                    # 'fontWeight': 'bold',
-                    'font-family':'HelveticaNeue',
-                    'font-size':'14px'
-                },
-                style_table={
-                    'maxHeight': '300px',
-                    'overflowY': 'scroll'
-                },
-                sort_action = 'native',
-                sort_mode = 'multi',
-                # filter_action = 'native',
-                row_selectable = 'multi',
-                style_data_conditional=[{
-                    'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PAM_disrupted'},
-                    'backgroundColor': "#62c096",
-                    'color': 'white'
-                },
-                {
-                    'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PAM_disrupted_silent_mutation'},
-                    'backgroundColor': "#62c096",
-                    'color': 'white'
-                }]
-            ),
+            dcc.Loading(id='loading-4', children=[
+
+                dash_table.DataTable(
+                    id = 'peg-table-db',
+                    columns = [{'name': i, 'id': i} for i in ['spacer sequence','PAM','strand','peg-to-edit distance','spacer GC content','annotation']],
+                    data = df_tmp.to_dict('records'),
+                    style_cell={'textAlign': 'left', 'padding': '5px'},
+                    # style_as_list_view=True,
+                    style_header={
+                        'backgroundColor': 'white',
+                        # 'fontWeight': 'bold',
+                        'font-family':'HelveticaNeue',
+                        'font-size':'14px'
+                    },
+                    style_table={
+                        'maxHeight': '300px',
+                        'overflowY': 'scroll'
+                    },
+                    sort_action = 'native',
+                    sort_mode = 'multi',
+                    # filter_action = 'native',
+                    row_selectable = 'multi',
+                    style_data_conditional=[{
+                        'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PAM_disrupted'},
+                        'backgroundColor': "#62c096",
+                        'color': 'white'
+                    },
+                    {
+                        'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PAM_disrupted_silent_mutation'},
+                        'backgroundColor': "#62c096",
+                        'color': 'white'
+                    }]
+                ),
+            
+            ], type='default'),
 
             html.H6('pegRNA extensions', style = {'display': 'inline', 'margin':'0px', 'margin-right':'5px'}),
             html.Span('?', id = 'pegext-tooltip-db', style={'font-size':'11px', 'textAlign': 'center', 'color': 'white',}, className = 'dot'),
@@ -1239,27 +1247,31 @@ database_page = html.Div([
 
             html.Label('Please select pegRNA spacer(s) above to see associated extensions', style = {'color':'grey', 'margin-top':'0px'}),
 
-            dash_table.DataTable(
-                id = 'pegext-table-db',
-                columns = [{'name': i, 'id': i} for i in ['PBS length','PBS GC content','RTT length','RTT GC content','pegRNA extension']],
-                data = df_tmp.to_dict('records'),
-                style_cell={'textAlign': 'left', 'padding': '5px'},
-                # style_as_list_view=True,
-                style_header={
-                    'backgroundColor': 'white',
-                    # 'fontWeight': 'bold',
-                    'font-family':'HelveticaNeue',
-                    'font-size':'14px'
-                },
-                style_table={
-                    'maxHeight': '300px',
-                    'overflowY': 'scroll'
-                },
-                sort_action = 'native',
-                sort_mode = 'multi',
-                # filter_action = 'native',
-                row_selectable = 'multi'
-                ),
+            dcc.Loading(id='loading-5', children=[
+
+                dash_table.DataTable(
+                    id = 'pegext-table-db',
+                    columns = [{'name': i, 'id': i} for i in ['PBS length','PBS GC content','RTT length','RTT GC content','pegRNA extension']],
+                    data = df_tmp.to_dict('records'),
+                    style_cell={'textAlign': 'left', 'padding': '5px'},
+                    # style_as_list_view=True,
+                    style_header={
+                        'backgroundColor': 'white',
+                        # 'fontWeight': 'bold',
+                        'font-family':'HelveticaNeue',
+                        'font-size':'14px'
+                    },
+                    style_table={
+                        'maxHeight': '300px',
+                        'overflowY': 'scroll'
+                    },
+                    sort_action = 'native',
+                    sort_mode = 'multi',
+                    # filter_action = 'native',
+                    row_selectable = 'multi'
+                    ),
+
+                ], type='default'),
 
             html.H6('ngRNA spacers', style = {'display': 'inline', 'margin':'0px', 'margin-right':'5px'}),
             html.Span('?', id = 'ngspacer-tooltip-db', style={'font-size':'11px', 'textAlign': 'center', 'color': 'white',}, className = 'dot'),
@@ -1272,38 +1284,41 @@ database_page = html.Div([
 
             html.Label('Please select pegRNA spacer(s) above to see associated ngRNAs', style = {'color':'grey', 'margin-top':'0px'}),
 
-            dash_table.DataTable(
-                id = 'ng-table-db',
-                columns = [{'name': i, 'id': i} for i in ['spacer sequence','PAM','strand','nick-to-peg distance','spacer GC content','annotation']],
-                data = df_tmp.to_dict('records'),
-                style_cell={'textAlign': 'left', 'padding': '5px'},
-                # style_as_list_view=True,
-                style_header={
-                    'backgroundColor': 'white',
-                    # 'fontWeight': 'bold',
-                    'font-family':'HelveticaNeue','font-size':'14px'
+            dcc.Loading(id='loading-6', children=[
 
-                },
-                style_table={
-                    'maxHeight': '300px',
-                    'overflowY': 'scroll'
-                },
-                sort_action = 'native',
-                sort_mode = 'multi',
-                row_selectable = 'multi',
-                # filter_action = 'native',
-                style_data_conditional=[{
-                    'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PE3b-seed'},
-                    'backgroundColor': "#62c096",
-                    'color': 'white'
-                },
-                {
-                    'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PE3b-nonseed'},
-                    'backgroundColor': "#62c096",
-                    'color': 'white'
-                },
-                ]
-            ),
+                dash_table.DataTable(
+                    id = 'ng-table-db',
+                    columns = [{'name': i, 'id': i} for i in ['spacer sequence','PAM','strand','nick-to-peg distance','spacer GC content','annotation']],
+                    data = df_tmp.to_dict('records'),
+                    style_cell={'textAlign': 'left', 'padding': '5px'},
+                    # style_as_list_view=True,
+                    style_header={
+                        'backgroundColor': 'white',
+                        # 'fontWeight': 'bold',
+                        'font-family':'HelveticaNeue','font-size':'14px'
+
+                    },
+                    style_table={
+                        'maxHeight': '300px',
+                        'overflowY': 'scroll'
+                    },
+                    sort_action = 'native',
+                    sort_mode = 'multi',
+                    row_selectable = 'multi',
+                    # filter_action = 'native',
+                    style_data_conditional=[{
+                        'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PE3b-seed'},
+                        'backgroundColor': "#62c096",
+                        'color': 'white'
+                    },
+                    {
+                        'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PE3b-nonseed'},
+                        'backgroundColor': "#62c096",
+                        'color': 'white'
+                    },
+                    ]
+                    ),
+                ], type='default'),
 
             html.Div(id='store-peg-table-total-db', style={'display': 'none'}),
             html.Div(id='store-peg-table-db', style={'display': 'none'}),
@@ -1596,7 +1611,7 @@ design_page = html.Div([
             html.Label(id = 'pbs-info', children = 'Primer binding site', style = {'color':'grey'}),
             dcc.RangeSlider(
                 id = 'pbs-range',
-                min=5,
+                min=7,
                 max=17,
                 value=[12, 14],
                 allowCross=False
@@ -1621,7 +1636,7 @@ design_page = html.Div([
             html.Label(id = 'rtt-info', children = 'Reverse transcription template', style = {'color':'grey'}),
             dcc.RangeSlider(
                 id = 'rtt-range',
-                min=5,
+                min=10,
                 max=80,
                 value=[10, 20],
                 allowCross=False
@@ -1732,37 +1747,40 @@ design_page = html.Div([
 
             html.Label('Increase RTT length if no pegRNA spacer designs are available', style = {'color':'grey', 'margin-top':'0px'}),
 
-            dash_table.DataTable(
-                id = 'peg-table',
-                columns = [{'name': i, 'id': i} for i in ['spacer sequence','PAM','strand','peg-to-edit distance','spacer GC content','annotation']],
-                data = df_tmp.to_dict('records'),
-                style_cell={'textAlign': 'left', 'padding': '5px'},
-                # style_as_list_view=True,
-                style_header={
-                    'backgroundColor': 'white',
-                    # 'fontWeight': 'bold',
-                    'font-family':'HelveticaNeue',
-                    'font-size':'14px'
-                },
-                style_table={
-                    'maxHeight': '300px',
-                    'overflowY': 'scroll'
-                },
-                sort_action = 'native',
-                sort_mode = 'multi',
-                # filter_action = 'native',
-                row_selectable = 'multi',
-                style_data_conditional=[{
-                    'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PAM_disrupted'},
-                    'backgroundColor': "#62c096",
-                    'color': 'white'
-                },
-                {
-                    'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PAM_disrupted_silent_mutation'},
-                    'backgroundColor': "#62c096",
-                    'color': 'white'
-                }]
-            ),
+            dcc.Loading(id='loading-1', children=[
+
+                dash_table.DataTable(
+                    id = 'peg-table',
+                    columns = [{'name': i, 'id': i} for i in ['spacer sequence','PAM','strand','peg-to-edit distance','spacer GC content','annotation']],
+                    data = df_tmp.to_dict('records'),
+                    style_cell={'textAlign': 'left', 'padding': '5px'},
+                    # style_as_list_view=True,
+                    style_header={
+                        'backgroundColor': 'white',
+                        # 'fontWeight': 'bold',
+                        'font-family':'HelveticaNeue',
+                        'font-size':'14px'
+                    },
+                    style_table={
+                        'maxHeight': '300px',
+                        'overflowY': 'scroll'
+                    },
+                    sort_action = 'native',
+                    sort_mode = 'multi',
+                    # filter_action = 'native',
+                    row_selectable = 'multi',
+                    style_data_conditional=[{
+                        'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PAM_disrupted'},
+                        'backgroundColor': "#62c096",
+                        'color': 'white'
+                    },
+                    {
+                        'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PAM_disrupted_silent_mutation'},
+                        'backgroundColor': "#62c096",
+                        'color': 'white'
+                    }]
+                ),
+            ], type='default'),
 
             html.H6('pegRNA extensions', style = {'display': 'inline', 'margin':'0px', 'margin-right':'5px'}),
             html.Span('?', id = 'pegext-tooltip', style={'font-size':'11px', 'textAlign': 'center', 'color': 'white',}, className = 'dot'),
@@ -1775,27 +1793,30 @@ design_page = html.Div([
 
             html.Label('Please select pegRNA spacer(s) above to see associated extensions', style = {'color':'grey', 'margin-top':'0px'}),
 
-            dash_table.DataTable(
-                id = 'pegext-table',
-                columns = [{'name': i, 'id': i} for i in ['PBS length','PBS GC content','RTT length','RTT GC content','pegRNA extension']],
-                data = df_tmp.to_dict('records'),
-                style_cell={'textAlign': 'left', 'padding': '5px'},
-                # style_as_list_view=True,
-                style_header={
-                    'backgroundColor': 'white',
-                    # 'fontWeight': 'bold',
-                    'font-family':'HelveticaNeue',
-                    'font-size':'14px'
-                },
-                style_table={
-                    'maxHeight': '300px',
-                    'overflowY': 'scroll'
-                },
-                sort_action = 'native',
-                sort_mode = 'multi',
-                # filter_action = 'native',
-                row_selectable = 'multi'
-                ),
+            dcc.Loading(id='loading-2', children=[
+
+                dash_table.DataTable(
+                    id = 'pegext-table',
+                    columns = [{'name': i, 'id': i} for i in ['PBS length','PBS GC content','RTT length','RTT GC content','pegRNA extension']],
+                    data = df_tmp.to_dict('records'),
+                    style_cell={'textAlign': 'left', 'padding': '5px'},
+                    # style_as_list_view=True,
+                    style_header={
+                        'backgroundColor': 'white',
+                        # 'fontWeight': 'bold',
+                        'font-family':'HelveticaNeue',
+                        'font-size':'14px'
+                    },
+                    style_table={
+                        'maxHeight': '300px',
+                        'overflowY': 'scroll'
+                    },
+                    sort_action = 'native',
+                    sort_mode = 'multi',
+                    # filter_action = 'native',
+                    row_selectable = 'multi'
+                    ),
+                ], type='default'),
 
             html.H6('ngRNA spacers', style = {'display': 'inline', 'margin':'0px', 'margin-right':'5px'}),
             html.Span('?', id = 'ngspacer-tooltip', style={'font-size':'11px', 'textAlign': 'center', 'color': 'white',}, className = 'dot'),
@@ -1808,39 +1829,42 @@ design_page = html.Div([
 
             html.Label('Please select pegRNA spacer(s) above to see associated ngRNAs', style = {'color':'grey', 'margin-top':'0px'}),
 
-            dash_table.DataTable(
-                id = 'ng-table',
-                columns = [{'name': i, 'id': i} for i in ['spacer sequence','PAM','strand','nick-to-peg distance','spacer GC content','annotation']],
-                data = df_tmp.to_dict('records'),
-                style_cell={'textAlign': 'left', 'padding': '5px'},
-                # style_as_list_view=True,
-                style_header={
-                    'backgroundColor': 'white',
-                    # 'fontWeight': 'bold',
-                    'font-family':'HelveticaNeue','font-size':'14px'
+            dcc.Loading(id='loading-3', children=[
 
-                },
-                style_table={
-                    'maxHeight': '300px',
-                    'overflowY': 'scroll'
-                },
-                sort_action = 'native',
-                sort_mode = 'multi',
-                row_selectable = 'multi',
-                # filter_action = 'native',
-                style_data_conditional=[{
-                    'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PE3b-seed'},
-                    'backgroundColor': "#62c096",
-                    'color': 'white'
-                },
-                {
-                    'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PE3b-nonseed'},
-                    'backgroundColor': "#62c096",
-                    'color': 'white'
-                },
-                ]
-            ),
+                dash_table.DataTable(
+                    id = 'ng-table',
+                    columns = [{'name': i, 'id': i} for i in ['spacer sequence','PAM','strand','nick-to-peg distance','spacer GC content','annotation']],
+                    data = df_tmp.to_dict('records'),
+                    style_cell={'textAlign': 'left', 'padding': '5px'},
+                    # style_as_list_view=True,
+                    style_header={
+                        'backgroundColor': 'white',
+                        # 'fontWeight': 'bold',
+                        'font-family':'HelveticaNeue','font-size':'14px'
 
+                    },
+                    style_table={
+                        'maxHeight': '300px',
+                        'overflowY': 'scroll'
+                    },
+                    sort_action = 'native',
+                    sort_mode = 'multi',
+                    row_selectable = 'multi',
+                    # filter_action = 'native',
+                    style_data_conditional=[{
+                        'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PE3b-seed'},
+                        'backgroundColor': "#62c096",
+                        'color': 'white'
+                    },
+                    {
+                        'if': {'column_id': 'annotation', 'filter_query': '{annotation} eq PE3b-nonseed'},
+                        'backgroundColor': "#62c096",
+                        'color': 'white'
+                    },
+                    ]
+                ),
+            ], type='default'),
+            
             html.Div(id='store-peg-table-total', style={'display': 'none'}),
             html.Div(id='store-peg-table', style={'display': 'none'}),
 
@@ -2318,7 +2342,7 @@ def update_rtt_title(rtt_range):
 )
 
 def update_ngrnas_title(n_ngRNAs):
-    return('Number of ngRNAs per pegRNA: %s bp' % (n_ngRNAs))
+    return('Number of ngRNAs per pegRNA: %s' % (n_ngRNAs))
 
 @app.callback(Output('nick-dist-title-pool', 'children'),
     [Input('nick-dist-pool','value')]
@@ -2926,6 +2950,8 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                 pe_pam_ref_silent_mutation = ''
 
                                 # Construct pegRNA extension to encode intended edit(s)
+                                if (pe_nick_edit_idx - rtt_length) < 0:
+                                    rtt_length = pe_nick_edit_idx
 
                                 # Patch for NGG PAMs - may need to build something more generalizable in the future
                                 if silent_mutation == 'yes':
@@ -2937,7 +2963,7 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                         if nick_aa_index == 0:
                                             original_codon = edit_sequence[pe_nick_edit_idx + 3:pe_nick_edit_idx + 6].upper()
 
-                                            if len(codon_swap_0[original_codon.upper()]) > 1:
+                                            if len(codon_swap_0[original_codon.upper()]) > 0:
                                                 new_codon = codon_swap_0[original_codon][0][0].lower()
                                                 pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 3] + new_codon + edit_sequence[pe_nick_edit_idx + 6:pe_nick_edit_idx + rtt_length])
                                                 pe_pam_ref_silent_mutation = pe_pam_ref + '-to-' + new_codon
@@ -2947,16 +2973,19 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                                 pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + rtt_length])
 
                                         elif nick_aa_index == 1:
+
                                             original_codon_1 = edit_sequence[pe_nick_edit_idx + 2:pe_nick_edit_idx + 5].upper()
                                             original_codon_2 = edit_sequence[pe_nick_edit_idx + 5:pe_nick_edit_idx + 8].upper()
 
-                                            if len(codon_swap_1_1[original_codon_1.upper()]) > 1:
+                                            if len(codon_swap_1_1[original_codon_1.upper()]) > 0:
+
                                                 new_codon = codon_swap_1_1[original_codon_1][0][0].lower()
                                                 pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 2] + new_codon + edit_sequence[pe_nick_edit_idx + 5:pe_nick_edit_idx + rtt_length])
                                                 pe_pam_ref_silent_mutation = pe_pam_ref + '-to-' + new_codon[1:] + original_codon_2[:1].lower()
                                                 pe_annotate = 'PAM_disrupted_silent_mutation'
 
-                                            elif len(codon_swap_1_2[original_codon_2.upper()]) > 1:
+                                            elif len(codon_swap_1_2[original_codon_2.upper()]) > 0:
+
                                                 new_codon = codon_swap_1_2[original_codon_2][0][0].lower()
                                                 pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 5] + new_codon + edit_sequence[pe_nick_edit_idx + 8:pe_nick_edit_idx + rtt_length])
                                                 pe_pam_ref_silent_mutation = pe_pam_ref + '-to-' + original_codon_1[1:].lower() + new_codon[:1]
@@ -2968,7 +2997,7 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                         elif nick_aa_index == 2:
                                             original_codon = edit_sequence[pe_nick_edit_idx + 4:pe_nick_edit_idx + 7].upper()
 
-                                            if len(codon_swap_2[original_codon.upper()]) > 1:
+                                            if len(codon_swap_2[original_codon.upper()]) > 0:
                                                 new_codon = codon_swap_2[original_codon][0][0].lower()
                                                 pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 4] + new_codon + edit_sequence[pe_nick_edit_idx + 7:pe_nick_edit_idx + rtt_length])
                                                 pe_pam_ref_silent_mutation = pe_pam_ref + '-to-' + edit_sequence[pe_nick_edit_idx + 3:pe_nick_edit_idx + 4].lower() + new_codon[:2]
@@ -3081,6 +3110,8 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
 
                                 # Construct pegRNA extension to encode intended edit(s)
                                 # pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx + pbs_length]
+                                if (pe_nick_edit_idx - rtt_length) < 0:
+                                    rtt_length = pe_nick_edit_idx
 
                                 # Patch for NGG PAMs - may need to build something more generalizable in the future
                                 if silent_mutation == 'yes':
@@ -3092,7 +3123,7 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                         if nick_aa_index == 0:
                                             original_codon = edit_sequence[pe_nick_edit_idx - 6:pe_nick_edit_idx - 3].upper()
 
-                                            if len(codon_swap_2[original_codon.upper()]) > 1:
+                                            if len(codon_swap_2[original_codon.upper()]) > 0:
                                                 new_codon = codon_swap_2[original_codon][0][0].lower()
                                                 pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx - 6] + new_codon + edit_sequence[pe_nick_edit_idx - 3:pe_nick_edit_idx + pbs_length]
                                                 pe_pam_ref_silent_mutation = reverse_complement(pe_pam_ref) + '-to-' + reverse_complement(new_codon)
@@ -3104,7 +3135,7 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                         elif nick_aa_index == 1:
                                             original_codon = edit_sequence[pe_nick_edit_idx - 7:pe_nick_edit_idx - 4].upper()
 
-                                            if len(codon_swap_0[original_codon.upper()]) > 1:
+                                            if len(codon_swap_0[original_codon.upper()]) > 0:
                                                 new_codon = codon_swap_0[original_codon][0][0].lower()
                                                 pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx - 7] + new_codon + edit_sequence[pe_nick_edit_idx - 4:pe_nick_edit_idx + pbs_length]
                                                 pe_pam_ref_silent_mutation = reverse_complement(pe_pam_ref) + '-to-' + reverse_complement(new_codon[1:] + edit_sequence[pe_nick_edit_idx - 4:pe_nick_edit_idx - 3].lower())
@@ -3117,13 +3148,13 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                             original_codon_1 = edit_sequence[pe_nick_edit_idx - 8:pe_nick_edit_idx - 5].upper()
                                             original_codon_2 = edit_sequence[pe_nick_edit_idx - 5:pe_nick_edit_idx - 2].upper()
 
-                                            if len(codon_swap_1_1[original_codon_1.upper()]) > 1:
+                                            if len(codon_swap_1_1[original_codon_1.upper()]) > 0:
                                                 new_codon = codon_swap_1_1[original_codon_1][0][0].lower()
                                                 pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx - 8] + new_codon + edit_sequence[pe_nick_edit_idx - 5:pe_nick_edit_idx + pbs_length]
                                                 pe_pam_ref_silent_mutation = reverse_complement(pe_pam_ref) + '-to-' + reverse_complement(new_codon[2:] + original_codon_2[:2].lower())
                                                 pe_annotate = 'PAM_disrupted_silent_mutation'
 
-                                            elif len(codon_swap_1_2[original_codon_2.upper()]) > 1:
+                                            elif len(codon_swap_1_2[original_codon_2.upper()]) > 0:
                                                 new_codon = codon_swap_1_2[original_codon_2][0][0].lower()
                                                 pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 5] + new_codon + edit_sequence[pe_nick_edit_idx + 8:pe_nick_edit_idx + rtt_length])
                                                 pe_pam_ref_silent_mutation = reverse_complement(pe_pam_ref) + '-to-' + reverse_complement(original_codon_1[2:].lower() + new_codon[:2])
@@ -3217,37 +3248,46 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
         df = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
         df = pd.DataFrame.from_dict(peg_design)
 
-    if filter_c1_extension == 'yes':
-        df = df[(df['extension first base'] != 'C') | (df['RTT length'] == 80)]
-        df.reset_index(drop=True, inplace=True)
-
     df_pegs = df[df['type'] == 'pegRNA']
 
     # Find recommended pegRNA
     if len(df_pegs.sort_values(['annotation', 'peg-to-edit distance'])['pegRNA group']) > 0:
 
+        edit_effective_length = max([edit_span_length_w_ref, edit_span_length_w_edit])
+        if edit_effective_length <= 1:
+            homology_downstream_recommended = 9
+        elif edit_effective_length <= 5:
+            homology_downstream_recommended = 14
+        elif edit_effective_length <= 10:
+            homology_downstream_recommended = 19
+        elif edit_effective_length <= 15:
+            homology_downstream_recommended = 24
+        else:
+            homology_downstream_recommended = 34
+
         pegrna_group = df_pegs.sort_values(['annotation', 'peg-to-edit distance'])['pegRNA group'].values[0]
-        rtt_length_optimal = min(df_pegs[df_pegs['pegRNA group'] == pegrna_group]['peg-to-edit distance']) + 9
+        rtt_length_optimal = min(df_pegs[df_pegs['pegRNA group'] == pegrna_group]['peg-to-edit distance']) + homology_downstream_recommended
+        rtt_max = max(df_pegs[(df_pegs['pegRNA group'] == pegrna_group)]['RTT length'].values)
 
         # find_peg = 0
         extension_first_base = 'C'
-        while (extension_first_base == 'C') and (rtt_length_optimal < 80):
+        while (extension_first_base == 'C') and (rtt_length_optimal < rtt_max):
             rtt_length_optimal += 1
-            extension_first_base = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == 80)]['pegRNA extension'].values[0][80-int(rtt_length_optimal):80][0]
+            extension_first_base = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == rtt_max)]['pegRNA extension'].values[0][rtt_max-int(rtt_length_optimal):rtt_max][0]
 
         # if len(df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == (rtt_length_optimal - 1))]) > 0:
         if extension_first_base != 'C':
 
-            pbs_extension_recommended = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == 80)]['pegRNA extension'].values[0][80:]
-            rtt_extension_max = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == 80)]['pegRNA extension'].values[0][:80]
+            pbs_extension_recommended = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == rtt_max)]['pegRNA extension'].values[0][rtt_max:]
+            rtt_extension_max = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == rtt_max)]['pegRNA extension'].values[0][:rtt_max]
             extension_recommended = rtt_extension_max[-rtt_length_optimal:] + pbs_extension_recommended
 
-            peg_spacer_top_recommended = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == 80)]['spacer top strand oligo'].values[0]
-            peg_spacer_bottom_recommended = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == 80)]['spacer bottom strand oligo'].values[0]
+            peg_spacer_top_recommended = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == rtt_max)]['spacer top strand oligo'].values[0]
+            peg_spacer_bottom_recommended = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == rtt_max)]['spacer bottom strand oligo'].values[0]
             peg_ext_top_recommended = 'gtgc' + extension_recommended
             peg_ext_bottom_recommended = 'aaaa' + reverse_complement(extension_recommended)
 
-            peg_annotation_recommended = ' %s' % str(df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == 80)]['annotation'].values[0]).replace('_', ' ')
+            peg_annotation_recommended = ' %s' % str(df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == rtt_max)]['annotation'].values[0]).replace('_', ' ')
             peg_pbs_recommended = '14 nt'
             peg_rtt_recommended = '%s nt' % str(rtt_length_optimal)
 
@@ -3302,15 +3342,26 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
         ng_annotation_recommended = ''
         ng_distance_recommended = ''
 
+    # Filter dataframes
+    if filter_c1_extension == 'yes':
+        df = df[(df['extension first base'] != 'C')]
 
-    # # Filter dataframes
-    if pbs_range[1] < 14:
-        df = df[df['PBS length'] != 14]
-        df_pegs = df_pegs[df_pegs['PBS length'] != 14]
+    pbs_range_list = list(range(pbs_range[0], pbs_range[1] + 1)) + ['']
+    rtt_range_list = list(range(rtt_range[0], rtt_range[1] + 1)) + ['']
 
-    if rtt_range[1] < 80:
-        df = df[df['RTT length'] != 80]
-        df_pegs = df_pegs[df_pegs['RTT length'] != 80]
+    pegrna_groups_to_keep = list(set(df_pegs[df_pegs['RTT length'].isin(rtt_range_list)]['pegRNA group'].values))
+
+    df = df[df['PBS length'].isin(pbs_range_list)]
+    df_pegs = df_pegs[df_pegs['PBS length'].isin(pbs_range_list)]
+
+    df = df[df['RTT length'].isin(rtt_range_list)]
+    df_pegs = df_pegs[df_pegs['RTT length'].isin(rtt_range_list)]
+
+    df = df[df['pegRNA group'].isin(pegrna_groups_to_keep)]
+    df_pegs = df_pegs[df_pegs['pegRNA group'].isin(pegrna_groups_to_keep)]
+
+    df.reset_index(drop=True, inplace=True)
+    df.to_csv('/PrimeDesign/reports/PrimeDesign_%s.csv' % session_id)
 
     # # Filter pegrna dataframe
     # df = df[((df['type'] == 'pegRNA') & (df['RTT length'] >= rtt_range[0]) & (df['RTT length'] <= rtt_range[1]) & (df['PBS length'] >= pbs_range[0]) & (df['PBS length'] <= pbs_range[1])) | ((df['type'] == 'ngRNA') & (abs(df['nick-to-peg distance']) >= nicking_distance_range[0]) & (abs(df['nick-to-peg distance']) <= nicking_distance_range[1]))]
@@ -3320,8 +3371,6 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
     df_pegs = df_pegs.sort_values('peg-to-edit distance')
     df_pegs.reset_index(drop=True, inplace=True)
 
-    df.to_csv('/PrimeDesign/reports/PrimeDesign_%s.csv' % session_id)
-
     return(df_pegs.to_dict('records'), df.to_json(date_format='iso', orient='split'), df_pegs.to_json(date_format='iso', orient='split'), peg_spacer_top_recommended, peg_spacer_bottom_recommended, peg_ext_top_recommended, peg_ext_bottom_recommended, peg_annotation_recommended, peg_pbs_recommended, peg_rtt_recommended, ng_spacer_top_recommended, ng_spacer_bottom_recommended, ng_annotation_recommended, ng_distance_recommended)
 
 @app.callback(Output('pegext-table', 'data'),
@@ -3330,23 +3379,29 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
 
 def update_pegext_table(selected_row, pbs_range, rtt_range, filter_c1_extension, store_peg_table_total, store_peg_table):
 
-    try:
-        # Open up stored peg table
-        df_peg = pd.read_json(store_peg_table, orient='split')
-        df_peg_total = pd.read_json(store_peg_table_total, orient='split')
+    if selected_row:
 
-        spacer_sequence = list(df_peg.loc[selected_row, 'spacer sequence'].values)
-        df_pegext = df_peg_total[df_peg_total['spacer sequence'].isin(spacer_sequence)]
-        df_pegext = df_pegext[df_pegext['type'] == 'pegRNA']
-        df_pegext = df_pegext[['PBS length','PBS GC content','RTT length','RTT GC content','pegRNA extension']].drop_duplicates()
+        try:
+            # Open up stored peg table
+            df_peg = pd.read_json(store_peg_table, orient='split')
+            df_peg_total = pd.read_json(store_peg_table_total, orient='split')
 
-        # df_pegext = df_pegext[(df_pegext['PBS length'] >= pbs_range[0]) & (df_pegext['PBS length'] <= pbs_range[1])]
-        # df_pegext = df_pegext[(df_pegext['RTT length'] >= rtt_range[0]) & (df_pegext['RTT length'] <= rtt_range[1])]
-        df_pegext = df_pegext.sort_values(['PBS length', 'RTT length'])
+            spacer_sequence = list(df_peg.loc[selected_row, 'spacer sequence'].values)
+            df_pegext = df_peg_total[df_peg_total['spacer sequence'].isin(spacer_sequence)]
+            df_pegext = df_pegext[df_pegext['type'] == 'pegRNA']
+            df_pegext = df_pegext[['PBS length','PBS GC content','RTT length','RTT GC content','pegRNA extension']].drop_duplicates()
 
-        df_pegext.reset_index(drop=True, inplace=True)
+            # df_pegext = df_pegext[(df_pegext['PBS length'] >= pbs_range[0]) & (df_pegext['PBS length'] <= pbs_range[1])]
+            # df_pegext = df_pegext[(df_pegext['RTT length'] >= rtt_range[0]) & (df_pegext['RTT length'] <= rtt_range[1])]
+            df_pegext = df_pegext.sort_values(['PBS length', 'RTT length'])
 
-    except:
+            df_pegext.reset_index(drop=True, inplace=True)
+
+        except:
+            df_pegext = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
+            df_pegext = pd.DataFrame.from_dict(df_pegext)
+
+    else:
         df_pegext = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
         df_pegext = pd.DataFrame.from_dict(df_pegext)
 
@@ -3358,22 +3413,28 @@ def update_pegext_table(selected_row, pbs_range, rtt_range, filter_c1_extension,
 
 def update_ng_table(selected_row, nicking_distance_range, store_peg_table_total, store_peg_table):
 
-    try:
-        # Open up stored peg table
-        df_peg = pd.read_json(store_peg_table, orient='split')
-        df_peg_total = pd.read_json(store_peg_table_total, orient='split')
+    if selected_row:
 
-        peg_group = list(df_peg.loc[selected_row, 'pegRNA group'].values)
-        df_ng = df_peg_total[df_peg_total['pegRNA group'].isin(peg_group)]
-        df_ng = df_ng[df_ng['type'] == 'ngRNA']
-        df_ng = df_ng[['spacer sequence','PAM','strand','nick-to-peg distance','spacer GC content','annotation']].drop_duplicates()
+        try:
+            # Open up stored peg table
+            df_peg = pd.read_json(store_peg_table, orient='split')
+            df_peg_total = pd.read_json(store_peg_table_total, orient='split')
 
-        df_ng = df_ng[(abs(df_ng['nick-to-peg distance']) >= nicking_distance_range[0]) & (abs(df_ng['nick-to-peg distance']) <= nicking_distance_range[1])]
-        df_ng = df_ng.sort_values(['nick-to-peg distance'])
+            peg_group = list(df_peg.loc[selected_row, 'pegRNA group'].values)
+            df_ng = df_peg_total[df_peg_total['pegRNA group'].isin(peg_group)]
+            df_ng = df_ng[df_ng['type'] == 'ngRNA']
+            df_ng = df_ng[['spacer sequence','PAM','strand','nick-to-peg distance','spacer GC content','annotation']].drop_duplicates()
 
-        df_ng.reset_index(drop=True, inplace=True)
+            df_ng = df_ng[(abs(df_ng['nick-to-peg distance']) >= nicking_distance_range[0]) & (abs(df_ng['nick-to-peg distance']) <= nicking_distance_range[1])]
+            df_ng = df_ng.sort_values(['nick-to-peg distance'])
 
-    except:
+            df_ng.reset_index(drop=True, inplace=True)
+
+        except:
+            df_ng = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
+            df_ng = pd.DataFrame.from_dict(df_ng)
+
+    else:
         df_ng = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
         df_ng = pd.DataFrame.from_dict(df_ng)
 
@@ -3826,7 +3887,7 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
                                 if nick_aa_index == 0:
                                     original_codon = edit_sequence[pe_nick_edit_idx + 3:pe_nick_edit_idx + 6].upper()
 
-                                    if len(codon_swap_0[original_codon.upper()]) > 1:
+                                    if len(codon_swap_0[original_codon.upper()]) > 0:
                                         new_codon = codon_swap_0[original_codon][0][0].lower()
                                         pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 3] + new_codon + edit_sequence[pe_nick_edit_idx + 6:pe_nick_edit_idx + rtt_length])
                                         pegRNA_ext_max = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 3] + new_codon + edit_sequence[pe_nick_edit_idx + 6:pe_nick_edit_idx + rtt_max_length_pooled])
@@ -3841,14 +3902,14 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
                                     original_codon_1 = edit_sequence[pe_nick_edit_idx + 2:pe_nick_edit_idx + 5].upper()
                                     original_codon_2 = edit_sequence[pe_nick_edit_idx + 5:pe_nick_edit_idx + 8].upper()
 
-                                    if len(codon_swap_1_1[original_codon_1.upper()]) > 1:
+                                    if len(codon_swap_1_1[original_codon_1.upper()]) > 0:
                                         new_codon = codon_swap_1_1[original_codon_1][0][0].lower()
                                         pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 2] + new_codon + edit_sequence[pe_nick_edit_idx + 5:pe_nick_edit_idx + rtt_length])
                                         pegRNA_ext_max = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 2] + new_codon + edit_sequence[pe_nick_edit_idx + 5:pe_nick_edit_idx + rtt_max_length_pooled])
                                         pe_pam_ref_silent_mutation = pe_pam_ref + '-to-' + new_codon[1:] + original_codon_2[:1].lower()
                                         pe_annotate = 'PAM_disrupted_silent_mutation'
 
-                                    elif len(codon_swap_1_2[original_codon_2.upper()]) > 1:
+                                    elif len(codon_swap_1_2[original_codon_2.upper()]) > 0:
                                         new_codon = codon_swap_1_2[original_codon_2][0][0].lower()
                                         pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 5] + new_codon + edit_sequence[pe_nick_edit_idx + 8:pe_nick_edit_idx + rtt_length])
                                         pegRNA_ext_max = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 5] + new_codon + edit_sequence[pe_nick_edit_idx + 8:pe_nick_edit_idx + rtt_max_length_pooled])
@@ -3862,7 +3923,7 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
                                 elif nick_aa_index == 2:
                                     original_codon = edit_sequence[pe_nick_edit_idx + 4:pe_nick_edit_idx + 7].upper()
 
-                                    if len(codon_swap_2[original_codon.upper()]) > 1:
+                                    if len(codon_swap_2[original_codon.upper()]) > 0:
                                         new_codon = codon_swap_2[original_codon][0][0].lower()
                                         pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 4] + new_codon + edit_sequence[pe_nick_edit_idx + 7:pe_nick_edit_idx + rtt_length])
                                         pegRNA_ext_max = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 4] + new_codon + edit_sequence[pe_nick_edit_idx + 7:pe_nick_edit_idx + rtt_max_length_pooled])
@@ -3960,7 +4021,7 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
                                 if nick_aa_index == 0:
                                     original_codon = edit_sequence[pe_nick_edit_idx - 6:pe_nick_edit_idx - 3].upper()
 
-                                    if len(codon_swap_2[original_codon.upper()]) > 1:
+                                    if len(codon_swap_2[original_codon.upper()]) > 0:
                                         new_codon = codon_swap_2[original_codon][0][0].lower()
                                         pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx - 6] + new_codon + edit_sequence[pe_nick_edit_idx - 3:pe_nick_edit_idx + pbs_length]
                                         pegRNA_ext_max = edit_sequence[pe_nick_edit_idx - rtt_max_length_pooled:pe_nick_edit_idx - 6] + new_codon + edit_sequence[pe_nick_edit_idx - 3:pe_nick_edit_idx + pbs_length]
@@ -3974,7 +4035,7 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
                                 elif nick_aa_index == 1:
                                     original_codon = edit_sequence[pe_nick_edit_idx - 7:pe_nick_edit_idx - 4].upper()
 
-                                    if len(codon_swap_0[original_codon.upper()]) > 1:
+                                    if len(codon_swap_0[original_codon.upper()]) > 0:
                                         new_codon = codon_swap_0[original_codon][0][0].lower()
                                         pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx - 7] + new_codon + edit_sequence[pe_nick_edit_idx - 4:pe_nick_edit_idx + pbs_length]
                                         pegRNA_ext_max = edit_sequence[pe_nick_edit_idx - rtt_max_length_pooled:pe_nick_edit_idx - 7] + new_codon + edit_sequence[pe_nick_edit_idx - 4:pe_nick_edit_idx + pbs_length]
@@ -3989,14 +4050,14 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
                                     original_codon_1 = edit_sequence[pe_nick_edit_idx - 8:pe_nick_edit_idx - 5].upper()
                                     original_codon_2 = edit_sequence[pe_nick_edit_idx - 5:pe_nick_edit_idx - 2].upper()
 
-                                    if len(codon_swap_1_1[original_codon_1.upper()]) > 1:
+                                    if len(codon_swap_1_1[original_codon_1.upper()]) > 0:
                                         new_codon = codon_swap_1_1[original_codon_1][0][0].lower()
                                         pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx - 8] + new_codon + edit_sequence[pe_nick_edit_idx - 5:pe_nick_edit_idx + pbs_length]
                                         pegRNA_ext_max = edit_sequence[pe_nick_edit_idx - rtt_max_length_pooled:pe_nick_edit_idx - 8] + new_codon + edit_sequence[pe_nick_edit_idx - 5:pe_nick_edit_idx + pbs_length]
                                         pe_pam_ref_silent_mutation = reverse_complement(pe_pam_ref) + '-to-' + reverse_complement(new_codon[2:] + original_codon_2[:2].lower())
                                         pe_annotate = 'PAM_disrupted_silent_mutation'
 
-                                    elif len(codon_swap_1_2[original_codon_2.upper()]) > 1:
+                                    elif len(codon_swap_1_2[original_codon_2.upper()]) > 0:
                                         new_codon = codon_swap_1_2[original_codon_2][0][0].lower()
                                         # pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 5] + new_codon + edit_sequence[pe_nick_edit_idx + 8:pe_nick_edit_idx + rtt_length])
                                         pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx - 5] + new_codon + edit_sequence[pe_nick_edit_idx - 2:pe_nick_edit_idx + pbs_length]
@@ -4359,6 +4420,7 @@ def update_input_check(primevar_id_search_type, primevar_id_search, editing_dire
     if (primevar_id_search is not None):
 
         try:
+            primevar_id_search = primevar_id_search.replace('rs', '')
             tmp = primevar_map[primevar_id_search_type][editing_direction][primevar_id_search]
             sequence_check = 'Success'
             sequence_check_style = {'color':'#6bb6ff'}
@@ -4387,6 +4449,7 @@ def update_reference_sequence(primevar_input, selected_rows_peg, selected_rows_p
 
     if 'Success' in primevar_input:
 
+        primevar_id_search = primevar_id_search.replace('rs', '')
         zip_file = ZipFile('/PrimeDesign/PrimeVar/' + primevar_map[primevar_id_search_type][editing_direction][primevar_id_search])
         df = pd.read_csv(zip_file.open(primevar_map[primevar_id_search_type][editing_direction][primevar_id_search].replace('.zip', '')), names = ['Target_name', 'Target_sequence', 'pegRNA group', 'type', 'spacer sequence', 'spacer GC content', 'PAM', 'pegRNA extension', 'strand', 'annotation', 'peg-to-edit distance', 'Nick_index', 'nick-to-peg distance', 'PBS length', 'PBS GC content', 'RTT length', 'RTT GC content', 'extension first base', 'Spacer_sequence_order_TOP', 'Spacer_sequence_order_BOTTOM', 'pegRNA_extension_sequence_order_TOP', 'pegRNA_extension_sequence_order_BOTTOM'], header = None)
 
@@ -4579,13 +4642,14 @@ def update_reference_sequence(primevar_input, selected_rows_peg, selected_rows_p
 
 @app.callback([Output('peg-table-db', 'data'), Output('store-peg-table-total-db', 'children'), Output('store-peg-table-db', 'children')],
     [Input('primevar-input-check','children'), Input('pbs-range-db','value'), Input('rtt-range-db','value'), Input('nick-dist-range-db','value'), Input('filter-c1-extension-option-db','value'), Input('silentmutation-option-db','value')],
-    state = [State('primevar-id-search-type','value'), State('primevar-id-search','value'), State('editing-direction', 'value')]
+    state = [State('primevar-id-search-type','value'), State('primevar-id-search','value'), State('editing-direction', 'value'), State('session-id', 'children')]
 )
 
-def update_database_tables(primevar_input, pbs_range, rtt_range, nicking_distance_range, filter_c1_extension, silent_mutation, primevar_id_search_type, primevar_id_search, editing_direction):
+def update_database_tables(primevar_input, pbs_range, rtt_range, nicking_distance_range, filter_c1_extension, silent_mutation, primevar_id_search_type, primevar_id_search, editing_direction, session_id):
 
     if 'Success' in primevar_input:
 
+        primevar_id_search = primevar_id_search.replace('rs', '')
         zip_file = ZipFile('/PrimeDesign/PrimeVar/' + primevar_map[primevar_id_search_type][editing_direction][primevar_id_search])
         df = pd.read_csv(zip_file.open(primevar_map[primevar_id_search_type][editing_direction][primevar_id_search].replace('.zip', '')), names = ['Target_name', 'Target_sequence', 'pegRNA group', 'type', 'spacer sequence', 'spacer GC content', 'PAM', 'pegRNA extension', 'strand', 'annotation', 'peg-to-edit distance', 'Nick_index', 'nick-to-peg distance', 'PBS length', 'PBS GC content', 'RTT length', 'RTT GC content', 'extension first base', 'Spacer_sequence_order_TOP', 'Spacer_sequence_order_BOTTOM', 'pegRNA_extension_sequence_order_TOP', 'pegRNA_extension_sequence_order_BOTTOM'], header = None)
 
@@ -4602,11 +4666,13 @@ def update_database_tables(primevar_input, pbs_range, rtt_range, nicking_distanc
         df_pegs = df_pegs.sort_values('peg-to-edit distance')
         df_pegs.reset_index(drop=True, inplace=True)
 
-        if primevar_id_search_type == 'rs':
-            df.to_csv('/PrimeDesign/reports/PrimeVar_dbSNPrs%s.csv' % (str(primevar_id_search)))
+        df.to_csv('/PrimeDesign/reports/PrimeDesign_PrimeVar_%s.csv' % session_id)
 
-        else:
-            df.to_csv('/PrimeDesign/reports/PrimeVar_ClinVarVariationID%s.csv' % (str(primevar_id_search)))
+        # if primevar_id_search_type == 'rs':
+        #     df.to_csv('/PrimeDesign/reports/PrimeVar_dbSNPrs%s.csv' % (str(primevar_id_search)))
+
+        # else:
+        #     df.to_csv('/PrimeDesign/reports/PrimeVar_ClinVarVariationID%s.csv' % (str(primevar_id_search)))
 
     else:
         peg_design = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
@@ -4623,22 +4689,28 @@ def update_database_tables(primevar_input, pbs_range, rtt_range, nicking_distanc
 
 def update_pegext_table(selected_row, store_peg_table_total, store_peg_table, pbs_range, rtt_range):
 
-    try:
-        # Open up stored peg table
-        df_peg = pd.read_json(store_peg_table, orient='split')
-        df_peg_total = pd.read_json(store_peg_table_total, orient='split')
+    if selected_row:
 
-        spacer_sequence = list(df_peg.loc[selected_row, 'spacer sequence'].values)
-        df_pegext = df_peg_total[df_peg_total['spacer sequence'].isin(spacer_sequence)]
-        df_pegext = df_pegext[df_pegext['type'] == 'pegRNA']
-        df_pegext = df_pegext[['PBS length','PBS GC content','RTT length','RTT GC content','pegRNA extension']].drop_duplicates()
-        df_pegext['PBS GC content'] = df_pegext['PBS GC content'].round(2)
-        df_pegext['RTT GC content'] = df_pegext['RTT GC content'].round(2)
-        df_pegext = df_pegext[(df_pegext['PBS length'] >= pbs_range[0]) & (df_pegext['PBS length'] <= pbs_range[1])]
-        df_pegext = df_pegext[(df_pegext['RTT length'] >= rtt_range[0]) & (df_pegext['RTT length'] <= rtt_range[1])]
-        df_pegext.reset_index(drop=True, inplace=True)
+        try:
+            # Open up stored peg table
+            df_peg = pd.read_json(store_peg_table, orient='split')
+            df_peg_total = pd.read_json(store_peg_table_total, orient='split')
 
-    except:
+            spacer_sequence = list(df_peg.loc[selected_row, 'spacer sequence'].values)
+            df_pegext = df_peg_total[df_peg_total['spacer sequence'].isin(spacer_sequence)]
+            df_pegext = df_pegext[df_pegext['type'] == 'pegRNA']
+            df_pegext = df_pegext[['PBS length','PBS GC content','RTT length','RTT GC content','pegRNA extension']].drop_duplicates()
+            df_pegext['PBS GC content'] = df_pegext['PBS GC content'].round(2)
+            df_pegext['RTT GC content'] = df_pegext['RTT GC content'].round(2)
+            df_pegext = df_pegext[(df_pegext['PBS length'] >= pbs_range[0]) & (df_pegext['PBS length'] <= pbs_range[1])]
+            df_pegext = df_pegext[(df_pegext['RTT length'] >= rtt_range[0]) & (df_pegext['RTT length'] <= rtt_range[1])]
+            df_pegext.reset_index(drop=True, inplace=True)
+
+        except:
+            df_pegext = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
+            df_pegext = pd.DataFrame.from_dict(df_pegext)
+
+    else:
         df_pegext = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
         df_pegext = pd.DataFrame.from_dict(df_pegext)
 
@@ -4651,20 +4723,26 @@ def update_pegext_table(selected_row, store_peg_table_total, store_peg_table, pb
 
 def update_ng_table(selected_row, store_peg_table_total, store_peg_table, nicking_distance_range):
 
-    try:
-        # Open up stored peg table
-        df_peg = pd.read_json(store_peg_table, orient='split')
-        df_peg_total = pd.read_json(store_peg_table_total, orient='split')
+    if selected_row:
 
-        peg_group = list(df_peg.loc[selected_row, 'pegRNA group'].values)
-        df_ng = df_peg_total[df_peg_total['pegRNA group'].isin(peg_group)]
-        df_ng = df_ng[df_ng['type'] == 'ngRNA']
-        df_ng = df_ng[['spacer sequence','PAM','strand','nick-to-peg distance','spacer GC content','annotation']].drop_duplicates()
-        df_ng['spacer GC content'] = df_ng['spacer GC content'].round(2)
-        df_ng = df_ng[(abs(df_ng['nick-to-peg distance']) >= nicking_distance_range[0]) & (abs(df_ng['nick-to-peg distance']) <= nicking_distance_range[1])]
-        df_ng.reset_index(drop=True, inplace=True)
+        try:
+            # Open up stored peg table
+            df_peg = pd.read_json(store_peg_table, orient='split')
+            df_peg_total = pd.read_json(store_peg_table_total, orient='split')
 
-    except:
+            peg_group = list(df_peg.loc[selected_row, 'pegRNA group'].values)
+            df_ng = df_peg_total[df_peg_total['pegRNA group'].isin(peg_group)]
+            df_ng = df_ng[df_ng['type'] == 'ngRNA']
+            df_ng = df_ng[['spacer sequence','PAM','strand','nick-to-peg distance','spacer GC content','annotation']].drop_duplicates()
+            df_ng['spacer GC content'] = df_ng['spacer GC content'].round(2)
+            df_ng = df_ng[(abs(df_ng['nick-to-peg distance']) >= nicking_distance_range[0]) & (abs(df_ng['nick-to-peg distance']) <= nicking_distance_range[1])]
+            df_ng.reset_index(drop=True, inplace=True)
+
+        except:
+            df_ng = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
+            df_ng = pd.DataFrame.from_dict(df_ng)
+
+    else:
         df_ng = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
         df_ng = pd.DataFrame.from_dict(df_ng)
 
@@ -4691,6 +4769,18 @@ def update_pbs_title(rtt_range):
 def update_pbs_title(nick_dist_range):
     return('Nicking distance: %s - %s bp' % (nick_dist_range[0], nick_dist_range[1]))
 
+@app.callback(Output('download-link-db', 'href'),
+    [Input('primevar-input-check','children')],
+    state = [State('session-id', 'children')]
+    # state = [State('primevar-id-search-type','value'), State('primevar-id-search','value'), State('editing-direction', 'value')]
+)
+def update_download_link(input_check, session_id):
+    return('/download/PrimeDesign_PrimeVar_%s.csv' % session_id)
+
+    # if primevar_id_search_type == 'rs':
+    #     return('/PrimeDesign/reports/PrimeVar_dbSNPrs%s.csv' % (str(primevar_id_search)))
+    # else:
+    #     return('/PrimeDesign/reports/PrimeVar_ClinVarVariationID%s.csv' % (str(primevar_id_search)))
 
 if __name__ == '__main__':
     app.run_server(debug = True, port = 9994, host = '0.0.0.0')
