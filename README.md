@@ -36,13 +36,13 @@ Users can specify the following options:
 -pe_format, --pe_format
       Prime editing formatting including the spacer, cut index -> /, and protospacer adjacent motif (PAM) -> [PAM] (Default: NNNNNNNNNNNNNNNNN/NNN[NGG]). Examples: NNNNNNNNNNNNNNNNN/NNN[NGG], NNNNNNNNNNNNNNNNN/NNN[NG]
 -pbs, --pbs_length_list
-      List of primer binding site (PBS) lengths for the pegRNA extension (Default: 10 to 16 nt). Example: 12 13 14 15
+      List of primer binding site (PBS) lengths for the pegRNA extension (Default: 10 to 15 nt). Example: 12 13 14 15
 -rtt, --rtt_length_list
-      List of reverse transcription (RT) template lengths for the pegRNA extension (Default: 10 to 16 nt). Example: 10 15 20
+      List of reverse transcription (RT) template lengths for the pegRNA extension (Default: 10 to 30 nt). Example: 10 15 20
 -nick_dist_min, --nicking_distance_minimum
-      Minimum nicking distance for designing ngRNAs upstream and downstream of a pegRNA (Default: 0).
+      Minimum nicking distance for designing ngRNAs upstream and downstream of a pegRNA (Default: 0 bp).
 -nick_dist_max, --nicking_distance_maximum
-      Maximum nicking distance for designing ngRNAs upstream and downstream of a pegRNA (Default: 100).
+      Maximum nicking distance for designing ngRNAs upstream and downstream of a pegRNA (Default: 100 bp).
 -filter_c1, --filter_c1_extension
       Option to filter against pegRNA extensions that start with a C base.
 -silent_mut, --silent_mutation
