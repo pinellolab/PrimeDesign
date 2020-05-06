@@ -62,7 +62,7 @@ parser.add_argument('-genome_wide', '--genome_wide_design', action='store_true',
 parser.add_argument('-sat_mut', '--saturation_mutagenesis', default = False, choices = ['aa', 'base'], type = str, help = '***** Saturation mutagenesis design with prime editing. The aa option makes amino acid changes and the base option makes DNA base changes. (Default: False) *****\n\n')
 parser.add_argument('-n_pegrnas', '--number_of_pegrnas', default = 3, type = int, help = '***** The maximum number of pegRNAs to design for each input sequence. The pegRNAs are ranked by 1) PAM disrupted > PAM intact then 2) distance to edit. (Default: 3) *****\n\n')
 parser.add_argument('-n_ngrnas', '--number_of_ngrnas', default = 3, type = int, help = '***** The maximum number of ngRNAs to design for each input sequence. The ngRNAs are ranked by 1) PE3b-seed > PE3b-nonseed > PE3 then 2) deviation from nicking_distance_pooled. (Default: 3) *****\n\n')
-parser.add_argument('-nick_dist_pooled', '--nicking_distance_pooled', default = 75, type = int, help = '***** The determined optimal nicking distance between pegRNA and ngRNA. PE3b annotation is priority, followed by nicking distance closest to this parameter. (Default: 75 nt) *****\n\n')
+parser.add_argument('-nick_dist_pooled', '--nicking_distance_pooled', default = 75, type = int, help = '***** The nicking distance between pegRNAs and ngRNAs for pooled designs. PE3b annotation is priority, followed by nicking distance closest to this parameter. (Default: 75 bp) *****\n\n')
 parser.add_argument('-homology_downstream', '--homology_downstream', default = 10, type = int, help = '***** For pooled designs (genome_wide or saturation_mutagenesis needs to be indicated), this parameter determines the RT extension length downstream of an edit for pegRNA designs. (Default: 10) *****\n\n')
 parser.add_argument('-pbs_pooled', '--pbs_length_pooled', type = int, default = 14, help = '***** The PBS length to design pegRNAs for pooled design applications. (Default: 14 nt) *****\n\n')
 parser.add_argument('-rtt_pooled', '--rtt_max_length_pooled', type = int, default = 50, help = '***** The maximum RTT length to design pegRNAs for pooled design applications. (Default: 50 nt) *****\n\n')
@@ -96,9 +96,9 @@ rtt_max_length_pooled = args.rtt_max_length_pooled
 
 # Default PBS and RTT lengths to design
 if pbs_length_list == 0:
-	pbs_length_list = list(range(12, 15))
+	pbs_length_list = list(range(10, 16))
 if rtt_length_list == 0:
-	rtt_length_list = list(range(10, 21))
+	rtt_length_list = list(range(10, 31))
 
 # Output directory date and time stamped
 out_dir = args.out_dir
