@@ -19,6 +19,7 @@ RUN conda config --add channels bioconda
 RUN pip install dash==1.9.1  # Dash core
 RUN pip install dash-bio==0.4.8 # Dash bio
 RUN pip install dash-bootstrap-components
+RUN pip install seqfold
 RUN pip install gunicorn
 
 # Create environment

@@ -10,6 +10,7 @@ import time
 import math
 import glob
 import dash
+import subprocess
 import dash_table
 import dash_bio as dashbio
 import dash_html_components as html
@@ -974,19 +975,7 @@ database_page = html.Div([
             html.Span(' | '),
             html.Span('ngRNA spacer', style = {'color':'#808080'}),
 
-            ], className = 'six columns', style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px','margin': '0px'}),
-            
-            html.Div([
-
-            # dcc.RadioItems(
-            #     id = 'sequence-option2',
-            #     options=[
-            #         {'label': 'Reference', 'value': 'ref'},
-            #         {'label': 'Edited', 'value': 'edit'},
-            #     ],
-            #     value='ref',
-            #     labelStyle={'display': 'inline-block'}
-            # ),
+            html.Hr(),
 
             html.H6('Edited DNA', style = {'margin':'0px', 'padding-bottom':'0px'}),
             html.Label('Select pegRNA extension(s) and ngRNA(s) in design tables to visualize', style = {'color':'grey', 'margin-top':'0px'}),
@@ -1000,21 +989,6 @@ database_page = html.Div([
                 coverage = [],
                 # legend = [{'name':'Substitution', 'color':'#1E90FF', 'underscore':False}, {'name':'Insertion', 'color':'#3CB371', 'underscore':False}, {'name':'Deletion', 'color':'#DC143C', 'underscore':False}, {'name':'Selected pegRNA spacer', 'color':'#d6d6d6', 'underscore':False}]
             ),
-
-            # html.Div(id = 'edit-protein-display-db', children = [
-
-            #     html.H6('Edited Protein', style = {'margin':'0px', 'padding-bottom':'0px'}),
-            #     dashbio.SequenceViewer(
-            #         id = 'edit-protein-sequence-db',
-            #         sequence = ' ',
-            #         badge =False,
-            #         charsPerLine = 80,
-            #         sequenceMaxHeight = '10000px',
-            #         search = False,
-            #         coverage = [],
-            #     ),
-
-            #     ], style = {'display':'none'}),
 
             html.Div(id='store-sequence2-db', style={'display': 'none'}),
 
@@ -1030,7 +1004,50 @@ database_page = html.Div([
             html.Span(' | '),
             html.Span('ngRNA spacer', style = {'color':'#808080'}),
 
-            ], className = 'six columns', style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px', 'margin': '0px', 'float':'right'}),
+            ], className = 'eight columns', style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px','margin': '0px', 'height':'500px', 'overflow':'auto'}),
+            
+            html.Div([
+
+                html.Div([
+
+                    html.H6('pegRNA extension secondary structure', style = {'margin':'0px', 'padding-bottom':'0px'}),
+                    html.Label('Select a pegRNA extension to visualize predicted secondary structure', style = {'color':'grey', 'margin-top':'0px'}),
+                    dashbio.FornaContainer(
+                        id='forna-pegext-db',
+                        # allowPanningAndZooming=False,
+                        height=400
+                    ),
+
+                ]),
+
+            # html.H6('Edited DNA', style = {'margin':'0px', 'padding-bottom':'0px'}),
+            # html.Label('Select pegRNA extension(s) and ngRNA(s) in design tables to visualize', style = {'color':'grey', 'margin-top':'0px'}),
+            # dashbio.SequenceViewer(
+            #     id = 'edit-sequence-db',
+            #     sequence = ' ',
+            #     badge =False,
+            #     charsPerLine = 80,
+            #     sequenceMaxHeight = '10000px',
+            #     search = False,
+            #     coverage = [],
+            #     # legend = [{'name':'Substitution', 'color':'#1E90FF', 'underscore':False}, {'name':'Insertion', 'color':'#3CB371', 'underscore':False}, {'name':'Deletion', 'color':'#DC143C', 'underscore':False}, {'name':'Selected pegRNA spacer', 'color':'#d6d6d6', 'underscore':False}]
+            # ),
+
+            # html.Div(id='store-sequence2-db', style={'display': 'none'}),
+
+            # html.Span('Substitution', style = {'color':'#1E90FF'}),
+            # html.Span(' | '),
+            # html.Span('Insertion', style = {'color':'#3CB371'}),
+            # html.Span(' | '),
+            # html.Span('pegRNA spacer 1-17nt', style = {'color':'#3d3d3d', 'text-decoration':'underline'}),
+            # html.Span(' | '),
+            # html.Span('PBS', style = {'color':'#9f7fdf'}),
+            # html.Span(' | '),
+            # html.Span('RTT', style = {'color':'#ffa500'}),
+            # html.Span(' | '),
+            # html.Span('ngRNA spacer', style = {'color':'#808080'}),
+
+            ], className = 'four columns', style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px', 'margin': '0px', 'float':'right', 'height':'500px', 'overflow':'auto'}),
 
         ], className = 'row', style = {'padding-right': '0px', 'padding-left': '0px','margin': '0px'}),
     
@@ -1418,7 +1435,7 @@ design_page = html.Div([
                         html.Label(id = 'pegrna-ext-recommend-bottom', style = {'overflow':'auto',}),
 
 
-                        ], style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px','margin': '0px'}),
+                        ], style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px','margin': '0px', 'height':'260px', 'overflow':'auto'}),
 
                     ], className = 'six columns'),
 
@@ -1447,7 +1464,7 @@ design_page = html.Div([
                         html.Label('Spacer oligo bottom:', style = {'font-weight':'bold'}),
                         html.Label(id = 'ngrna-spacer-recommend-bottom', style = {'overflow':'auto',}),
 
-                        ], style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px','margin': '0px'}),
+                        ], style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px','margin': '0px', 'height':'260px', 'overflow':'auto'}),
 
                     ], className = 'six columns'),
 
@@ -1483,7 +1500,7 @@ design_page = html.Div([
                 id = 'reference-sequence',
                 sequence = ' ',
                 badge =False,
-                charsPerLine = 80,
+                charsPerLine = 100,
                 sequenceMaxHeight = '10000px',
                 search = False,
                 coverage = [],
@@ -1497,7 +1514,7 @@ design_page = html.Div([
                     id = 'reference-protein-sequence',
                     sequence = ' ',
                     badge =False,
-                    charsPerLine = 80,
+                    charsPerLine = 100,
                     sequenceMaxHeight = '10000px',
                     search = False,
                     coverage = [],
@@ -1515,40 +1532,21 @@ design_page = html.Div([
             html.Span(' | '),
             html.Span('ngRNA spacer', style = {'color':'#808080'}),
 
-            ], className = 'six columns', style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px','margin': '0px'}),
-            
-            html.Div([
+            html.Hr(),
 
-            # dcc.RadioItems(
-            #     id = 'sequence-option2',
-            #     options=[
-            #         {'label': 'Reference', 'value': 'ref'},
-            #         {'label': 'Edited', 'value': 'edit'},
-            #     ],
-            #     value='ref',
-            #     labelStyle={'display': 'inline-block'}
-            # ),
-
+            #####
             html.H6('Edited DNA', style = {'margin':'0px', 'padding-bottom':'0px'}),
             html.Label('Select pegRNA extension(s) and ngRNA(s) in design tables to visualize', style = {'color':'grey', 'margin-top':'0px'}),
             dashbio.SequenceViewer(
                 id = 'edit-sequence',
                 sequence = ' ',
                 badge =False,
-                charsPerLine = 80,
+                charsPerLine = 100,
                 sequenceMaxHeight = '10000px',
                 search = False,
                 coverage = [],
                 # legend = [{'name':'Substitution', 'color':'#1E90FF', 'underscore':False}, {'name':'Insertion', 'color':'#3CB371', 'underscore':False}, {'name':'Deletion', 'color':'#DC143C', 'underscore':False}, {'name':'Selected pegRNA spacer', 'color':'#d6d6d6', 'underscore':False}]
             ),
-
-            # dcc.Checklist(
-            #         id = 'edit-protein-option',
-            #         options=[
-            #             {'label': 'Visualize amino acid sequence', 'value': 'protein'},
-            #         ],
-            #         value=[]
-            #     ), 
 
             html.Div(id = 'edit-protein-display', children = [
 
@@ -1557,7 +1555,7 @@ design_page = html.Div([
                     id = 'edit-protein-sequence',
                     sequence = ' ',
                     badge =False,
-                    charsPerLine = 80,
+                    charsPerLine = 100,
                     sequenceMaxHeight = '10000px',
                     search = False,
                     coverage = [],
@@ -1578,8 +1576,67 @@ design_page = html.Div([
             html.Span('RTT', style = {'color':'#ffa500'}),
             html.Span(' | '),
             html.Span('ngRNA spacer', style = {'color':'#808080'}),
+            ######
 
-            ], className = 'six columns', style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px', 'margin': '0px', 'float':'right'}),
+            ], className = 'eight columns', style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px','margin': '0px', 'height':'500px', 'overflow':'auto'}),
+            
+            html.Div([
+
+                html.Div([
+
+                    html.H6('pegRNA extension secondary structure', style = {'margin':'0px', 'padding-bottom':'0px'}),
+                    html.Label('Select a pegRNA extension to visualize predicted secondary structure', style = {'color':'grey', 'margin-top':'0px'}),
+                    dashbio.FornaContainer(
+                        id='forna-pegext',
+                        # allowPanningAndZooming=False,
+                        height=400
+                    ),
+
+                ]),
+
+            # html.H6('Edited DNA', style = {'margin':'0px', 'padding-bottom':'0px'}),
+            # html.Label('Select pegRNA extension(s) and ngRNA(s) in design tables to visualize', style = {'color':'grey', 'margin-top':'0px'}),
+            # dashbio.SequenceViewer(
+            #     id = 'edit-sequence',
+            #     sequence = ' ',
+            #     badge =False,
+            #     charsPerLine = 80,
+            #     sequenceMaxHeight = '10000px',
+            #     search = False,
+            #     coverage = [],
+            #     # legend = [{'name':'Substitution', 'color':'#1E90FF', 'underscore':False}, {'name':'Insertion', 'color':'#3CB371', 'underscore':False}, {'name':'Deletion', 'color':'#DC143C', 'underscore':False}, {'name':'Selected pegRNA spacer', 'color':'#d6d6d6', 'underscore':False}]
+            # ),
+
+            # html.Div(id = 'edit-protein-display', children = [
+
+            #     html.H6('Edited Protein', style = {'margin':'0px', 'padding-bottom':'0px'}),
+            #     dashbio.SequenceViewer(
+            #         id = 'edit-protein-sequence',
+            #         sequence = ' ',
+            #         badge =False,
+            #         charsPerLine = 80,
+            #         sequenceMaxHeight = '10000px',
+            #         search = False,
+            #         coverage = [],
+            #     ),
+
+            #     ], style = {'display':'none'}),
+
+            # html.Div(id='store-sequence2', style={'display': 'none'}),
+
+            # html.Span('Substitution', style = {'color':'#1E90FF'}),
+            # html.Span(' | '),
+            # html.Span('Insertion', style = {'color':'#3CB371'}),
+            # html.Span(' | '),
+            # html.Span('pegRNA spacer 1-17nt', style = {'color':'#3d3d3d', 'text-decoration':'underline'}),
+            # html.Span(' | '),
+            # html.Span('PBS', style = {'color':'#9f7fdf'}),
+            # html.Span(' | '),
+            # html.Span('RTT', style = {'color':'#ffa500'}),
+            # html.Span(' | '),
+            # html.Span('ngRNA spacer', style = {'color':'#808080'}),
+
+            ], className = 'four columns', style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px', 'margin': '0px', 'float':'right', 'height':'500px', 'overflow':'auto'}),
 
         ], className = 'row', style = {'padding-right': '15px', 'padding-left': '15px','margin': '0px'}),
     
@@ -1885,6 +1942,14 @@ design_page = html.Div([
 
 
             ], className = 'nine columns', style={'display': 'inline-block','border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px',}), #'float':'right','width':'70%'
+        
+
+        # html.Div([
+
+        #     dashbio.FornaContainer(
+        #             id='forna-pegext'
+        #         ),
+        #     ]),
 
         ], className = 'row', style = {'padding-right': '15px', 'padding-left': '15px','margin': '0px'}), #'margin': '0px'
     
@@ -5015,10 +5080,64 @@ def update_pbs_title(nick_dist_range):
 def update_download_link(input_check, session_id):
     return('/download/PrimeDesign_PrimeVar_%s.csv' % session_id)
 
-    # if primevar_id_search_type == 'rs':
-    #     return('/PrimeDesign/reports/PrimeVar_dbSNPrs%s.csv' % (str(primevar_id_search)))
-    # else:
-    #     return('/PrimeDesign/reports/PrimeVar_ClinVarVariationID%s.csv' % (str(primevar_id_search)))
+# RNA folding design
+@app.callback(Output('forna-pegext', 'sequences'),
+    [Input('pegext-table','selected_rows')],
+    state = [State('peg-table','selected_rows'), State('store-peg-table', 'children'), State('store-peg-table-total', 'children')],
+)
+def show_selected_sequences(selected_rows_pegext, selected_rows_peg, store_peg_table, store_peg_table_total):
+    
+    if selected_rows_pegext is None:
+        raise PreventUpdate
+
+    df_peg = pd.read_json(store_peg_table, orient='split')
+    df_peg_total = pd.read_json(store_peg_table_total, orient='split')
+
+    peg_group = list(df_peg.loc[selected_rows_peg, 'spacer sequence'].values)
+    df_pegext = df_peg_total[df_peg_total['spacer sequence'].isin(peg_group)]
+    df_pegext = df_pegext[df_pegext['type'] == 'pegRNA']
+    df_pegext = df_pegext[['PBS length','PBS GC content','RTT length','RTT GC content','pegRNA extension']].drop_duplicates()
+
+    df_pegext = df_pegext.sort_values(['PBS length', 'RTT length'])
+
+    df_pegext.reset_index(drop=True, inplace=True)
+    pegext_sequence = list(df_pegext.loc[selected_rows_pegext, 'pegRNA extension'].values)[0]
+
+    result = subprocess.run(['seqfold', pegext_sequence.replace('T','U').replace('t','U'), '-v', '-t', '37'], stdout=subprocess.PIPE)
+    pegext_structure = result.stdout.split(b'\n')[1].decode("utf-8")
+
+    return [{'sequence':pegext_sequence, 'structure':pegext_structure}]
+
+# RNA folding primevar
+@app.callback(Output('forna-pegext-db', 'sequences'),
+    [Input('pegext-table-db','selected_rows'), Input('peg-table-db','selected_rows')],
+    state = [State('pbs-range-db','value'), State('rtt-range-db','value'), State('store-peg-table-db', 'children'), State('store-peg-table-total-db', 'children')],
+)
+def show_selected_sequences(selected_rows_pegext, selected_rows_peg, pbs_range, rtt_range, store_peg_table, store_peg_table_total):
+    
+    if selected_rows_pegext is not None:
+
+        df_peg = pd.read_json(store_peg_table, orient='split')
+        df_peg_total = pd.read_json(store_peg_table_total, orient='split')
+
+        peg_group = list(df_peg.loc[selected_rows_peg, 'spacer sequence'].values)
+        df_pegext = df_peg_total[df_peg_total['spacer sequence'].isin(peg_group)]
+        df_pegext = df_pegext[df_pegext['type'] == 'pegRNA']
+        df_pegext = df_pegext[['PBS length','PBS GC content','RTT length','RTT GC content','pegRNA extension']].drop_duplicates()
+
+        df_pegext = df_pegext[(df_pegext['PBS length'] >= pbs_range[0]) & (df_pegext['PBS length'] <= pbs_range[1])]
+        df_pegext = df_pegext[(df_pegext['RTT length'] >= rtt_range[0]) & (df_pegext['RTT length'] <= rtt_range[1])]
+
+        df_pegext.reset_index(drop=True, inplace=True)
+        pegext_sequence = list(df_pegext.loc[selected_rows_pegext, 'pegRNA extension'].values)[0]
+
+        result = subprocess.run(['seqfold', pegext_sequence.replace('T','U').replace('t','U'), '-v', '-t', '37'], stdout=subprocess.PIPE)
+        pegext_structure = result.stdout.split(b'\n')[1].decode("utf-8")
+
+        return [{'sequence':pegext_sequence, 'structure':pegext_structure}]
+
+    else:
+        return [{'sequence':'', 'structure':''}]
 
 if __name__ == '__main__':
     app.run_server(debug = True, port = 9994, host = '0.0.0.0')
