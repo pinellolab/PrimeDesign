@@ -33,16 +33,19 @@ if not os.path.exists(UPLOAD_DIRECTORY):
 
 # Primevar mapping
 primevar_map = {'clinvar':{'forward':{}, 'reverse':{},},'rs':{'forward':{}, 'reverse':{},}}
-with open('/PrimeDesign/PrimeVar/PrimeVar_mapping.csv', 'r') as f:
-    for line in f:
+try:
+    with open('/PrimeDesign/PrimeVar/PrimeVar_mapping.csv', 'r') as f:
+        for line in f:
 
-        try:
-            variationid, rsid, direction, path = line.strip('\n').split(',')
-            primevar_map['clinvar'][direction][variationid] = path
-            primevar_map['rs'][direction][rsid] = path
+            try:
+                variationid, rsid, direction, path = line.strip('\n').split(',')
+                primevar_map['clinvar'][direction][variationid] = path
+                primevar_map['rs'][direction][rsid] = path
 
-        except:
-            pass
+            except:
+                pass
+except:
+    pass
 
 @server.route('/download/<path:path>')
 def download(path):
@@ -144,10 +147,18 @@ about_page = html.Div([
 
     html.Div([
 
-        '''Manuscript in preparation!
+        '''Our manuscript is available on bioRxiv here: 
         '''
 
-        ], style = {'color':'#6a6a6a'}),
+        ], style = {'color':'#6a6a6a', 'display':'inline'}),
+
+    html.A(
+            ' https://www.biorxiv.org/content/10.1101/2020.05.04.077750v1',
+            id='biorxiv-link',
+            href="https://www.biorxiv.org/content/10.1101/2020.05.04.077750v1",
+            target='_blank',
+            style = {'text-decoration':'none', 'display':'inline'}
+        ),
 
     html.H3('Contact'),
 
@@ -2877,7 +2888,9 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
 
                         # Store ngRNA spacer
                         nick_ref_idx = re.search(full_search_ref, reference_sequence).end() - (pe_format_length - cut_idx)
-                        target_design[target_name]['ngRNA']['+'].append([nick_ref_idx, full_search_edit, spacer_sequence_edit, pam_edit, ng_annotate])
+                        nick_edit_start_idx = re.search(spacer_sequence_edit, edit_sequence).start()
+                        nick_edit_end_idx = re.search(spacer_sequence_edit, edit_sequence).end()
+                        target_design[target_name]['ngRNA']['+'].append([nick_ref_idx, nick_edit_start_idx, nick_edit_end_idx, full_search_edit, spacer_sequence_edit, pam_edit, ng_annotate])
 
             # Find ngRNA spacers targeting (-) strand
             if find_guides_editnumber_minus:
@@ -2916,7 +2929,9 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
 
                         # Store ngRNA spacer
                         nick_ref_idx = re.search(full_search_ref, reference_sequence).start() + (pe_format_length - cut_idx)
-                        target_design[target_name]['ngRNA']['-'].append([nick_ref_idx, full_search_edit, spacer_sequence_edit, pam_edit, ng_annotate])
+                        nick_edit_start_idx = re.search(spacer_sequence_edit, edit_sequence).start()
+                        nick_edit_end_idx = re.search(spacer_sequence_edit, edit_sequence).end()
+                        target_design[target_name]['ngRNA']['-'].append([nick_ref_idx, nick_edit_start_idx, nick_edit_end_idx, full_search_edit, spacer_sequence_edit, pam_edit, ng_annotate])
 
             # Grab index information of edits to introduce to target sequence
             edit_start_in_ref = int(target_design[target_name]['edit_start_in_ref'])
@@ -2939,6 +2954,7 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                 if nick2edit_length >= 0:
 
                     # Loop through RTT lengths
+                    silent_mutation_edit = ''
                     for rtt_length in rtt_length_list:
 
                         # See if RT length can reach entire edit
@@ -2968,6 +2984,7 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                                 pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 3] + new_codon + edit_sequence[pe_nick_edit_idx + 6:pe_nick_edit_idx + rtt_length])
                                                 pe_pam_ref_silent_mutation = pe_pam_ref + '-to-' + new_codon
                                                 pe_annotate = 'PAM_disrupted_silent_mutation'
+                                                silent_mutation_edit = edit_sequence[:pe_nick_edit_idx + 3] + new_codon + edit_sequence[pe_nick_edit_idx + 6:]
 
                                             else:
                                                 pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + rtt_length])
@@ -2983,6 +3000,7 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                                 pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 2] + new_codon + edit_sequence[pe_nick_edit_idx + 5:pe_nick_edit_idx + rtt_length])
                                                 pe_pam_ref_silent_mutation = pe_pam_ref + '-to-' + new_codon[1:] + original_codon_2[:1].lower()
                                                 pe_annotate = 'PAM_disrupted_silent_mutation'
+                                                silent_mutation_edit = edit_sequence[:pe_nick_edit_idx + 2] + new_codon + edit_sequence[pe_nick_edit_idx + 5:]
 
                                             elif len(codon_swap_1_2[original_codon_2.upper()]) > 0:
 
@@ -2990,6 +3008,7 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                                 pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 5] + new_codon + edit_sequence[pe_nick_edit_idx + 8:pe_nick_edit_idx + rtt_length])
                                                 pe_pam_ref_silent_mutation = pe_pam_ref + '-to-' + original_codon_1[1:].lower() + new_codon[:1]
                                                 pe_annotate = 'PAM_disrupted_silent_mutation'
+                                                silent_mutation_edit = edit_sequence[:pe_nick_edit_idx + 5] + new_codon + edit_sequence[pe_nick_edit_idx + 8:]
 
                                             else:
                                                 pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + rtt_length])
@@ -3002,6 +3021,7 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                                 pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 4] + new_codon + edit_sequence[pe_nick_edit_idx + 7:pe_nick_edit_idx + rtt_length])
                                                 pe_pam_ref_silent_mutation = pe_pam_ref + '-to-' + edit_sequence[pe_nick_edit_idx + 3:pe_nick_edit_idx + 4].lower() + new_codon[:2]
                                                 pe_annotate = 'PAM_disrupted_silent_mutation'
+                                                silent_mutation_edit = edit_sequence[:pe_nick_edit_idx + 4] + new_codon + edit_sequence[pe_nick_edit_idx + 7:]
 
                                             else:
                                                 pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + rtt_length])
@@ -3052,8 +3072,23 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                     # Create ngRNAs targeting (-) strand for (+) pegRNAs
                     if counter in counted:
                         for ng_minus in target_design[target_name]['ngRNA']['-']:
-                            ng_nick_ref_idx, ng_full_search_edit, ng_spacer_sequence_edit, ng_pam_edit, ng_annotate = ng_minus
+                            ng_nick_ref_idx, ng_edit_start_idx, ng_edit_end_idx, ng_full_search_edit, ng_spacer_sequence_edit, ng_pam_edit, ng_annotate = ng_minus
                             nick_distance = ng_nick_ref_idx - pe_nick_ref_idx
+
+                            # change ngRNAs that overlap silent mutation
+                            if (silent_mutation == 'yes') and (len(silent_mutation_edit) > 0):
+                                ng_spacer_sequence_edit = silent_mutation_edit[ng_edit_start_idx:ng_edit_end_idx]
+
+                                mutation_indices = [i for i, a in enumerate(ng_spacer_sequence_edit) if a.islower()]
+                                if len(mutation_indices) > 0:
+                                    if len([1 for x in mutation_indices if x >= 10]) > 0:
+                                        ng_annotate = 'PE3b-seed'
+
+                                    else:
+                                        ng_annotate = 'PE3b-nonseed'
+                                else:
+                                    ng_annotate = 'PE3'
+
                             if (abs(nick_distance) >= nicking_distance_minimum) and (abs(nick_distance) <= nicking_distance_maximum):
 
                                 peg_design['pegRNA group'].append(counter)
@@ -3098,6 +3133,7 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                 if nick2edit_length >= 0:
 
                     # Loop through RTT lengths
+                    silent_mutation_edit = ''
                     for rtt_length in rtt_length_list:
 
                         # See if RT length can reach entire edit
@@ -3128,6 +3164,7 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                                 pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx - 6] + new_codon + edit_sequence[pe_nick_edit_idx - 3:pe_nick_edit_idx + pbs_length]
                                                 pe_pam_ref_silent_mutation = reverse_complement(pe_pam_ref) + '-to-' + reverse_complement(new_codon)
                                                 pe_annotate = 'PAM_disrupted_silent_mutation'
+                                                silent_mutation_edit = edit_sequence[:pe_nick_edit_idx - 6] + new_codon + edit_sequence[pe_nick_edit_idx - 3:]
 
                                             else:
                                                 pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx + pbs_length]
@@ -3140,6 +3177,7 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                                 pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx - 7] + new_codon + edit_sequence[pe_nick_edit_idx - 4:pe_nick_edit_idx + pbs_length]
                                                 pe_pam_ref_silent_mutation = reverse_complement(pe_pam_ref) + '-to-' + reverse_complement(new_codon[1:] + edit_sequence[pe_nick_edit_idx - 4:pe_nick_edit_idx - 3].lower())
                                                 pe_annotate = 'PAM_disrupted_silent_mutation'
+                                                silent_mutation_edit = edit_sequence[:pe_nick_edit_idx - 7] + new_codon + edit_sequence[pe_nick_edit_idx - 4:]
 
                                             else:
                                                 pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx + pbs_length]
@@ -3153,12 +3191,14 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                                 pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx - 8] + new_codon + edit_sequence[pe_nick_edit_idx - 5:pe_nick_edit_idx + pbs_length]
                                                 pe_pam_ref_silent_mutation = reverse_complement(pe_pam_ref) + '-to-' + reverse_complement(new_codon[2:] + original_codon_2[:2].lower())
                                                 pe_annotate = 'PAM_disrupted_silent_mutation'
+                                                silent_mutation_edit = edit_sequence[:pe_nick_edit_idx - 8] + new_codon + edit_sequence[pe_nick_edit_idx - 5:]
 
                                             elif len(codon_swap_1_2[original_codon_2.upper()]) > 0:
                                                 new_codon = codon_swap_1_2[original_codon_2][0][0].lower()
-                                                pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 5] + new_codon + edit_sequence[pe_nick_edit_idx + 8:pe_nick_edit_idx + rtt_length])
+                                                pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx - 5] + new_codon + edit_sequence[pe_nick_edit_idx - 2:pe_nick_edit_idx + pbs_length]
                                                 pe_pam_ref_silent_mutation = reverse_complement(pe_pam_ref) + '-to-' + reverse_complement(original_codon_1[2:].lower() + new_codon[:2])
                                                 pe_annotate = 'PAM_disrupted_silent_mutation'
+                                                silent_mutation_edit = edit_sequence[:pe_nick_edit_idx - 5] + new_codon + edit_sequence[pe_nick_edit_idx - 2:]
 
                                             else:
                                                 pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx + pbs_length]
@@ -3209,8 +3249,22 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                     # Create ngRNAs targeting (+) strand for (-) pegRNAs
                     if counter in counted:
                         for ng_plus in target_design[target_name]['ngRNA']['+']:
-                            ng_nick_ref_idx, ng_full_search_edit, ng_spacer_sequence_edit, ng_pam_edit, ng_annotate = ng_plus
+                            ng_nick_ref_idx, ng_edit_start_idx, ng_edit_end_idx, ng_full_search_edit, ng_spacer_sequence_edit, ng_pam_edit, ng_annotate = ng_plus
                             nick_distance = ng_nick_ref_idx - pe_nick_ref_idx
+
+                            if (silent_mutation == 'yes') and (len(silent_mutation_edit) > 0):
+                                ng_spacer_sequence_edit = silent_mutation_edit[ng_edit_start_idx:ng_edit_end_idx]
+
+                                mutation_indices = [i for i, a in enumerate(ng_spacer_sequence_edit) if a.islower()]
+                                if len(mutation_indices) > 0:
+                                    if len([1 for x in mutation_indices if x >= 10]) > 0:
+                                        ng_annotate = 'PE3b-seed'
+
+                                    else:
+                                        ng_annotate = 'PE3b-nonseed'
+                                else:
+                                    ng_annotate = 'PE3'
+
                             if (abs(nick_distance) >= nicking_distance_minimum) and (abs(nick_distance) <= nicking_distance_maximum):
 
                                 peg_design['pegRNA group'].append(counter)
@@ -3802,7 +3856,9 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
 
                         # Store ngRNA spacer
                         nick_ref_idx = re.search(full_search_ref, reference_sequence).end() - (pe_format_length - cut_idx)
-                        target_design[target_name]['ngRNA']['+'].append([nick_ref_idx, full_search_edit, spacer_sequence_edit, pam_edit, ng_annotate])
+                        nick_edit_start_idx = re.search(spacer_sequence_edit, edit_sequence).start()
+                        nick_edit_end_idx = re.search(spacer_sequence_edit, edit_sequence).end()
+                        target_design[target_name]['ngRNA']['+'].append([nick_ref_idx, nick_edit_start_idx, nick_edit_end_idx, full_search_edit, spacer_sequence_edit, pam_edit, ng_annotate])
 
             # Find ngRNA spacers targeting (-) strand
             if find_guides_editnumber_minus:
@@ -3841,7 +3897,9 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
 
                         # Store ngRNA spacer
                         nick_ref_idx = re.search(full_search_ref, reference_sequence).start() + (pe_format_length - cut_idx)
-                        target_design[target_name]['ngRNA']['-'].append([nick_ref_idx, full_search_edit, spacer_sequence_edit, pam_edit, ng_annotate])
+                        nick_edit_start_idx = re.search(spacer_sequence_edit, edit_sequence).start()
+                        nick_edit_end_idx = re.search(spacer_sequence_edit, edit_sequence).end()
+                        target_design[target_name]['ngRNA']['-'].append([nick_ref_idx, nick_edit_start_idx, nick_edit_end_idx, full_search_edit, spacer_sequence_edit, pam_edit, ng_annotate])
 
             # Grab index information of edits to introduce to target sequence
             edit_start_in_ref = int(target_design[target_name]['edit_start_in_ref'])
@@ -3868,6 +3926,7 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
                 if nick2edit_length >= 0:
 
                     # See if RTT length can reach entire edit with homology downstream constraint
+                    silent_mutation_edit = ''
                     nick2lastedit_length = nick2edit_length + edit_span_length_w_edit
                     rtt_length = nick2lastedit_length + homology_downstream
                     if rtt_length < rtt_max_length_pooled:
@@ -3893,6 +3952,7 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
                                         pegRNA_ext_max = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 3] + new_codon + edit_sequence[pe_nick_edit_idx + 6:pe_nick_edit_idx + rtt_max_length_pooled])
                                         pe_pam_ref_silent_mutation = pe_pam_ref + '-to-' + new_codon
                                         pe_annotate = 'PAM_disrupted_silent_mutation'
+                                        silent_mutation_edit = edit_sequence[:pe_nick_edit_idx + 3] + new_codon + edit_sequence[pe_nick_edit_idx + 6:]
 
                                     else:
                                         pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + rtt_length])
@@ -3908,6 +3968,7 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
                                         pegRNA_ext_max = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 2] + new_codon + edit_sequence[pe_nick_edit_idx + 5:pe_nick_edit_idx + rtt_max_length_pooled])
                                         pe_pam_ref_silent_mutation = pe_pam_ref + '-to-' + new_codon[1:] + original_codon_2[:1].lower()
                                         pe_annotate = 'PAM_disrupted_silent_mutation'
+                                        silent_mutation_edit = edit_sequence[:pe_nick_edit_idx + 2] + new_codon + edit_sequence[pe_nick_edit_idx + 5:]
 
                                     elif len(codon_swap_1_2[original_codon_2.upper()]) > 0:
                                         new_codon = codon_swap_1_2[original_codon_2][0][0].lower()
@@ -3915,6 +3976,7 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
                                         pegRNA_ext_max = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 5] + new_codon + edit_sequence[pe_nick_edit_idx + 8:pe_nick_edit_idx + rtt_max_length_pooled])
                                         pe_pam_ref_silent_mutation = pe_pam_ref + '-to-' + original_codon_1[1:].lower() + new_codon[:1]
                                         pe_annotate = 'PAM_disrupted_silent_mutation'
+                                        silent_mutation_edit = edit_sequence[:pe_nick_edit_idx + 5] + new_codon + edit_sequence[pe_nick_edit_idx + 8:]
 
                                     else:
                                         pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + rtt_length])
@@ -3929,6 +3991,7 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
                                         pegRNA_ext_max = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + 4] + new_codon + edit_sequence[pe_nick_edit_idx + 7:pe_nick_edit_idx + rtt_max_length_pooled])
                                         pe_pam_ref_silent_mutation = pe_pam_ref + '-to-' + edit_sequence[pe_nick_edit_idx + 3:pe_nick_edit_idx + 4].lower() + new_codon[:2]
                                         pe_annotate = 'PAM_disrupted_silent_mutation'
+                                        silent_mutation_edit = edit_sequence[:pe_nick_edit_idx + 4] + new_codon + edit_sequence[pe_nick_edit_idx + 7:]
 
                                     else:
                                         pegRNA_ext = reverse_complement(edit_sequence[pe_nick_edit_idx - pbs_length:pe_nick_edit_idx + rtt_length])
@@ -3974,8 +4037,22 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
                     if pegid in pe_design[target_name]:
                     # if counter in counted:
                         for ng_minus in target_design[target_name]['ngRNA']['-']:
-                            ng_nick_ref_idx, ng_full_search_edit, ng_spacer_sequence_edit, ng_pam_edit, ng_annotate = ng_minus
+                            ng_nick_ref_idx, ng_edit_start_idx, ng_edit_end_idx, ng_full_search_edit, ng_spacer_sequence_edit, ng_pam_edit, ng_annotate = ng_minus
                             nick_distance = ng_nick_ref_idx - pe_nick_ref_idx
+
+                            if (silent_mutation == 'yes') and (len(silent_mutation_edit) > 0):
+                                ng_spacer_sequence_edit = silent_mutation_edit[ng_edit_start_idx:ng_edit_end_idx]
+
+                                mutation_indices = [i for i, a in enumerate(ng_spacer_sequence_edit) if a.islower()]
+                                if len(mutation_indices) > 0:
+                                    if len([1 for x in mutation_indices if x >= 10]) > 0:
+                                        ng_annotate = 'PE3b-seed'
+
+                                    else:
+                                        ng_annotate = 'PE3b-nonseed'
+                                else:
+                                    ng_annotate = 'PE3'
+
                             if (abs(nick_distance) >= nicking_distance_minimum) and (abs(nick_distance) <= nicking_distance_maximum):
 
                                 if ng_annotate == 'PE3b-seed':
@@ -4002,6 +4079,7 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
                 if nick2edit_length >= 0:
 
                     # See if RT length can reach entire edit
+                    silent_mutation_edit = ''
                     nick2lastedit_length = nick2edit_length + edit_span_length_w_edit
                     rtt_length = nick2lastedit_length + homology_downstream
                     if rtt_length < rtt_max_length_pooled:
@@ -4027,6 +4105,7 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
                                         pegRNA_ext_max = edit_sequence[pe_nick_edit_idx - rtt_max_length_pooled:pe_nick_edit_idx - 6] + new_codon + edit_sequence[pe_nick_edit_idx - 3:pe_nick_edit_idx + pbs_length]
                                         pe_pam_ref_silent_mutation = reverse_complement(pe_pam_ref) + '-to-' + reverse_complement(new_codon)
                                         pe_annotate = 'PAM_disrupted_silent_mutation'
+                                        silent_mutation_edit = edit_sequence[:pe_nick_edit_idx - 6] + new_codon + edit_sequence[pe_nick_edit_idx - 3:]
 
                                     else:
                                         pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx + pbs_length]
@@ -4041,6 +4120,7 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
                                         pegRNA_ext_max = edit_sequence[pe_nick_edit_idx - rtt_max_length_pooled:pe_nick_edit_idx - 7] + new_codon + edit_sequence[pe_nick_edit_idx - 4:pe_nick_edit_idx + pbs_length]
                                         pe_pam_ref_silent_mutation = reverse_complement(pe_pam_ref) + '-to-' + reverse_complement(new_codon[1:] + edit_sequence[pe_nick_edit_idx - 4:pe_nick_edit_idx - 3].lower())
                                         pe_annotate = 'PAM_disrupted_silent_mutation'
+                                        silent_mutation_edit = edit_sequence[:pe_nick_edit_idx - 7] + new_codon + edit_sequence[pe_nick_edit_idx - 4:]
 
                                     else:
                                         pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx + pbs_length]
@@ -4056,6 +4136,7 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
                                         pegRNA_ext_max = edit_sequence[pe_nick_edit_idx - rtt_max_length_pooled:pe_nick_edit_idx - 8] + new_codon + edit_sequence[pe_nick_edit_idx - 5:pe_nick_edit_idx + pbs_length]
                                         pe_pam_ref_silent_mutation = reverse_complement(pe_pam_ref) + '-to-' + reverse_complement(new_codon[2:] + original_codon_2[:2].lower())
                                         pe_annotate = 'PAM_disrupted_silent_mutation'
+                                        silent_mutation_edit = edit_sequence[:pe_nick_edit_idx - 8] + new_codon + edit_sequence[pe_nick_edit_idx - 5:]
 
                                     elif len(codon_swap_1_2[original_codon_2.upper()]) > 0:
                                         new_codon = codon_swap_1_2[original_codon_2][0][0].lower()
@@ -4064,6 +4145,7 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
                                         pegRNA_ext_max = edit_sequence[pe_nick_edit_idx - rtt_max_length_pooled:pe_nick_edit_idx - 5] + new_codon + edit_sequence[pe_nick_edit_idx - 2:pe_nick_edit_idx + pbs_length]
                                         pe_pam_ref_silent_mutation = reverse_complement(pe_pam_ref) + '-to-' + reverse_complement(original_codon_1[2:].lower() + new_codon[:2])
                                         pe_annotate = 'PAM_disrupted_silent_mutation'
+                                        silent_mutation_edit = edit_sequence[:pe_nick_edit_idx - 5] + new_codon + edit_sequence[pe_nick_edit_idx - 2:]
 
                                     else:
                                         pegRNA_ext = edit_sequence[pe_nick_edit_idx - rtt_length:pe_nick_edit_idx + pbs_length]
@@ -4111,8 +4193,22 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
                     if pegid in pe_design[target_name]:
                     # if counter in counted:
                         for ng_plus in target_design[target_name]['ngRNA']['+']:
-                            ng_nick_ref_idx, ng_full_search_edit, ng_spacer_sequence_edit, ng_pam_edit, ng_annotate = ng_plus
+                            ng_nick_ref_idx, ng_edit_start_idx, ng_edit_end_idx, ng_full_search_edit, ng_spacer_sequence_edit, ng_pam_edit, ng_annotate = ng_plus
                             nick_distance = ng_nick_ref_idx - pe_nick_ref_idx
+
+                            if (silent_mutation == 'yes') and (len(silent_mutation_edit) > 0):
+                                ng_spacer_sequence_edit = silent_mutation_edit[ng_edit_start_idx:ng_edit_end_idx]
+
+                                mutation_indices = [i for i, a in enumerate(ng_spacer_sequence_edit) if a.islower()]
+                                if len(mutation_indices) > 0:
+                                    if len([1 for x in mutation_indices if x >= 10]) > 0:
+                                        ng_annotate = 'PE3b-seed'
+
+                                    else:
+                                        ng_annotate = 'PE3b-nonseed'
+                                else:
+                                    ng_annotate = 'PE3'
+
                             if (abs(nick_distance) >= nicking_distance_minimum) and (abs(nick_distance) <= nicking_distance_maximum):
 
                                 if ng_annotate == 'PE3b-seed':
