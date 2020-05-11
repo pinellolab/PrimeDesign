@@ -15,6 +15,7 @@ import dash_table
 import dash_bio as dashbio
 import dash_html_components as html
 import dash_bootstrap_components as dbc
+import dash_daq as daq
 from flask import Flask, send_from_directory
 import pandas as pd
 from dash.dependencies import Input, Output, State, ClientsideFunction
@@ -943,7 +944,7 @@ database_page = html.Div([
                 id = 'reference-sequence-db',
                 sequence = ' ',
                 badge =False,
-                charsPerLine = 80,
+                charsPerLine = 90,
                 sequenceMaxHeight = '10000px',
                 search = False,
                 coverage = [],
@@ -983,7 +984,7 @@ database_page = html.Div([
                 id = 'edit-sequence-db',
                 sequence = ' ',
                 badge =False,
-                charsPerLine = 80,
+                charsPerLine = 90,
                 sequenceMaxHeight = '10000px',
                 search = False,
                 coverage = [],
@@ -1011,41 +1012,46 @@ database_page = html.Div([
                 html.Div([
 
                     html.H6('pegRNA extension secondary structure', style = {'margin':'0px', 'padding-bottom':'0px'}),
-                    html.Label('Select a pegRNA extension to visualize predicted secondary structure', style = {'color':'grey', 'margin-top':'0px'}),
-                    dashbio.FornaContainer(
-                        id='forna-pegext-db',
-                        # allowPanningAndZooming=False,
-                        height=400
-                    ),
+                    html.Label('Select a pegRNA spacer and extension to visualize predicted secondary structure', style = {'color':'grey', 'margin-top':'0px'}),
+
+                    html.Div([
+
+                        html.Label(id = 'forna-option-db-left-text', children = 'Extension only', style = {'display':'inline-block','color':'grey', 'margin-right':'10px'}),
+                        daq.ToggleSwitch(
+                            id = 'forna-option-db',
+                            labelPosition='bottom',
+                            style = {'display':'inline-block'}
+                            ),
+                        html.Label(id = 'forna-option-db-right-text', children = 'Full pegRNA', style = {'display':'inline-block','color':'grey', 'margin-left':'10px', 'margin-right':'30px'}),
+
+                        daq.NumericInput(
+                            id = 'forna-temp-db',
+                            min = -50,
+                            max = 100,
+                            value=37,
+                            size=60,
+                            style = {'display':'inline-block'}
+                            ),
+
+                        html.Label('°C', style = {'display':'inline-block','color':'grey','margin-left':'5px'}),
+
+                        ], style = {'display':'inline-block', 'text-align': 'center'}),
+
+                    dcc.Loading(
+                        id = 'loading-8',
+                        type = 'circle',
+                        children = [
+
+                            dashbio.FornaContainer(
+                                id='forna-pegext-db',
+                                # allowPanningAndZooming=False,
+                                height=400
+                            ),
+
+                        ]
+                        ),
 
                 ]),
-
-            # html.H6('Edited DNA', style = {'margin':'0px', 'padding-bottom':'0px'}),
-            # html.Label('Select pegRNA extension(s) and ngRNA(s) in design tables to visualize', style = {'color':'grey', 'margin-top':'0px'}),
-            # dashbio.SequenceViewer(
-            #     id = 'edit-sequence-db',
-            #     sequence = ' ',
-            #     badge =False,
-            #     charsPerLine = 80,
-            #     sequenceMaxHeight = '10000px',
-            #     search = False,
-            #     coverage = [],
-            #     # legend = [{'name':'Substitution', 'color':'#1E90FF', 'underscore':False}, {'name':'Insertion', 'color':'#3CB371', 'underscore':False}, {'name':'Deletion', 'color':'#DC143C', 'underscore':False}, {'name':'Selected pegRNA spacer', 'color':'#d6d6d6', 'underscore':False}]
-            # ),
-
-            # html.Div(id='store-sequence2-db', style={'display': 'none'}),
-
-            # html.Span('Substitution', style = {'color':'#1E90FF'}),
-            # html.Span(' | '),
-            # html.Span('Insertion', style = {'color':'#3CB371'}),
-            # html.Span(' | '),
-            # html.Span('pegRNA spacer 1-17nt', style = {'color':'#3d3d3d', 'text-decoration':'underline'}),
-            # html.Span(' | '),
-            # html.Span('PBS', style = {'color':'#9f7fdf'}),
-            # html.Span(' | '),
-            # html.Span('RTT', style = {'color':'#ffa500'}),
-            # html.Span(' | '),
-            # html.Span('ngRNA spacer', style = {'color':'#808080'}),
 
             ], className = 'four columns', style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px', 'margin': '0px', 'float':'right', 'height':'500px', 'overflow':'auto'}),
 
@@ -1500,7 +1506,7 @@ design_page = html.Div([
                 id = 'reference-sequence',
                 sequence = ' ',
                 badge =False,
-                charsPerLine = 100,
+                charsPerLine = 90,
                 sequenceMaxHeight = '10000px',
                 search = False,
                 coverage = [],
@@ -1514,7 +1520,7 @@ design_page = html.Div([
                     id = 'reference-protein-sequence',
                     sequence = ' ',
                     badge =False,
-                    charsPerLine = 100,
+                    charsPerLine = 90,
                     sequenceMaxHeight = '10000px',
                     search = False,
                     coverage = [],
@@ -1541,7 +1547,7 @@ design_page = html.Div([
                 id = 'edit-sequence',
                 sequence = ' ',
                 badge =False,
-                charsPerLine = 100,
+                charsPerLine = 90,
                 sequenceMaxHeight = '10000px',
                 search = False,
                 coverage = [],
@@ -1555,7 +1561,7 @@ design_page = html.Div([
                     id = 'edit-protein-sequence',
                     sequence = ' ',
                     badge =False,
-                    charsPerLine = 100,
+                    charsPerLine = 90,
                     sequenceMaxHeight = '10000px',
                     search = False,
                     coverage = [],
@@ -1578,65 +1584,55 @@ design_page = html.Div([
             html.Span('ngRNA spacer', style = {'color':'#808080'}),
             ######
 
-            ], className = 'eight columns', style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px','margin': '0px', 'height':'500px', 'overflow':'auto'}),
+            ], className = 'eight columns', style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px','margin': '0px', 'height':'600px', 'overflow':'auto'}),
             
             html.Div([
 
                 html.Div([
 
-                    html.H6('pegRNA extension secondary structure', style = {'margin':'0px', 'padding-bottom':'0px'}),
-                    html.Label('Select a pegRNA extension to visualize predicted secondary structure', style = {'color':'grey', 'margin-top':'0px'}),
-                    dashbio.FornaContainer(
-                        id='forna-pegext',
-                        # allowPanningAndZooming=False,
-                        height=400
-                    ),
+                    html.H6('pegRNA secondary structure', style = {'margin':'0px', 'padding-bottom':'0px'}),
+                    html.Label('Select a pegRNA spacer and extension to visualize predicted secondary structure', style = {'color':'grey', 'margin-top':'0px'}),
+
+                    html.Div([
+
+                        html.Label(id = 'forna-option-left-text', children = 'Extension only', style = {'display':'inline-block','color':'grey', 'margin-right':'10px'}),
+                        daq.ToggleSwitch(
+                            id = 'forna-option',
+                            labelPosition='bottom',
+                            style = {'display':'inline-block'}
+                            ),
+                        html.Label(id = 'forna-option-right-text', children = 'Full pegRNA', style = {'display':'inline-block','color':'grey', 'margin-left':'10px', 'margin-right':'30px'}),
+
+                        daq.NumericInput(
+                            id = 'forna-temp',
+                            min = -50,
+                            max = 100,
+                            value=37,
+                            size=60,
+                            style = {'display':'inline-block'}
+                            ),
+
+                        html.Label('°C', style = {'display':'inline-block','color':'grey','margin-left':'5px'}),
+
+                        ], style = {'display':'inline-block', 'text-align': 'center'}),
+
+                    dcc.Loading(
+                        id = 'loading-9',
+                        type = 'circle',
+                        children = [
+
+                            dashbio.FornaContainer(
+                                id='forna-pegext',
+                                # allowPanningAndZooming=False,
+                                height=400
+                            ),
+
+                        ]
+                        ),
 
                 ]),
 
-            # html.H6('Edited DNA', style = {'margin':'0px', 'padding-bottom':'0px'}),
-            # html.Label('Select pegRNA extension(s) and ngRNA(s) in design tables to visualize', style = {'color':'grey', 'margin-top':'0px'}),
-            # dashbio.SequenceViewer(
-            #     id = 'edit-sequence',
-            #     sequence = ' ',
-            #     badge =False,
-            #     charsPerLine = 80,
-            #     sequenceMaxHeight = '10000px',
-            #     search = False,
-            #     coverage = [],
-            #     # legend = [{'name':'Substitution', 'color':'#1E90FF', 'underscore':False}, {'name':'Insertion', 'color':'#3CB371', 'underscore':False}, {'name':'Deletion', 'color':'#DC143C', 'underscore':False}, {'name':'Selected pegRNA spacer', 'color':'#d6d6d6', 'underscore':False}]
-            # ),
-
-            # html.Div(id = 'edit-protein-display', children = [
-
-            #     html.H6('Edited Protein', style = {'margin':'0px', 'padding-bottom':'0px'}),
-            #     dashbio.SequenceViewer(
-            #         id = 'edit-protein-sequence',
-            #         sequence = ' ',
-            #         badge =False,
-            #         charsPerLine = 80,
-            #         sequenceMaxHeight = '10000px',
-            #         search = False,
-            #         coverage = [],
-            #     ),
-
-            #     ], style = {'display':'none'}),
-
-            # html.Div(id='store-sequence2', style={'display': 'none'}),
-
-            # html.Span('Substitution', style = {'color':'#1E90FF'}),
-            # html.Span(' | '),
-            # html.Span('Insertion', style = {'color':'#3CB371'}),
-            # html.Span(' | '),
-            # html.Span('pegRNA spacer 1-17nt', style = {'color':'#3d3d3d', 'text-decoration':'underline'}),
-            # html.Span(' | '),
-            # html.Span('PBS', style = {'color':'#9f7fdf'}),
-            # html.Span(' | '),
-            # html.Span('RTT', style = {'color':'#ffa500'}),
-            # html.Span(' | '),
-            # html.Span('ngRNA spacer', style = {'color':'#808080'}),
-
-            ], className = 'four columns', style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px', 'margin': '0px', 'float':'right', 'height':'500px', 'overflow':'auto'}),
+            ], className = 'four columns', style={'border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px', 'margin': '0px', 'float':'right', 'height':'600px', 'overflow':'auto'}),
 
         ], className = 'row', style = {'padding-right': '15px', 'padding-left': '15px','margin': '0px'}),
     
@@ -1942,14 +1938,6 @@ design_page = html.Div([
 
 
             ], className = 'nine columns', style={'display': 'inline-block','border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px',}), #'float':'right','width':'70%'
-        
-
-        # html.Div([
-
-        #     dashbio.FornaContainer(
-        #             id='forna-pegext'
-        #         ),
-        #     ]),
 
         ], className = 'row', style = {'padding-right': '15px', 'padding-left': '15px','margin': '0px'}), #'margin': '0px'
     
@@ -5082,38 +5070,49 @@ def update_download_link(input_check, session_id):
 
 # RNA folding design
 @app.callback(Output('forna-pegext', 'sequences'),
-    [Input('pegext-table','selected_rows')],
-    state = [State('peg-table','selected_rows'), State('store-peg-table', 'children'), State('store-peg-table-total', 'children')],
+    [Input('pegext-table','selected_rows'), Input('peg-table','selected_rows'), Input('forna-temp','value'), Input('forna-option','value'),],
+    state = [State('store-peg-table', 'children'), State('store-peg-table-total', 'children')],
 )
-def show_selected_sequences(selected_rows_pegext, selected_rows_peg, store_peg_table, store_peg_table_total):
+def show_selected_sequences(selected_rows_pegext, selected_rows_peg, temperature, fold_option, store_peg_table, store_peg_table_total):
     
-    if selected_rows_pegext is None:
-        raise PreventUpdate
+    if selected_rows_pegext is not None:
 
-    df_peg = pd.read_json(store_peg_table, orient='split')
-    df_peg_total = pd.read_json(store_peg_table_total, orient='split')
+        df_peg = pd.read_json(store_peg_table, orient='split')
+        df_peg_total = pd.read_json(store_peg_table_total, orient='split')
 
-    peg_group = list(df_peg.loc[selected_rows_peg, 'spacer sequence'].values)
-    df_pegext = df_peg_total[df_peg_total['spacer sequence'].isin(peg_group)]
-    df_pegext = df_pegext[df_pegext['type'] == 'pegRNA']
-    df_pegext = df_pegext[['PBS length','PBS GC content','RTT length','RTT GC content','pegRNA extension']].drop_duplicates()
+        peg_group = list(df_peg.loc[selected_rows_peg, 'spacer sequence'].values)
+        df_pegext = df_peg_total[df_peg_total['spacer sequence'].isin(peg_group)]
+        df_pegext = df_pegext[df_pegext['type'] == 'pegRNA']
+        df_pegext = df_pegext[['PBS length','PBS GC content','RTT length','RTT GC content','pegRNA extension']].drop_duplicates()
 
-    df_pegext = df_pegext.sort_values(['PBS length', 'RTT length'])
+        df_pegext = df_pegext.sort_values(['PBS length', 'RTT length'])
 
-    df_pegext.reset_index(drop=True, inplace=True)
-    pegext_sequence = list(df_pegext.loc[selected_rows_pegext, 'pegRNA extension'].values)[0]
+        df_pegext.reset_index(drop=True, inplace=True)
+        peg_spacer_sequence = peg_group[0]
+        tracr_sequence = 'GTTTTAGAGCTAGAAATAGCAAGTTAAAATAAGGCTAGTCCGTTATCAACTTGAAAAAGTGGCACCGAGTCGGTGC'
+        pegext_sequence = list(df_pegext.loc[selected_rows_pegext, 'pegRNA extension'].values)[0]
 
-    result = subprocess.run(['seqfold', pegext_sequence.replace('T','U').replace('t','U'), '-v', '-t', '37'], stdout=subprocess.PIPE)
-    pegext_structure = result.stdout.split(b'\n')[1].decode("utf-8")
+        pegRNA_complete = peg_spacer_sequence + tracr_sequence + pegext_sequence
 
-    return [{'sequence':pegext_sequence, 'structure':pegext_structure}]
+        if fold_option: # right -> full pegrna
+            result = subprocess.run(['seqfold', pegRNA_complete.replace('T','U').replace('t','U'), '-v', '-t', str(temperature)], stdout=subprocess.PIPE)
+            pegext_structure = result.stdout.split(b'\n')[1].decode("utf-8")
+            return [{'sequence':pegRNA_complete, 'structure':pegext_structure}]
+            
+        else: # left -> peg extension
+            result = subprocess.run(['seqfold', pegext_sequence.replace('T','U').replace('t','U'), '-v', '-t', str(temperature)], stdout=subprocess.PIPE)
+            pegext_structure = result.stdout.split(b'\n')[1].decode("utf-8")
+            return [{'sequence':pegext_sequence, 'structure':pegext_structure}]
+
+    else:
+        return [{'sequence':'', 'structure':''}]
 
 # RNA folding primevar
 @app.callback(Output('forna-pegext-db', 'sequences'),
-    [Input('pegext-table-db','selected_rows'), Input('peg-table-db','selected_rows')],
+    [Input('pegext-table-db','selected_rows'), Input('peg-table-db','selected_rows'), Input('forna-temp-db','value'), Input('forna-option-db','value'),],
     state = [State('pbs-range-db','value'), State('rtt-range-db','value'), State('store-peg-table-db', 'children'), State('store-peg-table-total-db', 'children')],
 )
-def show_selected_sequences(selected_rows_pegext, selected_rows_peg, pbs_range, rtt_range, store_peg_table, store_peg_table_total):
+def show_selected_sequences(selected_rows_pegext, selected_rows_peg, temperature, fold_option, pbs_range, rtt_range, store_peg_table, store_peg_table_total):
     
     if selected_rows_pegext is not None:
 
@@ -5129,12 +5128,21 @@ def show_selected_sequences(selected_rows_pegext, selected_rows_peg, pbs_range, 
         df_pegext = df_pegext[(df_pegext['RTT length'] >= rtt_range[0]) & (df_pegext['RTT length'] <= rtt_range[1])]
 
         df_pegext.reset_index(drop=True, inplace=True)
+        peg_spacer_sequence = peg_group[0]
+        tracr_sequence = 'GTTTTAGAGCTAGAAATAGCAAGTTAAAATAAGGCTAGTCCGTTATCAACTTGAAAAAGTGGCACCGAGTCGGTGC'
         pegext_sequence = list(df_pegext.loc[selected_rows_pegext, 'pegRNA extension'].values)[0]
 
-        result = subprocess.run(['seqfold', pegext_sequence.replace('T','U').replace('t','U'), '-v', '-t', '37'], stdout=subprocess.PIPE)
-        pegext_structure = result.stdout.split(b'\n')[1].decode("utf-8")
+        pegRNA_complete = peg_spacer_sequence + tracr_sequence + pegext_sequence
 
-        return [{'sequence':pegext_sequence, 'structure':pegext_structure}]
+        if fold_option: # right -> full pegrna
+            result = subprocess.run(['seqfold', pegRNA_complete.replace('T','U').replace('t','U'), '-v', '-t', str(temperature)], stdout=subprocess.PIPE)
+            pegext_structure = result.stdout.split(b'\n')[1].decode("utf-8")
+            return [{'sequence':pegRNA_complete, 'structure':pegext_structure}]
+            
+        else: # left -> peg extension
+            result = subprocess.run(['seqfold', pegext_sequence.replace('T','U').replace('t','U'), '-v', '-t', str(temperature)], stdout=subprocess.PIPE)
+            pegext_structure = result.stdout.split(b'\n')[1].decode("utf-8")
+            return [{'sequence':pegext_sequence, 'structure':pegext_structure}]
 
     else:
         return [{'sequence':'', 'structure':''}]
