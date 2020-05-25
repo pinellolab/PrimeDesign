@@ -161,7 +161,7 @@ def reverse_complement(sequence):
             new_sequence += 'G'
         elif base == 'G':
             new_sequence += 'C'
-        if base == 'a':
+        elif base == 'a':
             new_sequence += 't'
         elif base == 't':
             new_sequence += 'a'

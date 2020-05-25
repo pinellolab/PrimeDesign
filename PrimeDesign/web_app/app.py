@@ -686,7 +686,7 @@ pooled_page = html.Div([
                         'Drag and Drop or ',
                         html.A('Select File')
 
-                        ], style = {'padding-top':'40px', 'font-size':'30px'}),
+                        ], style = {'padding-top':'40px', 'font-size':'25px'}),
 
                     html.Br(),
 
@@ -698,7 +698,7 @@ pooled_page = html.Div([
 
                             ], style = {'display':'inline','font-size':'15px', 'font-weight':'bold', 'color':'#6a6a6a'}),
 
-                        html.Span('1. InputID   2. InputSequence', style = {'font-size':'15px', 'color':'#6a6a6a'}),
+                        html.Span('InputID,InputSequence', style = {'font-size':'15px', 'color':'#6a6a6a'}),
 
                         ]),
 
@@ -758,13 +758,14 @@ pooled_page = html.Div([
                 style={
                     'font-size': '20px',
                     'width': '100%',
-                    'height': '377px',
+                    'height': '400px',
                     # 'lineHeight': '60px',
                     'borderWidth': '2px',
                     'borderStyle': 'dashed',
                     'borderRadius': '5px',
                     'textAlign': 'center',
-                    'margin': '0px'
+                    'margin': '0px',
+                    'color':'grey'
                 },
             ),
 
@@ -787,6 +788,8 @@ pooled_page = html.Div([
                     style = {'font-size':'25px', 'color':'#6cb7ff', 'text-decoration':'underline'}
                 ),
 
+            html.Div(id = 'design-pool-warning', children = []),
+
             ], type='default'),
 
             ], className = 'six columns'),
@@ -795,48 +798,16 @@ pooled_page = html.Div([
 
     # html.Div([
 
-    #     html.Div(['hello'], className = 'six columns', style = {'color':'white'}),
+    #     html.H4('Visualize pooled design'),
 
-    #     html.Div(id = 'input-check-pool', children = ['Update: No file uploaded'], className = 'four columns', style = {'color':'#ff4d4d', 'font-size':'20px'}),
 
-    #     ], className = 'row', style = {'padding-right': '15px', 'padding-left': '15px','margin': '0px', 'padding-top':'5px'}),
 
-    # html.Div([
 
-    #     html.Br(),
-
-    #     html.H4('Step 3: Download PrimeDesign summary'),
-
-    #     html.H5(id='update-design-pool' , children = 'Design incomplete', style = {'color':'#6a6a6a', 'font-size':'25px'}),
-
-    #     html.A(
-    #         children = ' ',
-    #         id='download-link-pool',
-    #         download="PrimeDesign_Pooled.csv",
-    #         href="",
-    #         target="_blank",
-    #         style = {'font-size':'25px', 'color':'#6cb7ff', 'text-decoration':'underline'}
-    #     ),
-
-    #     ], style = {'text-align':'center'}),
+    #     ])
 
     ]),
 
 database_page = html.Div([
-
-    # html.Br(),
-
-    # html.Div([
-
-    #     html.H3('Welcome to PrimeVar!', style = {'margin-right':'5px','display':'inline', 'padding-top':'15px', 'padding-bottom':'10px'}),
-    #     html.Span('?', id = 'db-tooltip', style={'font-size':'11px', 'textAlign': 'center', 'color': 'white',}, className = 'dot'),
-    #     dbc.Tooltip('PrimeVar is a pegRNA and ngRNA design database for installing and correcting ClinVar pathogenic variants',
-    #                target = 'db-tooltip',
-    #                placement = 'right',
-    #                style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
-    #         ),
-
-    #     ]),
 
     html.Div([
 
@@ -1045,7 +1016,7 @@ database_page = html.Div([
                             dashbio.FornaContainer(
                                 id='forna-pegext-db',
                                 # allowPanningAndZooming=False,
-                                height=400
+                                height=430
                             ),
 
                         ]
@@ -1624,7 +1595,7 @@ design_page = html.Div([
                             dashbio.FornaContainer(
                                 id='forna-pegext',
                                 # allowPanningAndZooming=False,
-                                height=400
+                                height=430
                             ),
 
                         ]
@@ -2519,7 +2490,7 @@ def reverse_complement(sequence):
             new_sequence += 'G'
         elif base == 'G':
             new_sequence += 'C'
-        if base == 'a':
+        elif base == 'a':
             new_sequence += 't'
         elif base == 't':
             new_sequence += 'a'
@@ -3752,7 +3723,7 @@ def update_input_check(contents, filename, list_of_dates, pooled_design_type):
 
     return(sequence_check, sequence_check_style)
 
-@app.callback([Output('update-design-pool', 'children'), Output('download-link-pool', 'children')],
+@app.callback([Output('update-design-pool', 'children'), Output('design-pool-warning', 'children'), Output('download-link-pool', 'children')],
     [Input('input-check-pool','children')],
     state = [State('upload-data','contents'), State('upload-data', 'filename'), State('design-option-pool','value'), State('satmut-type','value'), State('npegs-pool','value'), State('homology-downstream-pool','value'), State('pbs-pool','value'), State('rtt-pool','value'), State('nngs-pool','value'), State('nick-dist-pool','value'), State('filter-c1-extension-option-pool','value'), State('silentmutation-option-pool','value'), State('session-id', 'children')]
 )
@@ -3760,6 +3731,8 @@ def update_input_check(contents, filename, list_of_dates, pooled_design_type):
 def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_type, number_of_pegrnas, homology_downstream, pbs_length_pooled, rtt_max_length_pooled, number_of_ngrnas, nicking_distance_pooled, filter_c1_extension, silent_mutation, session_id):
 
     target_design = {}
+    peg_count_dict = {}
+    warning_list = []
     peg_design = {'Target_name':[], 'Target_sequence':[], 'pegRNA_number':[],'gRNA_type':[], 'Spacer_sequence':[],'Spacer_GC_content':[],'PAM_sequence':[],'Strand':[],'pegRNA-to-edit_distance':[],'ngRNA-to-pegRNA_distance':[],'pegRNA_extension':[], 'First_extension_nucleotide':[],'PBS_length':[],'PBS_GC_content':[],'RTT_length':[],'RTT_GC_content':[],'Annotation':[],'Spacer_top_strand_oligo':[], 'Spacer_bottom_strand_oligo':[], 'pegRNA_extension_top_strand_oligo':[], 'pegRNA_extension_bottom_strand_oligo':[]}
     if 'Success' in input_check:
 
@@ -3832,6 +3805,7 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
 
                     # Initialize dictionary for the design of pegRNA spacers for each target sequence and intended edit(s)
                     target_design[sm_target_name] = {'target_sequence':sm_target_sequence, 'editformat2sequence': editformat2sequence, 'editnumber2sequence': editnumber2sequence, 'reference_sequence': reference_sequence, 'edit_sequence': edit_sequence, 'editnumber_sequence': editnumber_sequence, 'edit_span_length': [edit_span_length_w_ref, edit_span_length_w_edit], 'edit_start_in_ref': edit_start_in_ref, 'edit_stop_in_ref_rev': edit_stop_in_ref_rev, 'pegRNA':{'+':[], '-':[]}, 'ngRNA':{'+':[], '-':[]}}
+                    peg_count_dict[sm_target_name] = 0
 
             else:
 
@@ -3839,6 +3813,7 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
 
                 # Initialize dictionary for the design of pegRNA spacers for each target sequence and intended edit(s)
                 target_design[target_name] = {'target_sequence':target_sequence, 'editformat2sequence': editformat2sequence, 'editnumber2sequence': editnumber2sequence, 'reference_sequence': reference_sequence, 'edit_sequence': edit_sequence, 'editnumber_sequence': editnumber_sequence, 'edit_span_length': [edit_span_length_w_ref, edit_span_length_w_edit], 'edit_start_in_ref': edit_start_in_ref, 'edit_stop_in_ref_rev': edit_stop_in_ref_rev, 'pegRNA':{'+':[], '-':[]}, 'ngRNA':{'+':[], '-':[]}}
+                peg_count_dict[target_name] = 0
 
         ##### Initialize data storage for output
         pe_design = {}
@@ -4409,6 +4384,7 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
 
                             # f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'pegRNA', pe_spacer_sequence, spacer_gc_content, pe_pam_ref, pegRNA_ext, pe_strand, pe_annotate, nick2lastedit_length, pe_nick_ref_idx, '', pbs_length, pbs_gc_content, rtt_length, rtt_gc_content, pegRNA_ext_first_base, 'caccG' + pe_spacer_sequence[1:] + 'gtttt', 'ctctaaaac' + reverse_complement('G' + pe_spacer_sequence[1:]), 'gtgc' + pegRNA_ext, 'aaaa' + reverse_complement(pegRNA_ext)])) + '\n')
                             peg_count += 1
+                            peg_count_dict[target_name] += 1
 
                     else:
 
@@ -4443,6 +4419,7 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
 
                         # f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'pegRNA', pe_spacer_sequence, spacer_gc_content, pe_pam_ref, pegRNA_ext, pe_strand, pe_annotate, nick2lastedit_length, pe_nick_ref_idx, '', pbs_length, pbs_gc_content, rtt_length, rtt_gc_content, pegRNA_ext_first_base, 'caccG' + pe_spacer_sequence[1:] + 'gtttt', 'ctctaaaac' + reverse_complement('G' + pe_spacer_sequence[1:]), 'gtgc' + pegRNA_ext, 'aaaa' + reverse_complement(pegRNA_ext)])) + '\n')
                         peg_count += 1
+                        peg_count_dict[target_name] += 1
 
                     # Write ngRNAs
                     for ngRNA_entry in pe_design[target_name][pegid][1][:number_of_ngrnas]:
@@ -4528,6 +4505,8 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
                     peg_design['pegRNA_extension_top_strand_oligo'].append('gtgc' + pegRNA_ext)
                     peg_design['pegRNA_extension_bottom_strand_oligo'].append('aaaa' + reverse_complement(pegRNA_ext))
 
+                    peg_count_dict[target_name] += 1
+
                     # f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'pegRNA', pe_spacer_sequence, spacer_gc_content, pe_pam_ref, pegRNA_ext, pe_strand, pe_annotate, nick2lastedit_length, pe_nick_ref_idx, '', pbs_length, pbs_gc_content, rtt_length, rtt_gc_content, pegRNA_ext_first_base, 'caccG' + pe_spacer_sequence[1:] + 'gtttt', 'ctctaaaac' + reverse_complement('G' + pe_spacer_sequence[1:]), 'gtgc' + pegRNA_ext, 'aaaa' + reverse_complement(pegRNA_ext)])) + '\n')
 
                     # Sort ngRNAs
@@ -4579,11 +4558,17 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
 
         df.to_csv('/PrimeDesign/reports/PrimeDesign_Pooled_%s.csv' % session_id)
 
-        return('Design completed', 'Download designs')
+        for x in peg_count_dict:
+            if peg_count_dict[x] != number_of_pegrnas:
+                warning_list.append(html.H5('%s: %s designs' % (str(x), str(peg_count_dict[x])), style = {'color':'#ff4d4d', 'font-size':'15px'}))
 
+        if len(warning_list) > 0:
+            warning_list = [html.H5('Inputs with less than the desired number of pegRNA designs', style = {'color':'#ff4d4d', 'font-size':'15px', 'font-weight':'bold'})] + warning_list
+
+        return('Design completed', warning_list, 'Download designs')
     else:
 
-        return('Design incomplete', ' ')
+        return('Design incomplete', ' ',' ')
 
 # Download pooled example file update
 # html.A(children = 'Download genome wide example file', id='download-example-pool', download="PrimeDesign_genome_wide_example_file.csv", href="/download/PrimeDesign_genome_wide_example_file.csv"
