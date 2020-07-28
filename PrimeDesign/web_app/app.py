@@ -25,6 +25,7 @@ import dash_html_components as html
 # external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__)#, external_stylesheets = external_stylesheets)
+app.title = 'PrimeDesign'
 app.config.suppress_callback_exceptions = True
 server = app.server
 server.secret_key = '\xfd\x00R\xb5\xbd\x83_t\xed\xdf\xc4\na\x08\xf7K\xc4\xfd\xa2do3\xa5\xdd'
