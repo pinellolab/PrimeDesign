@@ -3171,7 +3171,7 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
 
                                 mutation_indices = [i for i, a in enumerate(ng_spacer_sequence_edit) if a.islower()]
                                 if len(mutation_indices) > 0:
-                                    if len([1 for x in mutation_indices if x >= 10]) > 0:
+                                    if len([1 for x in mutation_indices if x < 10]) > 0:
                                         ng_annotate = 'PE3b-seed'
 
                                     else:
@@ -4139,7 +4139,7 @@ def run_primedesign_pooled(input_check, contents, filename, pool_type, satmut_ty
 
                                 mutation_indices = [i for i, a in enumerate(ng_spacer_sequence_edit) if a.islower()]
                                 if len(mutation_indices) > 0:
-                                    if len([1 for x in mutation_indices if x >= 10]) > 0:
+                                    if len([1 for x in mutation_indices if x < 10]) > 0:
                                         ng_annotate = 'PE3b-seed'
 
                                     else:
