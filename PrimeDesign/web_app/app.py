@@ -5056,10 +5056,10 @@ def update_download_link(input_check, session_id):
 
 # RNA folding design
 @app.callback(Output('forna-pegext', 'sequences'),
-    [Input('pegext-table','selected_rows'), Input('peg-table','selected_rows'), Input('forna-temp','value'), Input('forna-option','value'),],
-    state = [State('store-peg-table', 'children'), State('store-peg-table-total', 'children')],
+    [Input('pegext-table','selected_rows'), Input('forna-temp','value'), Input('forna-option','value'),],
+    state = [State('peg-table','selected_rows'), State('store-peg-table', 'children'), State('store-peg-table-total', 'children')],
 )
-def show_selected_sequences(selected_rows_pegext, selected_rows_peg, temperature, fold_option, store_peg_table, store_peg_table_total):
+def show_selected_sequences(selected_rows_pegext, temperature, fold_option, selected_rows_peg, store_peg_table, store_peg_table_total):
     
     if selected_rows_pegext is not None:
 
@@ -5095,10 +5095,10 @@ def show_selected_sequences(selected_rows_pegext, selected_rows_peg, temperature
 
 # RNA folding primevar
 @app.callback(Output('forna-pegext-db', 'sequences'),
-    [Input('pegext-table-db','selected_rows'), Input('peg-table-db','selected_rows'), Input('forna-temp-db','value'), Input('forna-option-db','value'),],
-    state = [State('pbs-range-db','value'), State('rtt-range-db','value'), State('store-peg-table-db', 'children'), State('store-peg-table-total-db', 'children')],
+    [Input('pegext-table-db','selected_rows'), Input('forna-temp-db','value'), Input('forna-option-db','value'),],
+    state = [State('peg-table-db','selected_rows'), State('pbs-range-db','value'), State('rtt-range-db','value'), State('store-peg-table-db', 'children'), State('store-peg-table-total-db', 'children')],
 )
-def show_selected_sequences(selected_rows_pegext, selected_rows_peg, temperature, fold_option, pbs_range, rtt_range, store_peg_table, store_peg_table_total):
+def show_selected_sequences(selected_rows_pegext, temperature, fold_option, selected_rows_peg, pbs_range, rtt_range, store_peg_table, store_peg_table_total):
     
     if selected_rows_pegext is not None:
 
