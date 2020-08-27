@@ -3056,8 +3056,8 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                 pe_pam_ref_silent_mutation = ''
 
                                 # Construct pegRNA extension to encode intended edit(s)
-                                if (pe_nick_edit_idx - rtt_length) < 0:
-                                    rtt_length = pe_nick_edit_idx
+                                if ((len(edit_sequence) - pe_nick_edit_idx) - rtt_length) < 0:
+                                    rtt_length = len(edit_sequence) - pe_nick_edit_idx
 
                                 # Patch for NGG PAMs - may need to build something more generalizable in the future
                                 if silent_mutation == 'yes':
