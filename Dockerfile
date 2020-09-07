@@ -22,6 +22,7 @@ RUN pip install dash_daq
 RUN pip install dash-bootstrap-components
 RUN pip install seqfold
 RUN pip install gunicorn
+RUN pip install biopython
 
 # Create environment
 COPY PrimeDesign /PrimeDesign

@@ -21,6 +21,7 @@ import pandas as pd
 from dash.dependencies import Input, Output, State, ClientsideFunction
 import dash_core_components as dcc
 import dash_html_components as html
+from Bio.SeqUtils import MeltingTemp as mt
 
 # external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -55,7 +56,7 @@ def download(path):
     """Serve a file from the upload directory."""
     return send_from_directory(UPLOAD_DIRECTORY, path, as_attachment=True)
 
-peg_design_tmp = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
+peg_design_tmp = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[], 'PBS Tm':[], 'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
 df_tmp = pd.DataFrame.from_dict(peg_design_tmp)
  
 def serve_layout():
@@ -2776,7 +2777,7 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
 
 
     target_design = {}
-    peg_design = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[],}
+    peg_design = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[], 'PBS Tm':[], 'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[],}
 
     if 'Success' in input_check:
 
@@ -2784,12 +2785,14 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
         pe_format = 'NNNNNNNNNNNNNNNNN/NNN[NGG]'
         # nicking_distance_minimum = nicking_distance_range[0]
         # nicking_distance_maximum = nicking_distance_range[1]
-        pbs_length_list = list(range(pbs_range[0], pbs_range[1] + 1))
+        
+        # pbs_length_list = list(range(pbs_range[0], pbs_range[1] + 1))
+        pbs_length_list = list(range(7, 17)) # entire PBS range to calculate recommended pegRNA without 17
         rtt_length_list = list(range(rtt_range[0], rtt_range[1] + 1))
 
-        if 14 not in pbs_length_list:
-            pbs_length_list.append(14)
-            pbs_length_list = sorted(pbs_length_list)
+        # if 14 not in pbs_length_list:
+        #     pbs_length_list.append(14)
+        #     pbs_length_list = sorted(pbs_length_list)
 
         if 80 not in rtt_length_list:
             rtt_length_list.append(80)
@@ -3142,6 +3145,7 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                     peg_design['extension first base'].append(pegRNA_ext[0])
                                     peg_design['PBS length'].append(pbs_length)
                                     peg_design['PBS GC content'].append(gc_content(pegRNA_ext[rtt_length:]))
+                                    peg_design['PBS Tm'].append(mt.Tm_NN(pegRNA_ext[-pbs_length:], nn_table=mt.R_DNA_NN1))
                                     peg_design['RTT length'].append(rtt_length)
                                     peg_design['RTT GC content'].append(gc_content(pegRNA_ext[:rtt_length]))
                                     peg_design['annotation'].append(pe_annotate)
@@ -3193,6 +3197,7 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                 peg_design['extension first base'].append('')
                                 peg_design['PBS length'].append('')
                                 peg_design['PBS GC content'].append('')
+                                peg_design['PBS Tm'].append('')
                                 peg_design['RTT length'].append('')
                                 peg_design['RTT GC content'].append('')
                                 peg_design['annotation'].append(ng_annotate)
@@ -3319,6 +3324,7 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                     peg_design['extension first base'].append(pegRNA_ext[0])
                                     peg_design['PBS length'].append(pbs_length)
                                     peg_design['PBS GC content'].append(gc_content(pegRNA_ext[rtt_length:]))
+                                    peg_design['PBS Tm'].append(mt.Tm_NN(pegRNA_ext[-pbs_length:], nn_table=mt.R_DNA_NN1))
                                     peg_design['RTT length'].append(rtt_length)
                                     peg_design['RTT GC content'].append(gc_content(pegRNA_ext[:rtt_length]))
                                     peg_design['annotation'].append(pe_annotate)
@@ -3369,6 +3375,7 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                 peg_design['extension first base'].append('')
                                 peg_design['PBS length'].append('')
                                 peg_design['PBS GC content'].append('')
+                                peg_design['PBS Tm'].append('')
                                 peg_design['RTT length'].append('')
                                 peg_design['RTT GC content'].append('')
                                 peg_design['annotation'].append(ng_annotate)
@@ -3389,7 +3396,7 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
         df = pd.DataFrame.from_dict(peg_design)
 
     else:
-        df = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
+        df = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[], 'PBS Tm':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
         df = pd.DataFrame.from_dict(peg_design)
 
     df_pegs = df[df['type'] == 'pegRNA']
@@ -3410,35 +3417,39 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
             homology_downstream_recommended = 34
 
         pegrna_group = df_pegs.sort_values(['annotation', 'peg-to-edit distance'])['pegRNA group'].values[0]
-        rtt_length_optimal = min(df_pegs[df_pegs['pegRNA group'] == pegrna_group]['peg-to-edit distance']) + homology_downstream_recommended
+        rtt_length_recommended = min(df_pegs[df_pegs['pegRNA group'] == pegrna_group]['peg-to-edit distance']) + homology_downstream_recommended
         rtt_max = max(df_pegs[(df_pegs['pegRNA group'] == pegrna_group)]['RTT length'].values)
 
-        # find_peg = 0
-        extension_first_base = 'C'
-        while (extension_first_base == 'C') and (rtt_length_optimal < rtt_max):
-            rtt_length_optimal += 1
-            extension_first_base = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == rtt_max)]['pegRNA extension'].values[0][rtt_max-int(rtt_length_optimal):rtt_max][0]
+        # find recommended PBS
+        df_pegs['optimal_PBS_Tm'] = abs(df_pegs['PBS Tm'] - 40) # optimal PBS Tm of 40C
+        pbs_length_recommended = df_pegs[df_pegs['pegRNA group'] == pegrna_group].sort_values(['optimal_PBS_Tm'], ascending = [True])['PBS length'].values[0]
 
-        # if len(df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == (rtt_length_optimal - 1))]) > 0:
+        # find recommended RTT
+        extension_first_base = 'C'
+        while (extension_first_base == 'C') and (rtt_length_recommended < rtt_max):
+            rtt_length_recommended += 1
+            extension_first_base = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == pbs_length_recommended) & (df_pegs['RTT length'] == rtt_max)]['pegRNA extension'].values[0][rtt_max-int(rtt_length_recommended):rtt_max][0]
+
+        # if len(df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == (rtt_length_recommended - 1))]) > 0:
         if extension_first_base != 'C':
 
-            pbs_extension_recommended = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == rtt_max)]['pegRNA extension'].values[0][rtt_max:]
-            rtt_extension_max = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == rtt_max)]['pegRNA extension'].values[0][:rtt_max]
-            extension_recommended = rtt_extension_max[-rtt_length_optimal:] + pbs_extension_recommended
+            pbs_extension_recommended = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == pbs_length_recommended) & (df_pegs['RTT length'] == rtt_max)]['pegRNA extension'].values[0][rtt_max:]
+            rtt_extension_max = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == pbs_length_recommended) & (df_pegs['RTT length'] == rtt_max)]['pegRNA extension'].values[0][:rtt_max]
+            extension_recommended = rtt_extension_max[-rtt_length_recommended:] + pbs_extension_recommended
 
-            peg_spacer_top_recommended = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == rtt_max)]['spacer top strand oligo'].values[0]
-            peg_spacer_bottom_recommended = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == rtt_max)]['spacer bottom strand oligo'].values[0]
+            peg_spacer_top_recommended = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == pbs_length_recommended) & (df_pegs['RTT length'] == rtt_max)]['spacer top strand oligo'].values[0]
+            peg_spacer_bottom_recommended = df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == pbs_length_recommended) & (df_pegs['RTT length'] == rtt_max)]['spacer bottom strand oligo'].values[0]
             peg_ext_top_recommended = 'gtgc' + extension_recommended
             peg_ext_bottom_recommended = 'aaaa' + reverse_complement(extension_recommended)
 
-            peg_annotation_recommended = ' %s' % str(df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == 14) & (df_pegs['RTT length'] == rtt_max)]['annotation'].values[0]).replace('_', ' ')
-            peg_pbs_recommended = '14 nt'
-            peg_rtt_recommended = '%s nt' % str(rtt_length_optimal)
+            peg_annotation_recommended = ' %s' % str(df_pegs[(df_pegs['pegRNA group'] == pegrna_group) & (df_pegs['PBS length'] == pbs_length_recommended) & (df_pegs['RTT length'] == rtt_max)]['annotation'].values[0]).replace('_', ' ')
+            peg_pbs_recommended = '%s nt' % str(pbs_length_recommended)
+            peg_rtt_recommended = '%s nt' % str(rtt_length_recommended)
 
             # Find recommended ngRNA
             df_ngs = df[(df['type'] == 'ngRNA') & (df['pegRNA group'] == pegrna_group)]
-            df_ngs['optimal_distance'] = abs(abs(df_ngs['nick-to-peg distance']) - 75)
-            df_ngs = df_ngs.sort_values(['annotation', 'optimal_distance'], ascending = [False, True])
+            df_ngs['optimal_distance'] = abs(abs(df_ngs['nick-to-peg distance']) - 75) # optimal ngRNA +/- 75 bp away
+            df_ngs = df_ngs.sort_values(['annotation', 'optimal_distance'], ascending = [False, True]) # prioritize PE3b
 
             if len(df_ngs.sort_values(['annotation', 'optimal_distance'], ascending = [False, True])['spacer top strand oligo']) > 0:
 
@@ -3542,11 +3553,11 @@ def update_pegext_table(selected_row, pbs_range, rtt_range, filter_c1_extension,
             df_pegext.reset_index(drop=True, inplace=True)
 
         except:
-            df_pegext = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
+            df_pegext = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[] , 'PBS Tm':[], 'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
             df_pegext = pd.DataFrame.from_dict(df_pegext)
 
     else:
-        df_pegext = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
+        df_pegext = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[], 'PBS Tm':[], 'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
         df_pegext = pd.DataFrame.from_dict(df_pegext)
 
     return(df_pegext.to_dict('records'))
@@ -3575,11 +3586,11 @@ def update_ng_table(selected_row, nicking_distance_range, store_peg_table_total,
             df_ng.reset_index(drop=True, inplace=True)
 
         except:
-            df_ng = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
+            df_ng = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[], 'PBS Tm':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
             df_ng = pd.DataFrame.from_dict(df_ng)
 
     else:
-        df_ng = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
+        df_ng = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[], 'PBS Tm':[], 'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[]}
         df_ng = pd.DataFrame.from_dict(df_ng)
 
     return(df_ng.to_dict('records'))

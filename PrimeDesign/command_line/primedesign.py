@@ -855,7 +855,7 @@ for target_name in target_design:
 
 							mutation_indices = [i for i, a in enumerate(ng_spacer_sequence_edit) if a.islower()]
 							if len(mutation_indices) > 0:
-								if len([1 for x in mutation_indices if x >= 10]) > 0:
+								if len([1 for x in mutation_indices if x < 10]) > 0:
 									ng_annotate = 'PE3b-seed'
 
 								else:
@@ -1153,7 +1153,7 @@ for target_name in target_design:
 
 							mutation_indices = [i for i, a in enumerate(ng_spacer_sequence_edit) if a.islower()]
 							if len(mutation_indices) > 0:
-								if len([1 for x in mutation_indices if x >= 10]) > 0:
+								if len([1 for x in mutation_indices if x < 10]) > 0:
 									ng_annotate = 'PE3b-seed'
 
 								else:
