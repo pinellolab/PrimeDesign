@@ -3421,8 +3421,8 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
         rtt_max = max(df_pegs[(df_pegs['pegRNA group'] == pegrna_group)]['RTT length'].values)
 
         # find recommended PBS
-        df_pegs['optimal_PBS_Tm'] = abs(df_pegs['PBS Tm'] - 40) # optimal PBS Tm of 40C
-        pbs_length_recommended = df_pegs[df_pegs['pegRNA group'] == pegrna_group].sort_values(['optimal_PBS_Tm'], ascending = [True])['PBS length'].values[0]
+        df_pegs['recommended_PBS_Tm'] = abs(df_pegs['PBS Tm'] - 37) # optimal PBS Tm of 37C
+        pbs_length_recommended = df_pegs[df_pegs['pegRNA group'] == pegrna_group].sort_values(['recommended_PBS_Tm'], ascending = [True])['PBS length'].values[0]
 
         # find recommended RTT
         extension_first_base = 'C'
