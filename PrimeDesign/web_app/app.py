@@ -1761,13 +1761,13 @@ design_page = html.Div([
             ),
 
             html.Div([
-                html.Label(id = 'assess-offtargets', children = 'Calculate CFD and Doench score', style = {'font-weight':'bold', 'margin-right':'5px'}),
+                html.Label(id = 'assess-offtargets', children = 'Calculate CFD score', style = {'font-weight':'bold', 'margin-right':'5px'}),
                 html.Span('?',
                       id = 'assess-offtargets-tooltip',
                       style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'},
                       className = 'dot'),
 
-                 dbc.Tooltip(children = 'Option to assess the specificity (CFD) and activity (Doench) of pegRNA spacer sequences',
+                 dbc.Tooltip(children = 'Option to assess the specificity (CFD score) of pegRNA spacer sequences',
                        target = 'assess-offtargets-tooltip',
                        placement = 'right',
                        style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
@@ -1820,7 +1820,7 @@ design_page = html.Div([
 
                 dash_table.DataTable(
                     id = 'peg-table',
-                    columns = [{'name': i, 'id': i} for i in ['spacer sequence','PAM','strand','peg-to-edit distance','spacer GC content', 'CFD score', 'Doench score', 'annotation']],
+                    columns = [{'name': i, 'id': i} for i in ['spacer sequence','PAM','strand','peg-to-edit distance','spacer GC content', 'CFD score', 'annotation']],
                     data = df_tmp.to_dict('records'),
                     style_cell={'textAlign': 'left', 'padding': '5px'},
                     # style_as_list_view=True,
