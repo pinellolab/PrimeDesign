@@ -1736,6 +1736,31 @@ design_page = html.Div([
             ),
 
             html.Div([
+                html.Label(id = 'remove-homopolymerTs', children = 'Remove spacers with homopolymer T stretch', style = {'font-weight':'bold', 'margin-right':'5px'}),
+                html.Span('?',
+                      id = 'remove-homopolymerTs-tooltip',
+                      style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'},
+                      className = 'dot'),
+
+                 dbc.Tooltip('Spacers sequences with >=4 homopolymer T stretch may be less efficient',
+                       target = 'remove-homopolymerTs-tooltip',
+                       placement = 'right',
+                       style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
+                 ),
+
+            ], className='row', style={'display' : 'flex'}),
+
+            dcc.RadioItems(
+                id = 'filter-homopolymerTs',
+                options=[
+                    {'label': 'Yes', 'value': 'yes'},
+                    {'label': 'No', 'value': 'no'},
+                ],
+                value='yes',
+                labelStyle={'display': 'inline-block'}
+            ),
+
+            html.Div([
                 html.Label(id = 'silent-mutation', children = 'Disrupt PAM with silent PAM mutation', style = {'font-weight':'bold', 'margin-right':'5px'}),
                 html.Span('?',
                       id = 'silent-mutation-tooltip',
@@ -1767,7 +1792,7 @@ design_page = html.Div([
                       style={'font-size':'11px', 'textAlign': 'center', 'color': 'white'},
                       className = 'dot'),
 
-                 dbc.Tooltip(children = 'Option to assess the specificity (CFD score) of pegRNA spacer sequences',
+                 dbc.Tooltip(children = 'Option to assess the specificity (CFD score) of pegRNA spacer sequences. May take up to 5 minutes to compute.',
                        target = 'assess-offtargets-tooltip',
                        placement = 'right',
                        style = {'background-color': '#C0C0C0', 'color': '#fff','border-radius': '6px',  'padding': '1px'}
@@ -2797,11 +2822,11 @@ def saturating_mutagenesis_input_sequences(target_name, target_sequence, sm_type
     return(sm_target_name_list, sm_target_sequence_list)
 
 @app.callback([Output('peg-table', 'data'), Output('store-peg-table-total', 'children'), Output('store-peg-table', 'children'), Output('pegrna-spacer-recommend-top', 'children'), Output('pegrna-spacer-recommend-bottom', 'children'), Output('pegrna-ext-recommend-top', 'children'), Output('pegrna-ext-recommend-bottom', 'children'), Output('pegrna-annotation-recommend', 'children'), Output('pegrna-pbs-recommend', 'children'), Output('pegrna-rtt-recommend', 'children'), Output('ngrna-spacer-recommend-top', 'children'), Output('ngrna-spacer-recommend-bottom', 'children'), Output('ngrna-annotation-recommend', 'children'), Output('ngrna-distance-recommend', 'children')],
-    [Input('input-check','children'), Input('pbs-range','value'), Input('rtt-range','value'), Input('nick-dist-range','value'), Input('filter-c1-extension-option','value'), Input('silentmutation-option','value'), Input('offtargets-option','value')],
+    [Input('input-check','children'), Input('pbs-range','value'), Input('rtt-range','value'), Input('nick-dist-range','value'), Input('filter-c1-extension-option','value'), Input('silentmutation-option','value'), Input('filter-homopolymerTs','value'), Input('offtargets-option','value')],
     state = [State('pe-sequence-input','value'), State('session-id', 'children')]
 )
 
-def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, filter_c1_extension, silent_mutation, assess_offtargets, input_sequence, session_id):
+def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, filter_c1_extension, silent_mutation, filter_homopolymerTs, assess_offtargets, input_sequence, session_id):
 
 
     target_design = {}
@@ -3435,6 +3460,13 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
         df = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[], 'PBS Tm':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[], 'CFD score':[], 'Doench score':[]}
         df = pd.DataFrame.from_dict(peg_design)
 
+    # Filter out spacers with polyU
+    if filter_homopolymerTs == 'yes':
+        try:
+            df = df[~df['spacer sequence'].str.contains('TTTT')]
+        except:
+            pass
+
     df_pegs = df[df['type'] == 'pegRNA']
 
     # Find recommended pegRNA
@@ -3567,14 +3599,14 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
         # write pegRNA spacer sequence file for CRISPRitz off target analysis
         spacers_for_crispritz = df_pegs['spacer sequence']
 
-        with open('/PrimeDesign/reports/guides.txt', 'w') as f:
+        with open('/PrimeDesign/reports/guides_%s.txt' % session_id, 'w') as f:
             for crispritz_spacer in spacers_for_crispritz:
                 f.write(crispritz_spacer + 'NNN' + '\n')
 
-        subprocess.call('crispritz.py search /PrimeDesign/hg38_chromosomes/ /PrimeDesign/reports/pam.txt /PrimeDesign/reports/guides.txt crispritz_output -mm 4 -t -scores /PrimeDesign/hg38_chromosomes/', shell = True)
+        subprocess.call('crispritz.py search /PrimeDesign/hg38_chromosomes/ /PrimeDesign/reports/pam.txt /PrimeDesign/reports/guides_%s.txt crispritz_output_%s -mm 4 -t -scores /PrimeDesign/hg38_chromosomes/' % (session_id, session_id), shell = True)
 
         crispritz_scores = {}
-        with open('/PrimeDesign/web_app/crispritz_output.scores.txt', 'r') as f:
+        with open('/PrimeDesign/web_app/crispritz_output_%s.scores.txt' % session_id, 'r') as f:
             next(f)
             for line in f:
                 line = line.strip('\n').split('\t')

@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install gsl-bin libgsl0-dev -y && apt-get install 
 RUN conda update -n base -c defaults conda
 RUN conda install python=3.8 -y
 RUN conda install crispritz -y && conda clean --all -y
+RUN conda update crispritz -y
 
 # Add website dependencies
 RUN pip install dash==1.9.1  # Dash core
