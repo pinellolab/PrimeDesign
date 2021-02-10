@@ -56,7 +56,7 @@ def download(path):
     """Serve a file from the upload directory."""
     return send_from_directory(UPLOAD_DIRECTORY, path, as_attachment=True)
 
-peg_design_tmp = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[], 'PBS Tm':[], 'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[], 'CFD score':[], 'Doench score':[]}
+peg_design_tmp = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[], 'PBS Tm':[], 'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[], 'CFD score':[]}
 df_tmp = pd.DataFrame.from_dict(peg_design_tmp)
  
 def serve_layout():
@@ -1809,6 +1809,7 @@ design_page = html.Div([
                 value='no',
                 labelStyle={'display': 'inline-block'}
             ),
+            # html.Button('Compute CFD score', id='compute-cfd', n_clicks=0),
 
             ], className = 'three columns', style={'display': 'inline-block','border-radius': '5px','box-shadow': '3px 3px 3px lightgrey','background-color': '#fafafa','padding': '15px','margin':'0px',}), #'float':'left','width':'25%'
 
@@ -1856,7 +1857,7 @@ design_page = html.Div([
                         'font-size':'14px'
                     },
                     style_table={
-                        'maxHeight': '300px',
+                        'maxHeight': '300px', 
                         'overflowY': 'scroll'
                     },
                     sort_action = 'native',
@@ -1927,7 +1928,7 @@ design_page = html.Div([
 
                 dash_table.DataTable(
                     id = 'ng-table',
-                    columns = [{'name': i, 'id': i} for i in ['spacer sequence','PAM','strand','nick-to-peg distance','spacer GC content','annotation']],
+                    columns = [{'name': i, 'id': i} for i in ['spacer sequence','PAM','strand','nick-to-peg distance','spacer GC content','CFD score','annotation']],
                     data = df_tmp.to_dict('records'),
                     style_cell={'textAlign': 'left', 'padding': '5px'},
                     # style_as_list_view=True,
@@ -2830,7 +2831,7 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
 
 
     target_design = {}
-    peg_design = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[], 'PBS Tm':[], 'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[], 'CFD score':[], 'Doench score':[]}
+    peg_design = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[], 'PBS Tm':[], 'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[], 'CFD score':[]}
 
     if 'Success' in input_check:
 
@@ -3203,7 +3204,6 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                     peg_design['RTT GC content'].append(gc_content(pegRNA_ext[:rtt_length]))
                                     peg_design['annotation'].append(pe_annotate)
                                     peg_design['CFD score'].append('')
-                                    peg_design['Doench score'].append('')
 
                                     if pe_spacer_sequence[0] == 'G':
                                         peg_design['spacer top strand oligo'].append('cacc' + pe_spacer_sequence + 'gtttt')
@@ -3257,7 +3257,6 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                 peg_design['RTT GC content'].append('')
                                 peg_design['annotation'].append(ng_annotate)
                                 peg_design['CFD score'].append('')
-                                peg_design['Doench score'].append('')
 
                                 if reverse_complement(ng_spacer_sequence_edit)[0] == 'G':
                                     peg_design['spacer top strand oligo'].append('cacc' + reverse_complement(ng_spacer_sequence_edit))
@@ -3386,7 +3385,6 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                     peg_design['RTT GC content'].append(gc_content(pegRNA_ext[:rtt_length]))
                                     peg_design['annotation'].append(pe_annotate)
                                     peg_design['CFD score'].append('')
-                                    peg_design['Doench score'].append('')
 
                                     if reverse_complement(pe_spacer_sequence)[0] == 'G':
                                         peg_design['spacer top strand oligo'].append('cacc' + reverse_complement(pe_spacer_sequence) + 'gtttt')
@@ -3439,7 +3437,6 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
                                 peg_design['RTT GC content'].append('')
                                 peg_design['annotation'].append(ng_annotate)
                                 peg_design['CFD score'].append('')
-                                peg_design['Doench score'].append('')
 
                                 if ng_spacer_sequence_edit[0] == 'G':
                                     peg_design['spacer top strand oligo'].append('cacc' + ng_spacer_sequence_edit)
@@ -3457,7 +3454,7 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
         df = pd.DataFrame.from_dict(peg_design)
 
     else:
-        df = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[], 'PBS Tm':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[], 'CFD score':[], 'Doench score':[]}
+        df = {'pegRNA group':[],'type':[], 'spacer sequence':[],'spacer GC content':[],'PAM':[],'strand':[],'peg-to-edit distance':[],'nick-to-peg distance':[],'pegRNA extension':[], 'extension first base':[],'PBS length':[],'PBS GC content':[], 'PBS Tm':[],'RTT length':[],'RTT GC content':[],'annotation':[],'spacer top strand oligo':[], 'spacer bottom strand oligo':[], 'pegRNA extension top strand oligo':[], 'pegRNA extension bottom strand oligo':[], 'CFD score':[]}
         df = pd.DataFrame.from_dict(peg_design)
 
     # Filter out spacers with polyU
@@ -3584,7 +3581,7 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
     df_pegs = df_pegs[df_pegs['pegRNA group'].isin(pegrna_groups_to_keep)]
 
     df.reset_index(drop=True, inplace=True)
-    df.to_csv('/PrimeDesign/reports/PrimeDesign_%s.csv' % session_id)
+    # df.to_csv('/PrimeDesign/reports/PrimeDesign_%s.csv' % session_id)
 
     # # Filter pegrna dataframe
     # df = df[((df['type'] == 'pegRNA') & (df['RTT length'] >= rtt_range[0]) & (df['RTT length'] <= rtt_range[1]) & (df['PBS length'] >= pbs_range[0]) & (df['PBS length'] <= pbs_range[1])) | ((df['type'] == 'ngRNA') & (abs(df['nick-to-peg distance']) >= nicking_distance_range[0]) & (abs(df['nick-to-peg distance']) <= nicking_distance_range[1]))]
@@ -3597,11 +3594,12 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
     if assess_offtargets == 'yes':        
 
         # write pegRNA spacer sequence file for CRISPRitz off target analysis
-        spacers_for_crispritz = df_pegs['spacer sequence']
+        spacers_for_crispritz = list(set(df['spacer sequence']))
 
         with open('/PrimeDesign/reports/guides_%s.txt' % session_id, 'w') as f:
             for crispritz_spacer in spacers_for_crispritz:
-                f.write(crispritz_spacer + 'NNN' + '\n')
+                if len(crispritz_spacer) == 20:
+                    f.write(crispritz_spacer.upper() + 'NNN' + '\n')
 
         subprocess.call('crispritz.py search /PrimeDesign/hg38_chromosomes/ /PrimeDesign/reports/pam.txt /PrimeDesign/reports/guides_%s.txt crispritz_output_%s -mm 4 -t -scores /PrimeDesign/hg38_chromosomes/' % (session_id, session_id), shell = True)
 
@@ -3610,16 +3608,23 @@ def run_primedesign(input_check, pbs_range, rtt_range, nicking_distance_range, f
             next(f)
             for line in f:
                 line = line.strip('\n').split('\t')
-                crispritz_scores[line[0][:-3]] = [line[1], line[2]]
+                crispritz_scores[line[0][:-3]] = line[1]
 
-        cfd_scores = []
-        doench_scores = []
+        cfd_scores_peg = []
         for spacer_sequence in df_pegs['spacer sequence']:
-            cfd_scores.append(crispritz_scores[spacer_sequence][0])
-            doench_scores.append(crispritz_scores[spacer_sequence][1])
+            cfd_scores_peg.append(crispritz_scores[spacer_sequence])
 
-        df_pegs['CFD score'] = cfd_scores
-        df_pegs['Doench score'] = doench_scores
+        cfd_scores_total = []
+        for spacer_sequence in df['spacer sequence']:
+            try:
+                cfd_scores_total.append(crispritz_scores[spacer_sequence.upper()])
+            except:
+                cfd_scores_total.append('')
+
+        df_pegs['CFD score'] = cfd_scores_peg
+        df['CFD score'] = cfd_scores_total
+
+    df.to_csv('/PrimeDesign/reports/PrimeDesign_%s.csv' % session_id)
 
     return(df_pegs.to_dict('records'), df.to_json(date_format='iso', orient='split'), df_pegs.to_json(date_format='iso', orient='split'), peg_spacer_top_recommended, peg_spacer_bottom_recommended, peg_ext_top_recommended, peg_ext_bottom_recommended, peg_annotation_recommended, peg_pbs_recommended, peg_rtt_recommended, ng_spacer_top_recommended, ng_spacer_bottom_recommended, ng_annotation_recommended, ng_distance_recommended)
 
@@ -3673,7 +3678,7 @@ def update_ng_table(selected_row, nicking_distance_range, store_peg_table_total,
             peg_group = list(df_peg.loc[selected_row, 'pegRNA group'].values)
             df_ng = df_peg_total[df_peg_total['pegRNA group'].isin(peg_group)]
             df_ng = df_ng[df_ng['type'] == 'ngRNA']
-            df_ng = df_ng[['spacer sequence','PAM','strand','nick-to-peg distance','spacer GC content','annotation']].drop_duplicates()
+            df_ng = df_ng[['spacer sequence','PAM','strand','nick-to-peg distance','spacer GC content','CFD score','annotation']].drop_duplicates()
 
             df_ng = df_ng[(abs(df_ng['nick-to-peg distance']) >= nicking_distance_range[0]) & (abs(df_ng['nick-to-peg distance']) <= nicking_distance_range[1])]
             df_ng = df_ng.sort_values(['nick-to-peg distance'])
