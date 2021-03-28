@@ -31,10 +31,8 @@ docker run -v ${PWD}/:/DATA -w /DATA pinellolab/primedesign primedesign_cli [opt
 Users can specify the following options:
 ```
 -f, --file
-      Input file (.txt or .csv) with sequences for PrimeDesign. Format: target_name,target_sequence (Required)
+      Input file (.txt or .csv) with sequences for PrimeDesign. Format: target_name,target_sequence (column names required)
 
--pe_format, --pe_format
-      Prime editing formatting including the spacer, cut index -> /, and protospacer adjacent motif (PAM) -> [PAM] (Default: NNNNNNNNNNNNNNNNN/NNN[NGG]). Examples: NNNNNNNNNNNNNNNNN/NNN[NGG], NNNNNNNNNNNNNNNNN/NNN[NG]
 -pbs, --pbs_length_list
       List of primer binding site (PBS) lengths for the pegRNA extension (Default: 10 to 15 nt). Example: 12 13 14 15
 -rtt, --rtt_length_list
