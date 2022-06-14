@@ -1574,6 +1574,8 @@ with open(out_dir + '/%s' % pegRNAs_summary_f, 'w') as f:
 				peg_count = 0
 				for pegid in list(pe_design[target_name].keys()):
 
+					ng_continue = True
+
 					# Write pegRNAs
 					pegRNA_entry = pe_design[target_name][pegid][0][0]
 					pe_nick_ref_idx, pe_spacer_sequence, pe_pam_ref, pe_annotate, pe_strand, pbs_length, rtt_length, pegRNA_ext, pegRNA_ext_max, nick2lastedit_length = pegRNA_entry
@@ -1617,6 +1619,9 @@ with open(out_dir + '/%s' % pegRNAs_summary_f, 'w') as f:
 									f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'pegRNA', pe_spacer_sequence, spacer_gc_content, pe_pam_ref, pegRNA_ext, pe_strand, pe_annotate, nick2lastedit_length, pe_nick_ref_idx, '', pbs_length, pbs_gc_content, rtt_length, rtt_gc_content, pegRNA_ext_first_base, spacer_oligo_top, spacer_oligo_bottom, pegext_oligo_top, pegext_oligo_bottom])) + '\n')
 									peg_count += 1
 
+								else:
+									ng_continue = False
+
 							else:
 
 								f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'pegRNA', pe_spacer_sequence, spacer_gc_content, pe_pam_ref, pegRNA_ext, pe_strand, pe_annotate, nick2lastedit_length, pe_nick_ref_idx, '', pbs_length, pbs_gc_content, rtt_length, rtt_gc_content, pegRNA_ext_first_base, spacer_oligo_top, spacer_oligo_bottom, pegext_oligo_top, pegext_oligo_bottom])) + '\n')
@@ -1640,6 +1645,9 @@ with open(out_dir + '/%s' % pegRNAs_summary_f, 'w') as f:
 							if 'TTTT' not in pe_spacer_sequence:
 								f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'pegRNA', pe_spacer_sequence, spacer_gc_content, pe_pam_ref, pegRNA_ext, pe_strand, pe_annotate, nick2lastedit_length, pe_nick_ref_idx, '', pbs_length, pbs_gc_content, rtt_length, rtt_gc_content, pegRNA_ext_first_base, spacer_oligo_top, spacer_oligo_bottom, pegext_oligo_top, pegext_oligo_bottom])) + '\n')
 								peg_count += 1
+								
+							else:
+								ng_continue = False
 
 						else:
 
@@ -1647,26 +1655,27 @@ with open(out_dir + '/%s' % pegRNAs_summary_f, 'w') as f:
 							peg_count += 1
 
 					# Write ngRNAs
-					for ngRNA_entry in pe_design[target_name][pegid][1][:number_of_ngrnas]:
-						ng_code, ng_nick_ref_idx, ng_spacer_sequence_edit, ng_pam_edit, ng_annotate, ng_strand, nick_distance = ngRNA_entry
+					if ng_continue:
+						for ngRNA_entry in pe_design[target_name][pegid][1][:number_of_ngrnas]:
+							ng_code, ng_nick_ref_idx, ng_spacer_sequence_edit, ng_pam_edit, ng_annotate, ng_strand, nick_distance = ngRNA_entry
 
-						spacer_gc_content = gc_content(ng_spacer_sequence_edit)
+							spacer_gc_content = gc_content(ng_spacer_sequence_edit)
 
-						if ng_spacer_sequence_edit[0].upper() == 'G':
-							spacer_oligo_top = 'cacc' + ng_spacer_sequence_edit
-							spacer_oligo_bottom = 'aaac' + reverse_complement(ng_spacer_sequence_edit)
+							if ng_spacer_sequence_edit[0].upper() == 'G':
+								spacer_oligo_top = 'cacc' + ng_spacer_sequence_edit
+								spacer_oligo_bottom = 'aaac' + reverse_complement(ng_spacer_sequence_edit)
 
-						else:
-							spacer_oligo_top = 'caccG' + ng_spacer_sequence_edit
-							spacer_oligo_bottom = 'aaac' + reverse_complement('G' + ng_spacer_sequence_edit)
+							else:
+								spacer_oligo_top = 'caccG' + ng_spacer_sequence_edit
+								spacer_oligo_bottom = 'aaac' + reverse_complement('G' + ng_spacer_sequence_edit)
 
-						if filter_homopolymer_ts:
+							if filter_homopolymer_ts:
 
-							if 'TTTT' not in ng_spacer_sequence_edit:
+								if 'TTTT' not in ng_spacer_sequence_edit:
+									f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'ngRNA', ng_spacer_sequence_edit, spacer_gc_content, ng_pam_edit, '', ng_strand, ng_annotate, '', ng_nick_ref_idx, nick_distance, '', '', '', '', '', spacer_oligo_top, spacer_oligo_bottom, '', ''])) + '\n')
+
+							else:
 								f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'ngRNA', ng_spacer_sequence_edit, spacer_gc_content, ng_pam_edit, '', ng_strand, ng_annotate, '', ng_nick_ref_idx, nick_distance, '', '', '', '', '', spacer_oligo_top, spacer_oligo_bottom, '', ''])) + '\n')
-
-						else:
-							f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'ngRNA', ng_spacer_sequence_edit, spacer_gc_content, ng_pam_edit, '', ng_strand, ng_annotate, '', ng_nick_ref_idx, nick_distance, '', '', '', '', '', spacer_oligo_top, spacer_oligo_bottom, '', ''])) + '\n')
 
 					counter += 1
 
@@ -1736,6 +1745,8 @@ with open(out_dir + '/%s' % pegRNAs_summary_f, 'w') as f:
 		
 			for pegid in pe_design[target_name]:
 
+				ng_continue = True
+
 				# Write pegRNAs
 				for pegRNA_entry in pe_design[target_name][pegid][0]:
 					pe_nick_ref_idx, pe_spacer_sequence, pe_pam_ref, pe_annotate, pe_strand, pbs_length, rtt_length, pegRNA_ext, nick2lastedit_length = pegRNA_entry
@@ -1761,31 +1772,35 @@ with open(out_dir + '/%s' % pegRNAs_summary_f, 'w') as f:
 						if 'TTTT' not in pe_spacer_sequence:
 							f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'pegRNA', pe_spacer_sequence, spacer_gc_content, pe_pam_ref, pegRNA_ext, pe_strand, pe_annotate, nick2lastedit_length, pe_nick_ref_idx, '', pbs_length, pbs_gc_content, rtt_length, rtt_gc_content, pegRNA_ext_first_base, spacer_oligo_top, spacer_oligo_bottom, pegext_oligo_top, pegext_oligo_bottom])) + '\n')
 
+						else:
+							ng_continue = False
+
 					else:
 
 						f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'pegRNA', pe_spacer_sequence, spacer_gc_content, pe_pam_ref, pegRNA_ext, pe_strand, pe_annotate, nick2lastedit_length, pe_nick_ref_idx, '', pbs_length, pbs_gc_content, rtt_length, rtt_gc_content, pegRNA_ext_first_base, spacer_oligo_top, spacer_oligo_bottom, pegext_oligo_top, pegext_oligo_bottom])) + '\n')
 
 				# Write ngRNAs
-				for ngRNA_entry in pe_design[target_name][pegid][1]:
-					ng_nick_ref_idx, ng_spacer_sequence_edit, ng_pam_edit, ng_annotate, ng_strand, nick_distance = ngRNA_entry
+				if ng_continue:
+					for ngRNA_entry in pe_design[target_name][pegid][1][:number_of_ngrnas]:
+						ng_nick_ref_idx, ng_spacer_sequence_edit, ng_pam_edit, ng_annotate, ng_strand, nick_distance = ngRNA_entry
 
-					spacer_gc_content = gc_content(ng_spacer_sequence_edit)
+						spacer_gc_content = gc_content(ng_spacer_sequence_edit)
 
-					if ng_spacer_sequence_edit[0].upper() == 'G':
-						spacer_oligo_top = 'cacc' + ng_spacer_sequence_edit
-						spacer_oligo_bottom = 'aaac' + reverse_complement(ng_spacer_sequence_edit)
+						if ng_spacer_sequence_edit[0].upper() == 'G':
+							spacer_oligo_top = 'cacc' + ng_spacer_sequence_edit
+							spacer_oligo_bottom = 'aaac' + reverse_complement(ng_spacer_sequence_edit)
 
-					else:
-						spacer_oligo_top = 'caccG' + ng_spacer_sequence_edit
-						spacer_oligo_bottom = 'aaac' + reverse_complement('G' + ng_spacer_sequence_edit)
+						else:
+							spacer_oligo_top = 'caccG' + ng_spacer_sequence_edit
+							spacer_oligo_bottom = 'aaac' + reverse_complement('G' + ng_spacer_sequence_edit)
 
-					if filter_homopolymer_ts:
+						if filter_homopolymer_ts:
 
-						if 'TTTT' not in ng_spacer_sequence_edit:
+							if 'TTTT' not in ng_spacer_sequence_edit:
+								f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'ngRNA', ng_spacer_sequence_edit, spacer_gc_content, ng_pam_edit, '', ng_strand, ng_annotate, '', ng_nick_ref_idx, nick_distance, '', '', '', '', '', spacer_oligo_top, spacer_oligo_bottom, '', ''])) + '\n')
+
+						else:
+
 							f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'ngRNA', ng_spacer_sequence_edit, spacer_gc_content, ng_pam_edit, '', ng_strand, ng_annotate, '', ng_nick_ref_idx, nick_distance, '', '', '', '', '', spacer_oligo_top, spacer_oligo_bottom, '', ''])) + '\n')
-
-					else:
-
-						f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'ngRNA', ng_spacer_sequence_edit, spacer_gc_content, ng_pam_edit, '', ng_strand, ng_annotate, '', ng_nick_ref_idx, nick_distance, '', '', '', '', '', spacer_oligo_top, spacer_oligo_bottom, '', ''])) + '\n')
 
 				counter += 1
