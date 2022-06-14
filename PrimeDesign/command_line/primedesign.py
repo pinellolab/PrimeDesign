@@ -57,6 +57,7 @@ parser.add_argument('-rtt', '--rtt_length_list', type = int, default = 0, nargs 
 parser.add_argument('-nick_dist_min', '--nicking_distance_minimum', type = int, default = 0, nargs = '+', help = '***** Minimum nicking distance for designing ngRNAs upstream and downstream of a pegRNA (Default: 0). *****\n\n')
 parser.add_argument('-nick_dist_max', '--nicking_distance_maximum', type = int, default = 120, nargs = '+', help = '***** Maximum nicking distance for designing ngRNAs upstream and downstream of a pegRNA (Default: 100). *****\n\n')
 parser.add_argument('-filter_c1', '--filter_c1_extension', action='store_true', help = '***** Option to filter against pegRNA extensions that start with a C base. *****\n\n')
+parser.add_argument('-filter_homopolymer_ts', '--filter_homopolymer_ts', action='store_true', help = '***** Option to filter out spacer sequences with homopolymer Ts (>3). *****\n\n')
 parser.add_argument('-silent_mut', '--silent_mutation', action='store_true', help = '***** Introduce silent mutation into PAM assuming sequence is in-frame. Currently only available with SpCas9 PE (Default: N). *****\n\n')
 parser.add_argument('-genome_wide', '--genome_wide_design', action='store_true', help = '***** Whether or not this is a genome-wide pooled design. This option designs a set of pegRNAs per input without ranging PBS and RTT parameters. (Default: False) *****\n\n')
 parser.add_argument('-sat_mut', '--saturation_mutagenesis', default = False, choices = ['aa', 'base'], type = str, help = '***** Saturation mutagenesis design with prime editing. The aa option makes amino acid changes and the base option makes DNA base changes. (Default: False) *****\n\n')
@@ -82,6 +83,7 @@ rtt_length_list = args.rtt_length_list
 nicking_distance_minimum = args.nicking_distance_minimum
 nicking_distance_maximum = args.nicking_distance_maximum
 filter_c1_extension = args.filter_c1_extension
+filter_homopolymer_ts = args.filter_homopolymer_ts
 silent_mutation = args.silent_mutation
 
 genome_wide_design = args.genome_wide_design
@@ -1609,8 +1611,16 @@ with open(out_dir + '/%s' % pegRNAs_summary_f, 'w') as f:
 							pegext_oligo_top = 'gtgc' + pegRNA_ext
 							pegext_oligo_bottom = 'aaaa' + reverse_complement(pegRNA_ext)
 
-							f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'pegRNA', pe_spacer_sequence, spacer_gc_content, pe_pam_ref, pegRNA_ext, pe_strand, pe_annotate, nick2lastedit_length, pe_nick_ref_idx, '', pbs_length, pbs_gc_content, rtt_length, rtt_gc_content, pegRNA_ext_first_base, spacer_oligo_top, spacer_oligo_bottom, pegext_oligo_top, pegext_oligo_bottom])) + '\n')
-							peg_count += 1
+							if filter_homopolymer_ts:
+
+								if 'TTTT' not in pe_spacer_sequence:
+									f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'pegRNA', pe_spacer_sequence, spacer_gc_content, pe_pam_ref, pegRNA_ext, pe_strand, pe_annotate, nick2lastedit_length, pe_nick_ref_idx, '', pbs_length, pbs_gc_content, rtt_length, rtt_gc_content, pegRNA_ext_first_base, spacer_oligo_top, spacer_oligo_bottom, pegext_oligo_top, pegext_oligo_bottom])) + '\n')
+									peg_count += 1
+
+							else:
+
+								f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'pegRNA', pe_spacer_sequence, spacer_gc_content, pe_pam_ref, pegRNA_ext, pe_strand, pe_annotate, nick2lastedit_length, pe_nick_ref_idx, '', pbs_length, pbs_gc_content, rtt_length, rtt_gc_content, pegRNA_ext_first_base, spacer_oligo_top, spacer_oligo_bottom, pegext_oligo_top, pegext_oligo_bottom])) + '\n')
+								peg_count += 1
 
 					else:
 
@@ -1625,8 +1635,16 @@ with open(out_dir + '/%s' % pegRNAs_summary_f, 'w') as f:
 						pegext_oligo_top = 'gtgc' + pegRNA_ext
 						pegext_oligo_bottom = 'aaaa' + reverse_complement(pegRNA_ext)
 
-						f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'pegRNA', pe_spacer_sequence, spacer_gc_content, pe_pam_ref, pegRNA_ext, pe_strand, pe_annotate, nick2lastedit_length, pe_nick_ref_idx, '', pbs_length, pbs_gc_content, rtt_length, rtt_gc_content, pegRNA_ext_first_base, spacer_oligo_top, spacer_oligo_bottom, pegext_oligo_top, pegext_oligo_bottom])) + '\n')
-						peg_count += 1
+						if filter_homopolymer_ts:
+
+							if 'TTTT' not in pe_spacer_sequence:
+								f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'pegRNA', pe_spacer_sequence, spacer_gc_content, pe_pam_ref, pegRNA_ext, pe_strand, pe_annotate, nick2lastedit_length, pe_nick_ref_idx, '', pbs_length, pbs_gc_content, rtt_length, rtt_gc_content, pegRNA_ext_first_base, spacer_oligo_top, spacer_oligo_bottom, pegext_oligo_top, pegext_oligo_bottom])) + '\n')
+								peg_count += 1
+
+						else:
+
+							f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'pegRNA', pe_spacer_sequence, spacer_gc_content, pe_pam_ref, pegRNA_ext, pe_strand, pe_annotate, nick2lastedit_length, pe_nick_ref_idx, '', pbs_length, pbs_gc_content, rtt_length, rtt_gc_content, pegRNA_ext_first_base, spacer_oligo_top, spacer_oligo_bottom, pegext_oligo_top, pegext_oligo_bottom])) + '\n')
+							peg_count += 1
 
 					# Write ngRNAs
 					for ngRNA_entry in pe_design[target_name][pegid][1][:number_of_ngrnas]:
@@ -1642,7 +1660,13 @@ with open(out_dir + '/%s' % pegRNAs_summary_f, 'w') as f:
 							spacer_oligo_top = 'caccG' + ng_spacer_sequence_edit
 							spacer_oligo_bottom = 'aaac' + reverse_complement('G' + ng_spacer_sequence_edit)
 
-						f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'ngRNA', ng_spacer_sequence_edit, spacer_gc_content, ng_pam_edit, '', ng_strand, ng_annotate, '', ng_nick_ref_idx, nick_distance, '', '', '', '', '', spacer_oligo_top, spacer_oligo_bottom, '', ''])) + '\n')
+						if filter_homopolymer_ts:
+
+							if 'TTTT' not in ng_spacer_sequence_edit:
+								f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'ngRNA', ng_spacer_sequence_edit, spacer_gc_content, ng_pam_edit, '', ng_strand, ng_annotate, '', ng_nick_ref_idx, nick_distance, '', '', '', '', '', spacer_oligo_top, spacer_oligo_bottom, '', ''])) + '\n')
+
+						else:
+							f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'ngRNA', ng_spacer_sequence_edit, spacer_gc_content, ng_pam_edit, '', ng_strand, ng_annotate, '', ng_nick_ref_idx, nick_distance, '', '', '', '', '', spacer_oligo_top, spacer_oligo_bottom, '', ''])) + '\n')
 
 					counter += 1
 
@@ -1673,7 +1697,14 @@ with open(out_dir + '/%s' % pegRNAs_summary_f, 'w') as f:
 					pegext_oligo_top = 'gtgc' + pegRNA_ext
 					pegext_oligo_bottom = 'aaaa' + reverse_complement(pegRNA_ext)
 
-					f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'pegRNA', pe_spacer_sequence, spacer_gc_content, pe_pam_ref, pegRNA_ext, pe_strand, pe_annotate, nick2lastedit_length, pe_nick_ref_idx, '', pbs_length, pbs_gc_content, rtt_length, rtt_gc_content, pegRNA_ext_first_base, spacer_oligo_top, spacer_oligo_bottom, pegext_oligo_top, pegext_oligo_bottom])) + '\n')
+					if filter_homopolymer_ts:
+
+						if 'TTTT' not in pe_spacer_sequence:
+							f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'pegRNA', pe_spacer_sequence, spacer_gc_content, pe_pam_ref, pegRNA_ext, pe_strand, pe_annotate, nick2lastedit_length, pe_nick_ref_idx, '', pbs_length, pbs_gc_content, rtt_length, rtt_gc_content, pegRNA_ext_first_base, spacer_oligo_top, spacer_oligo_bottom, pegext_oligo_top, pegext_oligo_bottom])) + '\n')
+
+					else:
+
+						f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'pegRNA', pe_spacer_sequence, spacer_gc_content, pe_pam_ref, pegRNA_ext, pe_strand, pe_annotate, nick2lastedit_length, pe_nick_ref_idx, '', pbs_length, pbs_gc_content, rtt_length, rtt_gc_content, pegRNA_ext_first_base, spacer_oligo_top, spacer_oligo_bottom, pegext_oligo_top, pegext_oligo_bottom])) + '\n')
 
 					# Sort ngRNAs
 
@@ -1691,7 +1722,13 @@ with open(out_dir + '/%s' % pegRNAs_summary_f, 'w') as f:
 							spacer_oligo_top = 'caccG' + ng_spacer_sequence_edit
 							spacer_oligo_bottom = 'aaac' + reverse_complement('G' + ng_spacer_sequence_edit)
 
-						f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'ngRNA', ng_spacer_sequence_edit, spacer_gc_content, ng_pam_edit, '', ng_strand, ng_annotate, '', ng_nick_ref_idx, nick_distance, '', '', '', '', '', spacer_oligo_top, spacer_oligo_bottom, '', ''])) + '\n')
+						if filter_homopolymer_ts:
+
+							if 'TTTT' not in ng_spacer_sequence_edit:
+								f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'ngRNA', ng_spacer_sequence_edit, spacer_gc_content, ng_pam_edit, '', ng_strand, ng_annotate, '', ng_nick_ref_idx, nick_distance, '', '', '', '', '', spacer_oligo_top, spacer_oligo_bottom, '', ''])) + '\n')
+
+						else:
+							f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'ngRNA', ng_spacer_sequence_edit, spacer_gc_content, ng_pam_edit, '', ng_strand, ng_annotate, '', ng_nick_ref_idx, nick_distance, '', '', '', '', '', spacer_oligo_top, spacer_oligo_bottom, '', ''])) + '\n')
 
 					counter += 1
 
@@ -1719,7 +1756,14 @@ with open(out_dir + '/%s' % pegRNAs_summary_f, 'w') as f:
 					pegext_oligo_top = 'gtgc' + pegRNA_ext
 					pegext_oligo_bottom = 'aaaa' + reverse_complement(pegRNA_ext)
 
-					f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'pegRNA', pe_spacer_sequence, spacer_gc_content, pe_pam_ref, pegRNA_ext, pe_strand, pe_annotate, nick2lastedit_length, pe_nick_ref_idx, '', pbs_length, pbs_gc_content, rtt_length, rtt_gc_content, pegRNA_ext_first_base, spacer_oligo_top, spacer_oligo_bottom, pegext_oligo_top, pegext_oligo_bottom])) + '\n')
+					if filter_homopolymer_ts:
+
+						if 'TTTT' not in pe_spacer_sequence:
+							f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'pegRNA', pe_spacer_sequence, spacer_gc_content, pe_pam_ref, pegRNA_ext, pe_strand, pe_annotate, nick2lastedit_length, pe_nick_ref_idx, '', pbs_length, pbs_gc_content, rtt_length, rtt_gc_content, pegRNA_ext_first_base, spacer_oligo_top, spacer_oligo_bottom, pegext_oligo_top, pegext_oligo_bottom])) + '\n')
+
+					else:
+
+						f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'pegRNA', pe_spacer_sequence, spacer_gc_content, pe_pam_ref, pegRNA_ext, pe_strand, pe_annotate, nick2lastedit_length, pe_nick_ref_idx, '', pbs_length, pbs_gc_content, rtt_length, rtt_gc_content, pegRNA_ext_first_base, spacer_oligo_top, spacer_oligo_bottom, pegext_oligo_top, pegext_oligo_bottom])) + '\n')
 
 				# Write ngRNAs
 				for ngRNA_entry in pe_design[target_name][pegid][1]:
@@ -1735,6 +1779,13 @@ with open(out_dir + '/%s' % pegRNAs_summary_f, 'w') as f:
 						spacer_oligo_top = 'caccG' + ng_spacer_sequence_edit
 						spacer_oligo_bottom = 'aaac' + reverse_complement('G' + ng_spacer_sequence_edit)
 
-					f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'ngRNA', ng_spacer_sequence_edit, spacer_gc_content, ng_pam_edit, '', ng_strand, ng_annotate, '', ng_nick_ref_idx, nick_distance, '', '', '', '', '', spacer_oligo_top, spacer_oligo_bottom, '', ''])) + '\n')
+					if filter_homopolymer_ts:
+
+						if 'TTTT' not in ng_spacer_sequence_edit:
+							f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'ngRNA', ng_spacer_sequence_edit, spacer_gc_content, ng_pam_edit, '', ng_strand, ng_annotate, '', ng_nick_ref_idx, nick_distance, '', '', '', '', '', spacer_oligo_top, spacer_oligo_bottom, '', ''])) + '\n')
+
+					else:
+
+						f.write(','.join(map(str, [target_name, target_design[target_name]['target_sequence'], counter, 'ngRNA', ng_spacer_sequence_edit, spacer_gc_content, ng_pam_edit, '', ng_strand, ng_annotate, '', ng_nick_ref_idx, nick_distance, '', '', '', '', '', spacer_oligo_top, spacer_oligo_bottom, '', ''])) + '\n')
 
 				counter += 1
